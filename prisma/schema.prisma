@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id String @id @default(uuid())
+
+  name      String
+  email     String?   @unique
+  birthdate DateTime?
+  password  String
+  phone     String?
+  avatar    String?
+
+  status Boolean @default(true)
+
+  role Role @default(STUDENT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  educator    Educator?
+  interpreter Interpreter?
+  student     Student?
+  guardian    Guardian?
+}
+
+enum Role {
+  STUDENT
+  EDUCATOR
+  GUARDIAN
+  ADMIN
+}
+
+enum LibrasLevel {
+  BASICO
+  INTERMEDIARIO
+  AVANCADO
+  FLUENTE
+}
+
+//
+// EDUCATOR
+//
+
+model Educator {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  institute  String
+  department String
+  bio        String?
+  specialty  String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+//
+// INTERPRETER
+//
+
+model Interpreter {
+  id                 String      @id @default(uuid())
+  userId             String      @unique
+  certificate        String
+  areaAtuacao        String
+  proficienciaLibras LibrasLevel
+  institute          String
+  specialty          String
+  department         String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+//
+// STUDENT
+//
+
+model Student {
+  id                    String  @id @default(uuid())
+  userId                String  @unique
+  grauEscolar           String
+  necessidadesEspeciais String
+  bio                   String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+//
+// GUARDIAN (Responsável)
+//
+
+model Guardian {
+  id         String @id @default(uuid())
+  userId     String @unique
+  parentesco String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
