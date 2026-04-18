@@ -3,7 +3,7 @@ CREATE TYPE "Role" AS ENUM ('STUDENT', 'EDUCATOR', 'GUARDIAN', 'ADMIN');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "email" TEXT,
     "birthdate" TIMESTAMP(3),

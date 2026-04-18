@@ -21,6 +21,7 @@ model User {
   password  String
   phone     String?
   avatar    String?
+  bio       String?
 
   status Boolean @default(true)
 
@@ -38,6 +39,7 @@ model User {
 enum Role {
   STUDENT
   EDUCATOR
+  INTERPRETER
   GUARDIAN
   ADMIN
 }
@@ -54,11 +56,10 @@ enum LibrasLevel {
 //
 
 model Educator {
-  id         String  @id @default(uuid())
-  userId     String  @unique
+  id         String @id @default(uuid())
+  userId     String @unique
   institute  String
   department String
-  bio        String?
   specialty  String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -88,9 +89,9 @@ model Interpreter {
 model Student {
   id                    String  @id @default(uuid())
   userId                String  @unique
+  institute             String?
   grauEscolar           String
   necessidadesEspeciais String
-  bio                   String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -100,9 +101,10 @@ model Student {
 //
 
 model Guardian {
-  id         String @id @default(uuid())
-  userId     String @unique
-  parentesco String
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  parentesco   String
+  studentEmail String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

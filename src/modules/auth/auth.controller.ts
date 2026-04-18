@@ -1,9 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { RegisterDto } from './dto/register.dto';
 import { ApiResponse } from '@common/dto/response.dto';
-import { User } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginDocs, RegisterDocs } from '@/common/swagger/auth';
 
@@ -30,14 +29,14 @@ export class AuthController {
     // Decoradores personalizados para documentação Swagger
     @RegisterDocs()
     @Post('register')
-    async createUser(@Body() newUser: CreateUserDto): Promise<ApiResponse<User>> {
-
-        const user = await this.authService.create(newUser);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async createUser(@Body() dto: RegisterDto): Promise<ApiResponse<any>> {
+        const user = await this.authService.register(dto);
 
         return {
             success: true,
             message: 'Usuário criado com sucesso',
-            object: user
-        }
+            object: user,
+        };
     }
 }

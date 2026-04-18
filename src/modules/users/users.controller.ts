@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -30,7 +30,7 @@ export class UsersController {
 
     @FindByIdDocs()
     @Get(":id")
-    async findUser(@Param("id", ParseIntPipe) id: number) {
+    async findUser(@Param("id") id: string) {
 
         const user = await this.usersService.findUser(id);
 
@@ -44,7 +44,7 @@ export class UsersController {
 
     @DeleteDocs()
     @Delete(":id")
-    async deleteUser(@Param("id", ParseIntPipe) id: number) {
+    async deleteUser(@Param("id") id: string) {
         await this.usersService.delete(id);
         return {
             success: true,
@@ -54,7 +54,7 @@ export class UsersController {
 
     @UpdateDocs()
     @Patch(":id")
-    async updateUser(@Param("id", ParseIntPipe) id: number, @Body() updatedUser: UpdateUserDto) {
+    async updateUser(@Param("id") id: string, @Body() updatedUser: UpdateUserDto) {
         const user = await this.usersService.update(id, updatedUser);
         return {
             success: true,

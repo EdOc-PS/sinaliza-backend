@@ -1,5 +1,5 @@
 export type JwtUser = {
-  userId: number;
+  userId: string;
   email: string;
 };
 

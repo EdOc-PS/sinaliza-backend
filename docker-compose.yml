@@ -3,12 +3,12 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15
-    container_name: repo-postgres
+    container_name: sinaliza-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: repodb
+      POSTGRES_DB: sinalizadb
     ports:
       - "5432:5432"
     volumes:

@@ -11,7 +11,7 @@ export class UsersService {
     return this.usersRepository.findAll();
   }
 
-  findUser(id: number) {
+  findUser(id: string) {
     return this.findByIdOrFail(id);
   }
 
@@ -19,7 +19,7 @@ export class UsersService {
     return this.usersRepository.findByEmail(email);
   }
 
-  async findByIdOrFail(id: number) {
+  async findByIdOrFail(id: string) {
 
     const user = await this.usersRepository.findOne(id);
 
@@ -30,7 +30,7 @@ export class UsersService {
     return user;
   }
 
-  async validateActiveUser(id: number) {
+  async validateActiveUser(id: string) {
     const user = await this.findByIdOrFail(id);
 
     if (!user.status) {
@@ -40,13 +40,13 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updatedUser: UpdateUserDto) {
+  async update(id: string, updatedUser: UpdateUserDto) {
     await this.findByIdOrFail(id);
 
     return this.usersRepository.update(id, updatedUser);
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     await this.findByIdOrFail(id);
 
     return this.usersRepository.delete(id);
