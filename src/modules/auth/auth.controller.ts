@@ -1,10 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { ApiResponse } from '@common/dto/response.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginDocs, RegisterDocs } from '@/common/swagger/auth';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,6 +38,18 @@ export class AuthController {
         return {
             success: true,
             message: 'Usuário criado com sucesso',
+            object: user,
+        };
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    async getMe(@Request() req: AuthenticatedRequest) {
+        const user = await this.authService.getMe(req.user.userId);
+
+        return {
+            success: true,
+            message: 'Usuário obtido com sucesso',
             object: user,
         };
     }

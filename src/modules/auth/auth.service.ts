@@ -57,6 +57,11 @@ export class AuthService {
         return this.authRepository.createAccount(userData, profileData);
     }
 
+    // ──  obter dados do usuário autenticado ──────────────────────────────────────────
+    async getMe(userId: string) {
+        return this.usersService.findUser(userId);
+    }
+
     private buildProfileData(dto: RegisterDto) {
         const profile = dto.dataProfile;
 
