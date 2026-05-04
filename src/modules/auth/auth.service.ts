@@ -81,21 +81,13 @@ export class AuthService {
                     type: Role.EDUCATOR as const,
                     data: {
                         institute: profile.institute ?? '',
-                        department: profile.department ?? '',
-                        specialty: profile.specialty ?? '',
-                    },
-                };
-
-            case Role.INTERPRETER:
-                return {
-                    type: Role.INTERPRETER as const,
-                    data: {
-                        institute: profile.institute ?? '',
-                        certificate: profile.certificate ?? '',
-                        areaAtuacao: profile.areaAtuacao ?? '',
-                        proficienciaLibras: profile.proficienciaLibras ?? 'BASICO',
-                        specialty: '',
-                        department: '',
+                        educatorType: profile.educatorType ?? 'TEACHER',
+                        department: profile.department,
+                        specialty: profile.specialty,
+                        // Campos do Intérprete (preenchidos apenas se educatorType = INTERPRETER)
+                        certificate: profile.certificate,
+                        areaAtuacao: profile.areaAtuacao,
+                        proficienciaLibras: profile.proficienciaLibras,
                     },
                 };
 

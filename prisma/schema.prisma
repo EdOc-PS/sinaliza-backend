@@ -30,16 +30,18 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  educator    Educator?
-  interpreter Interpreter?
-  student     Student?
-  guardian    Guardian?
+  educator  Educator?
+  student   Student?
+  guardian  Guardian?
+
+  // Relações com Disciplinas
+  disciplines           Discipline[]           @relation("TeacherDisciplines")
+  disciplineEnrollments DisciplineEnrollment[]
 }
 
 enum Role {
   STUDENT
   EDUCATOR
-  INTERPRETER
   GUARDIAN
   ADMIN
 }
@@ -51,40 +53,37 @@ enum LibrasLevel {
   FLUENTE
 }
 
-//
-// EDUCATOR
-//
-
-model Educator {
-  id         String @id @default(uuid())
-  userId     String @unique
-  institute  String
-  department String
-  specialty  String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+// Identifica se o Educator é Professor ou Intérprete dentro da plataforma
+enum EducatorType {
+  TEACHER  
+  INTERPRETER
 }
 
 //
-// INTERPRETER
-//
+// EDUCATOR (absorve Professor e Intérprete)
 
-model Interpreter {
-  id                 String      @id @default(uuid())
-  userId             String      @unique
-  certificate        String
-  areaAtuacao        String
-  proficienciaLibras LibrasLevel
-  institute          String
-  specialty          String
-  department         String
+model Educator {
+  id           String       @id @default(uuid())
+  userId       String       @unique
+  educatorType EducatorType @default(TEACHER)
+
+  // Dados comuns
+  institute String
+
+  // Dados específicos do Professor (opcionais para Intérprete)
+  department String?
+  specialty  String?
+
+  // Dados específicos do Intérprete (opcionais para Professor)
+  certificate        String?
+  areaAtuacao        String?
+  proficienciaLibras LibrasLevel?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 //
 // STUDENT
-//
 
 model Student {
   id                    String  @id @default(uuid())
@@ -98,7 +97,6 @@ model Student {
 
 //
 // GUARDIAN (Responsável)
-//
 
 model Guardian {
   id           String  @id @default(uuid())
@@ -107,4 +105,63 @@ model Guardian {
   studentEmail String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// DISCIPLINE (Turma)
+// ─────────────────────────────────────────────
+
+enum SchoolLevel {
+  ENSINO_MEDIO_1 
+  ENSINO_MEDIO_2 
+  ENSINO_MEDIO_3
+}
+
+enum ClassRole {
+  STUDENT   
+  FAMILY  
+  INTERPRETER
+  ASSISTANT  // (uso futuro)
+}
+
+model Discipline {
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  colorBackground String?     // Hexadecimal: ex "#BACA57"
+  classCode       String      @unique // Gerado pelo service (ex: "ABC1D2")
+  schoolYear      Int?         // ex: 2026
+  schoolLevel     SchoolLevel?
+  isActive        Boolean     @default(true)
+  teacherId       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher     User                   @relation("TeacherDisciplines", fields: [teacherId], references: [id])
+  enrollments DisciplineEnrollment[]
+
+  @@index([teacherId])
+  @@index([classCode])
+}
+
+// ─────────────────────────────────────────────
+// DISCIPLINE ENROLLMENT (Matrícula)
+// ─────────────────────────────────────────────
+
+model DisciplineEnrollment {
+  id           String    @id @default(uuid())
+  userId       String
+  disciplineId String
+  roleInClass  ClassRole
+
+  createdAt DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+
+  // Um usuário só pode estar matriculado uma vez por disciplina
+  @@unique([userId, disciplineId])
+  @@index([disciplineId])
+  @@index([userId])
 }

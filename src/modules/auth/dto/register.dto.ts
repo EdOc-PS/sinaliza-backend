@@ -1,4 +1,4 @@
-import { LibrasLevel, Role } from '@common/enums/enum'
+import { EducatorType, LibrasLevel, Role } from '@common/enums/enum'
 import { Transform, Type } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import {
@@ -36,28 +36,33 @@ export class DataProfileDto {
     necessidadesEspeciais?: string
 
     // EDUCATOR
-    @ApiPropertyOptional({ example: 'Pedagogia', description: '[EDUCATOR]' })
+    @ApiPropertyOptional({ example: 'TEACHER', enum: EducatorType, description: '[EDUCATOR] Professor ou Intérprete' })
+    @IsEnum(EducatorType)
+    @IsOptional()
+    educatorType?: EducatorType
+
+    @ApiPropertyOptional({ example: 'Pedagogia', description: '[EDUCATOR / TEACHER]' })
     @IsString()
     @IsOptional()
     department?: string
 
-    @ApiPropertyOptional({ example: 'Libras e Inclusão', description: '[EDUCATOR]' })
+    @ApiPropertyOptional({ example: 'Libras e Inclusão', description: '[EDUCATOR / TEACHER]' })
     @IsString()
     @IsOptional()
     specialty?: string
 
-    // INTERPRETER
-    @ApiPropertyOptional({ example: 'ProLibras 2023', description: '[INTERPRETER]' })
+    // EDUCATOR / INTERPRETER
+    @ApiPropertyOptional({ example: 'ProLibras 2023', description: '[EDUCATOR / INTERPRETER]' })
     @IsString()
     @IsOptional()
     certificate?: string
 
-    @ApiPropertyOptional({ example: 'Interpretação em sala', description: '[INTERPRETER]' })
+    @ApiPropertyOptional({ example: 'Interpretação em sala', description: '[EDUCATOR / INTERPRETER]' })
     @IsString()
     @IsOptional()
     areaAtuacao?: string
 
-    @ApiPropertyOptional({ example: 'FLUENTE', enum: LibrasLevel, description: '[INTERPRETER]' })
+    @ApiPropertyOptional({ example: 'FLUENTE', enum: LibrasLevel, description: '[EDUCATOR / INTERPRETER]' })
     @IsEnum(LibrasLevel)
     @IsOptional()
     proficienciaLibras?: LibrasLevel

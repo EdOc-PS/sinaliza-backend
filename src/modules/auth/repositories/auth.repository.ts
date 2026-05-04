@@ -12,11 +12,20 @@ type UserData = {
     role: string;
 };
 
+type EducatorData = {
+    institute: string;
+    educatorType: string;
+    department?: string;
+    specialty?: string;
+    certificate?: string;
+    areaAtuacao?: string;
+    proficienciaLibras?: string;
+};
+
 type ProfileData =
-    | { type: Role.STUDENT;      data: { institute?: string; grauEscolar: string; necessidadesEspeciais: string } }
-    | { type: Role.EDUCATOR;     data: { institute: string; department: string; specialty: string } }
-    | { type: Role.INTERPRETER;  data: { institute: string; certificate: string; areaAtuacao: string; proficienciaLibras: string; specialty: string; department: string } }
-    | { type: Role.GUARDIAN;     data: { parentesco: string; studentEmail?: string } }
+    | { type: Role.STUDENT;  data: { institute?: string; grauEscolar: string; necessidadesEspeciais: string } }
+    | { type: Role.EDUCATOR; data: EducatorData }
+    | { type: Role.GUARDIAN; data: { parentesco: string; studentEmail?: string } }
     | null;
 
 @Injectable()
@@ -38,20 +47,17 @@ export class AuthRepository {
                 const profileInsert: Record<string, unknown> = { userId: user.id, ...profileData.data };
 
                 switch (profileData.type) {
-                    case Role.STUDENT:     await tx.student.create({ data: profileInsert });      break;
-                    case Role.EDUCATOR:    await tx.educator.create({ data: profileInsert });     break;
-                    case Role.INTERPRETER: await tx.interpreter.create({ data: profileInsert });  break;
-                    case Role.GUARDIAN:    await tx.guardian.create({ data: profileInsert });     break;
+                    case Role.STUDENT:  await tx.student.create({ data: profileInsert });  break;
+                    case Role.EDUCATOR: await tx.educator.create({ data: profileInsert }); break;
+                    case Role.GUARDIAN: await tx.guardian.create({ data: profileInsert }); break;
                 }
             }
 
             // 3. Retorna o usuário com o perfil incluído
             return tx.user.findUnique({
                 where: { id: user.id },
-                include: { student: true, educator: true, interpreter: true, guardian: true },
+                include: { student: true, educator: true, guardian: true },
             });
         });
     }
 }
-
-

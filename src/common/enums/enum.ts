@@ -1,9 +1,13 @@
 export enum Role {
   STUDENT = 'STUDENT',
   EDUCATOR = 'EDUCATOR',
-  INTERPRETER = 'INTERPRETER',
   GUARDIAN = 'GUARDIAN',
   ADMIN = 'ADMIN',
+}
+
+export enum EducatorType {
+  TEACHER = 'TEACHER',
+  INTERPRETER = 'INTERPRETER',
 }
 
 export enum LibrasLevel {
@@ -11,4 +15,17 @@ export enum LibrasLevel {
   INTERMEDIARIO = 'INTERMEDIARIO',
   AVANCADO = 'AVANCADO',
   FLUENTE = 'FLUENTE',
+}
+
+export enum SchoolLevel {
+  ENSINO_MEDIO_1 = 'ENSINO_MEDIO_1',
+  ENSINO_MEDIO_2 = 'ENSINO_MEDIO_2',
+  ENSINO_MEDIO_3 = 'ENSINO_MEDIO_3',
+}
+
+export enum ClassRole {
+  STUDENT = 'STUDENT',
+  FAMILY = 'FAMILY',
+  INTERPRETER = 'INTERPRETER',
+  ASSISTANT = 'ASSISTANT',
 }

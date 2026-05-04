@@ -1,15 +1,18 @@
 import { RegisterDto } from '@modules/auth/dto/register.dto';
 import { LoginDto } from '@modules/auth/dto/login.dto';
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation } from '@nestjs/swagger';
-
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 export function RegisterDocs() {
     return applyDecorators(
         ApiOperation({
-            summary: 'Cria uma nova conta de usuário',
+            summary: 'Criar nova conta',
             description:
-                'Endpoint único de registro. Envie `role` + os campos específicos do perfil escolhido.',
+                'Registro unificado. Envie `role` + os campos específicos do perfil em `dataProfile`.\n\n' +
+                '- **STUDENT** → `grauEscolar`, `necessidadesEspeciais`\n' +
+                '- **EDUCATOR (Professor)** → `educatorType: TEACHER`, `department`, `specialty`\n' +
+                '- **EDUCATOR (Intérprete)** → `educatorType: INTERPRETER`, `certificate`, `areaAtuacao`, `proficienciaLibras`\n' +
+                '- **GUARDIAN** → `parentesco`, `studentEmail`',
         }),
         ApiBody({
             type: RegisterDto,
@@ -31,8 +34,8 @@ export function RegisterDocs() {
                         },
                     },
                 },
-                educator: {
-                    summary: 'Educador',
+                educator_professor: {
+                    summary: 'Educador — Professor',
                     value: {
                         name: 'Maria Souza',
                         email: 'maria@email.com',
@@ -40,20 +43,22 @@ export function RegisterDocs() {
                         role: 'EDUCATOR',
                         dataProfile: {
                             institute: 'IFMG Ouro Preto',
+                            educatorType: 'TEACHER',
                             department: 'Pedagogia',
                             specialty: 'Libras e Inclusão',
                         },
                     },
                 },
-                interpreter: {
-                    summary: 'Intérprete',
+                educator_interprete: {
+                    summary: 'Educador — Intérprete',
                     value: {
                         name: 'Carlos Lima',
                         email: 'carlos@email.com',
                         password: 'senha123',
-                        role: 'INTERPRETER',
+                        role: 'EDUCATOR',
                         dataProfile: {
                             institute: 'IFMG Ouro Preto',
+                            educatorType: 'INTERPRETER',
                             certificate: 'ProLibras 2023',
                             areaAtuacao: 'Interpretação em sala de aula',
                             proficienciaLibras: 'FLUENTE',
@@ -61,7 +66,7 @@ export function RegisterDocs() {
                     },
                 },
                 guardian: {
-                    summary: 'Responsável',
+                    summary: 'Responsável (Familiar)',
                     value: {
                         name: 'Ana Pereira',
                         email: 'ana@email.com',
@@ -75,23 +80,42 @@ export function RegisterDocs() {
                 },
             },
         }),
+        ApiResponse({ status: 201, description: 'Conta criada com sucesso' }),
+        ApiResponse({ status: 400, description: 'Dados inválidos' }),
+        ApiResponse({ status: 401, description: 'Email já registrado' }),
     );
 }
 
 export function LoginDocs() {
     return applyDecorators(
-        ApiOperation({ summary: 'Realiza login do usuário' }),
+        ApiOperation({
+            summary: 'Login',
+            description: 'Retorna `access_token` JWT e dados do usuário autenticado.',
+        }),
         ApiBody({
             type: LoginDto,
             examples: {
                 login: {
                     summary: 'Exemplo de login',
                     value: {
-                        email: 'usuario@email.com',
+                        email: 'maria@email.com',
                         password: 'senha123',
                     },
                 },
             },
         }),
+        ApiResponse({ status: 200, description: 'Login realizado — retorna access_token + user' }),
+        ApiResponse({ status: 401, description: 'Credenciais inválidas ou usuário inativo' }),
+    );
+}
+
+export function GetMeDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Dados do usuário autenticado',
+            description: 'Retorna o perfil completo do usuário dono do token JWT.',
+        }),
+        ApiResponse({ status: 200, description: 'Usuário obtido com sucesso' }),
+        ApiResponse({ status: 401, description: 'Token inválido ou expirado' }),
     );
 }

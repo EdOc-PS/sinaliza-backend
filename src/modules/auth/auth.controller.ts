@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { ApiResponse } from '@common/dto/response.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { LoginDocs, RegisterDocs } from '@/common/swagger/auth';
+import { GetMeDocs, LoginDocs, RegisterDocs } from '@/common/swagger/auth';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 
@@ -42,6 +42,7 @@ export class AuthController {
         };
     }
 
+    @GetMeDocs()
     @UseGuards(JwtAuthGuard)
     @Get('me')
     async getMe(@Request() req: AuthenticatedRequest) {

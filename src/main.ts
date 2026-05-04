@@ -14,7 +14,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Filtragem e Validações
+  // ---- Filtragem e Validações ----
   app.useGlobalFilters(new HttpExceptionFilter());
 
   app.useGlobalPipes(
@@ -25,18 +25,28 @@ async function bootstrap() {
 
   // ---- Swagger ----
   const config = new DocumentBuilder()
-    .setTitle('Repo LIBRAS  - API')
-    .setDescription('API para gerenciamento de usuários, carrinho e pedidos')
-    .setVersion('0.1')
+    .setTitle('Sinaliza — API')
+    .setDescription(
+      'API do repositório digital de sinais de Libras.\n\n' +
+      '**Roles disponíveis:** `STUDENT` · `EDUCATOR` · `GUARDIAN` · `ADMIN`\n\n' +
+      '**Autenticação:** JWT Bearer — faça login em `/auth/login` e use o token retornado.',
+    )
+    .setVersion('1.0')
+    .addTag('Auth', 'Autenticação e registro de usuários')
+    .addTag('Disciplines', 'Gerenciamento de disciplinas e matrículas')
+    .addTag('Users', 'Gerenciamento de usuários')
     .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Token JWT obtido em /auth/login' },
       'access-token',
     )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
+  // ---- Porta ----
   await app.listen(process.env.PORT ?? 3000);
 }
 
