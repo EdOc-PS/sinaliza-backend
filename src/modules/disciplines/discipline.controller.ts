@@ -26,6 +26,7 @@ import {
   FindMembersDocs,
   FindMineDocs,
   FindOneDisciplineDocs,
+  FindSchoolLevelsDocs,
   JoinDisciplineDocs,
   LeaveDisciplineDocs,
   UpdateDisciplineDocs,
@@ -48,6 +49,14 @@ export class DisciplineController {
   ) {
     const discipline = await this.disciplineService.create(req.user.userId, dto);
     return { success: true, message: 'Disciplina criada com sucesso', object: discipline };
+  }
+
+  // ── GET /disciplines/options ───────────────────────────────
+  @FindSchoolLevelsDocs()
+  @Get('options')
+  async findSchoolLevels() {
+    const levels = await this.disciplineService.findSchoolLevels();
+    return { success: true, message: 'Níveis escolares obtidos com sucesso', object: levels };
   }
 
   // ── GET /disciplines/mine ─────────────────────────────────────────

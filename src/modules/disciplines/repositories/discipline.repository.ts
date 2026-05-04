@@ -132,4 +132,13 @@ export class DisciplineRepository {
       where: { userId_disciplineId: { userId, disciplineId } },
     });
   }
+
+  // ── Listar parâmetros por tipo ────────────────────────────────────
+  async findParams(type: string) {
+    return this.prisma.param.findMany({
+      where: { type, isActive: true },
+      select: { label: true, value: true },
+      orderBy: { order: 'asc' },
+    });
+  }
 }

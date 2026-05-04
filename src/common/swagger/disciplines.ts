@@ -143,6 +143,30 @@ export function JoinDisciplineDocs() {
     );
 }
 
+export function FindSchoolLevelsDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Listar níveis escolares',
+            description: 'Retorna as opções de nível escolar disponíveis para popular o select de criação de disciplina.',
+        }),
+        ApiResponse({
+            status: 200,
+            description: 'Lista de níveis escolares ativos ordenados',
+            schema: {
+                example: {
+                    success: true,
+                    message: 'Níveis escolares obtidos com sucesso',
+                    object: [
+                        { label: '1o Ano do Ensino Medio', value: 'ENSINO_MEDIO_1' },
+                        { label: '2o Ano do Ensino Medio', value: 'ENSINO_MEDIO_2' },
+                        { label: '3o Ano do Ensino Medio', value: 'ENSINO_MEDIO_3' },
+                    ],
+                },
+            },
+        }),
+    );
+}
+
 export function LeaveDisciplineDocs() {
     return applyDecorators(
         ApiOperation({ summary: 'Sair de uma disciplina' }),

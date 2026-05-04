@@ -165,3 +165,19 @@ model DisciplineEnrollment {
   @@index([disciplineId])
   @@index([userId])
 }
+
+// ─────────────────────────────────────────────
+// PARAM (Tabela genérica de parâmetros de selects)
+// ─────────────────────────────────────────────
+
+model Param {
+  id       String  @id @default(uuid())
+  type     String  // ex: "SCHOOL_LEVEL", "SCHOOL_YEAR", "PARENTESCO"
+  label    String  // ex: "1º Ano do Ensino Médio"
+  value    String  // ex: "ENSINO_MEDIO_1"
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  @@index([type])
+  @@unique([type, value])
+}

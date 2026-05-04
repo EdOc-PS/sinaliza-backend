@@ -95,6 +95,11 @@ export class DisciplineService {
     return this.disciplineRepository.unenroll(userId, disciplineId);
   }
 
+  // ── Listar níveis escolares ───────────────────────────────────────
+  async findSchoolLevels() {
+    return this.disciplineRepository.findParams('SCHOOL_LEVEL');
+  }
+
   // ── Gerar classCode aleatório ─────────────────────────────────────
   private generateClassCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
