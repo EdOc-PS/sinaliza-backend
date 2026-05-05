@@ -28,7 +28,7 @@ export class AuthService {
         const isPasswordValid = await bcrypt.compare(loginRequest.password, user.password);
         if (!isPasswordValid) throw new UnauthorizedException('Credenciais inválidas');
 
-        const token = this.jwtService.sign({ userId: user.id, email: user.email });
+        const token = this.jwtService.sign({ userId: user.id, email: user.email, role: user.role });
 
         return { access_token: token, user };
     }

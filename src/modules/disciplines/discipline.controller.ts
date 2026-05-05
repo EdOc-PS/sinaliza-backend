@@ -53,6 +53,7 @@ export class DisciplineController {
 
   // ── GET /disciplines/options ───────────────────────────────
   @FindSchoolLevelsDocs()
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get('options')
   async findSchoolLevels() {
     const levels = await this.disciplineService.findSchoolLevels();
