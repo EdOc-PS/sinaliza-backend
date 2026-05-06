@@ -54,7 +54,7 @@ export class DisciplineService {
   async update(id: string, teacherId: string, dto: UpdateDisciplineDto) {
     const discipline = await this.findById(id);
 
-    if (discipline.teacherId !== teacherId) {
+    if (discipline.teacher.id !== teacherId) {
       throw new ForbiddenException('Apenas o professor da disciplina pode editá-la');
     }
 
@@ -65,7 +65,7 @@ export class DisciplineService {
   async delete(id: string, teacherId: string) {
     const discipline = await this.findById(id);
 
-    if (discipline.teacherId !== teacherId) {
+    if (discipline.teacher.id !== teacherId) {
       throw new ForbiddenException('Apenas o professor da disciplina pode excluí-la');
     }
 
@@ -92,11 +92,6 @@ export class DisciplineService {
   // ── Listar membros de uma disciplina ─────────────────────────────
   async findMembers(id: string, requesterId: string) {
     const discipline = await this.findById(id);
-
-    // Apenas professor dono pode ver a lista completa de membros
-    if (discipline.teacherId !== requesterId) {
-      throw new ForbiddenException('Acesso negado');
-    }
 
     return this.disciplineRepository.findMembers(id);
   }

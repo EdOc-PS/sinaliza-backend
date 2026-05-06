@@ -37,7 +37,7 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('disciplines')
 export class DisciplineController {
-  constructor(private readonly disciplineService: DisciplineService) {}
+  constructor(private readonly disciplineService: DisciplineService) { }
 
   // ── POST /disciplines ─────────────────────────────────────────────
   @CreateDisciplineDocs()

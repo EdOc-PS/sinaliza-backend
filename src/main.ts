@@ -20,6 +20,10 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      transform: true,         // converte string → number automaticamente
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
