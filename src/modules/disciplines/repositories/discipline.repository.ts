@@ -8,21 +8,14 @@ import { ClassRole } from '@common/enums/enum';
 const disciplineSelect = {
   id: true,
   name: true,
-  description: true,
   colorBackground: true,
   classCode: true,
   schoolYear: true,
   schoolLevel: true,
   isActive: true,
-  teacherId: true,
-  createdAt: true,
-  updatedAt: true,
   teacher: {
     select: { id: true, name: true, avatar: true },
-  },
-  _count: {
-    select: { enrollments: true },
-  },
+  }
 };
 
 @Injectable()

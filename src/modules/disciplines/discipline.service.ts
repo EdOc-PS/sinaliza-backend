@@ -9,6 +9,14 @@ import { CreateDisciplineDto } from './dto/create-discipline.dto';
 import { UpdateDisciplineDto } from './dto/update-discipline.dto';
 import { JoinDisciplineDto } from './dto/join-discipline.dto';
 
+const transformDiscipline = (discipline: any) => {
+  const { _count, ...rest } = discipline;
+  return {
+    ...rest,
+    userCount: _count?.enrollments || 0,
+  };
+};
+
 @Injectable()
 export class DisciplineService {
   constructor(private readonly disciplineRepository: DisciplineRepository) {}
@@ -16,24 +24,30 @@ export class DisciplineService {
   // ── Criar disciplina ──────────────────────────────────────────────
   async create(teacherId: string, dto: CreateDisciplineDto) {
     const classCode = this.generateClassCode();
-    return this.disciplineRepository.create(teacherId, dto, classCode);
+    const discipline = await this.disciplineRepository.create(teacherId, dto, classCode);
+    return transformDiscipline(discipline);
   }
 
   // ── Listar disciplinas do professor logado ────────────────────────
   async findAllByTeacher(teacherId: string) {
-    return this.disciplineRepository.findAllByTeacher(teacherId);
+    const disciplines = await this.disciplineRepository.findAllByTeacher(teacherId);
+    return disciplines.map(transformDiscipline);
   }
 
   // ── Listar disciplinas em que o aluno está matriculado ────────────
   async findAllByStudent(userId: string) {
-    return this.disciplineRepository.findAllByStudent(userId);
+    const enrollments = await this.disciplineRepository.findAllByStudent(userId);
+    return enrollments.map(e => ({
+      ...e,
+      discipline: transformDiscipline(e.discipline),
+    }));
   }
 
   // ── Buscar disciplina por ID (validando acesso) ───────────────────
   async findById(id: string) {
     const discipline = await this.disciplineRepository.findById(id);
     if (!discipline) throw new NotFoundException('Disciplina não encontrada');
-    return discipline;
+    return transformDiscipline(discipline);
   }
 
   // ── Atualizar disciplina (apenas o professor dono) ────────────────
