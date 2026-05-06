@@ -4,8 +4,9 @@ import { CreateDisciplineDto } from '../dto/create-discipline.dto';
 import { UpdateDisciplineDto } from '../dto/update-discipline.dto';
 import { ClassRole } from '@common/enums/enum';
 
-// Campos públicos retornados da disciplina
-const disciplineSelect = {
+// ── Select para listagem de cards (/mine, /enrolled) ─────────────────
+// Dados mínimos para renderizar o card + teacherId para checks de ownership
+const disciplineCardSelect = {
   id: true,
   name: true,
   colorBackground: true,
@@ -13,9 +14,34 @@ const disciplineSelect = {
   schoolYear: true,
   schoolLevel: true,
   isActive: true,
+  teacherId: true,
+  teacher: {
+    select: { name: true },   // só o nome vira teacherName no service
+  },
+  _count: {
+    select: { enrollments: true },
+  },
+};
+
+// ── Select completo para detalhe (/disciplines/:id, update, delete) ───
+const disciplineDetailSelect = {
+  id: true,
+  name: true,
+  description: true,
+  colorBackground: true,
+  classCode: true,
+  schoolYear: true,
+  schoolLevel: true,
+  isActive: true,
+  teacherId: true,
+  createdAt: true,
+  updatedAt: true,
   teacher: {
     select: { id: true, name: true, avatar: true },
-  }
+  },
+  _count: {
+    select: { enrollments: true },
+  },
 };
 
 @Injectable()
@@ -34,7 +60,7 @@ export class DisciplineRepository {
         schoolLevel: dto.schoolLevel,
         teacherId,
       },
-      select: disciplineSelect,
+      select: disciplineDetailSelect,
     });
   }
 
@@ -42,7 +68,7 @@ export class DisciplineRepository {
   async findAllByTeacher(teacherId: string) {
     return this.prisma.discipline.findMany({
       where: { teacherId },
-      select: disciplineSelect,
+      select: disciplineCardSelect,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -54,7 +80,7 @@ export class DisciplineRepository {
       select: {
         roleInClass: true,
         createdAt: true,
-        discipline: { select: disciplineSelect },
+        discipline: { select: disciplineCardSelect },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -64,7 +90,7 @@ export class DisciplineRepository {
   async findById(id: string) {
     return this.prisma.discipline.findUnique({
       where: { id },
-      select: disciplineSelect,
+      select: disciplineDetailSelect,
     });
   }
 
@@ -72,7 +98,7 @@ export class DisciplineRepository {
   async findByClassCode(classCode: string) {
     return this.prisma.discipline.findUnique({
       where: { classCode },
-      select: disciplineSelect,
+      select: disciplineDetailSelect,
     });
   }
 
@@ -81,7 +107,7 @@ export class DisciplineRepository {
     return this.prisma.discipline.update({
       where: { id },
       data: dto,
-      select: disciplineSelect,
+      select: disciplineDetailSelect,
     });
   }
 

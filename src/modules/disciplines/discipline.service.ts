@@ -9,10 +9,21 @@ import { CreateDisciplineDto } from './dto/create-discipline.dto';
 import { UpdateDisciplineDto } from './dto/update-discipline.dto';
 import { JoinDisciplineDto } from './dto/join-discipline.dto';
 
+// Detalhe completo (/disciplines/:id, create, update) — mantém objeto teacher
 const transformDiscipline = (discipline: any) => {
   const { _count, ...rest } = discipline;
   return {
     ...rest,
+    userCount: _count?.enrollments || 0,
+  };
+};
+
+// Card resumido (/disciplines/mine, /enrolled) — achata teacher.name → teacherName
+const transformDisciplineCard = (discipline: any) => {
+  const { _count, teacher, ...rest } = discipline;
+  return {
+    ...rest,
+    teacherName: teacher?.name ?? null,
     userCount: _count?.enrollments || 0,
   };
 };
@@ -31,7 +42,7 @@ export class DisciplineService {
   // ── Listar disciplinas do professor logado ────────────────────────
   async findAllByTeacher(teacherId: string) {
     const disciplines = await this.disciplineRepository.findAllByTeacher(teacherId);
-    return disciplines.map(transformDiscipline);
+    return disciplines.map(transformDisciplineCard);
   }
 
   // ── Listar disciplinas em que o aluno está matriculado ────────────
@@ -39,7 +50,7 @@ export class DisciplineService {
     const enrollments = await this.disciplineRepository.findAllByStudent(userId);
     return enrollments.map(e => ({
       ...e,
-      discipline: transformDiscipline(e.discipline),
+      discipline: transformDisciplineCard(e.discipline),
     }));
   }
 
