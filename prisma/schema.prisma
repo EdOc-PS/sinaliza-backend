@@ -118,10 +118,11 @@ enum SchoolLevel {
 }
 
 enum ClassRole {
-  STUDENT   
-  FAMILY  
+  STUDENT
+  FAMILY
+  EDUCATOR
   INTERPRETER
-  ASSISTANT  // (uso futuro)
+  ASSISTANT
 }
 
 model Discipline {

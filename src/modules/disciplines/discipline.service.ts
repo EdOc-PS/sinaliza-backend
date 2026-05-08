@@ -8,6 +8,14 @@ import { DisciplineRepository } from './repositories/discipline.repository';
 import { CreateDisciplineDto } from './dto/create-discipline.dto';
 import { UpdateDisciplineDto } from './dto/update-discipline.dto';
 import { JoinDisciplineDto } from './dto/join-discipline.dto';
+import { ClassRole, Role } from '@common/enums/enum';
+
+const ROLE_TO_CLASS_ROLE: Record<Role, ClassRole> = {
+  [Role.STUDENT]:  ClassRole.STUDENT,
+  [Role.GUARDIAN]: ClassRole.FAMILY,
+  [Role.EDUCATOR]: ClassRole.EDUCATOR,
+  [Role.ADMIN]:    ClassRole.EDUCATOR,
+};
 
 // Detalhe completo (/disciplines/:id, create, update) — mantém objeto teacher
 const transformDiscipline = (discipline: any) => {
@@ -39,18 +47,43 @@ export class DisciplineService {
     return transformDiscipline(discipline);
   }
 
-  // ── Listar disciplinas do professor logado ────────────────────────
-  async findAllByTeacher(teacherId: string) {
-    const disciplines = await this.disciplineRepository.findAllByTeacher(teacherId);
-    return disciplines.map(transformDisciplineCard);
+  // ── Listar todas as disciplinas do usuário (criadas + matriculadas) ─
+  async findMine(userId: string) {
+    const [created, enrollments] = await Promise.all([
+      this.disciplineRepository.findAllByTeacher(userId),
+      this.disciplineRepository.findAllByStudent(userId),
+    ]);
+
+    const map = new Map<string, any>();
+
+    for (const d of created) {
+      map.set(d.id, { ...transformDisciplineCard(d), canManage: true });
+    }
+
+    for (const e of enrollments) {
+      const d = e.discipline;
+      if (!map.has(d.id)) {
+        map.set(d.id, {
+          ...transformDisciplineCard(d),
+          canManage: d.teacherId === userId,
+        });
+      }
+    }
+
+    return Array.from(map.values());
   }
 
-  // ── Listar disciplinas em que o aluno está matriculado ────────────
+  // ── @deprecated — mantidos para retrocompatibilidade ─────────────
+  async findAllByTeacher(teacherId: string) {
+    const disciplines = await this.disciplineRepository.findAllByTeacher(teacherId);
+    return disciplines.map(d => ({ ...transformDisciplineCard(d), canManage: true }));
+  }
+
   async findAllByStudent(userId: string) {
     const enrollments = await this.disciplineRepository.findAllByStudent(userId);
     return enrollments.map(e => ({
-      ...e,
-      discipline: transformDisciplineCard(e.discipline),
+      ...transformDisciplineCard(e.discipline),
+      canManage: e.discipline.teacherId === userId,
     }));
   }
 
@@ -84,20 +117,18 @@ export class DisciplineService {
   }
 
   // ── Entrar na disciplina pelo classCode ───────────────────────────
-  async join(userId: string, dto: JoinDisciplineDto) {
+  async join(userId: string, userRole: Role, dto: JoinDisciplineDto) {
     const discipline = await this.disciplineRepository.findByClassCode(dto.classCode);
 
     if (!discipline) throw new NotFoundException('Código de disciplina inválido');
     if (!discipline.isActive) throw new ForbiddenException('Esta disciplina está arquivada');
 
-    const alreadyEnrolled = await this.disciplineRepository.findEnrollment(
-      userId,
-      discipline.id,
-    );
+    const alreadyEnrolled = await this.disciplineRepository.findEnrollment(userId, discipline.id);
     if (alreadyEnrolled) throw new ConflictException('Você já está matriculado nesta disciplina');
 
-    await this.disciplineRepository.enroll(userId, discipline.id, dto.roleInClass);
-    return discipline;
+    const roleInClass = ROLE_TO_CLASS_ROLE[userRole];
+    await this.disciplineRepository.enroll(userId, discipline.id, roleInClass);
+    return transformDiscipline(discipline);
   }
 
   // ── Listar membros de uma disciplina ─────────────────────────────

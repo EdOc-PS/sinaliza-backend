@@ -26,6 +26,7 @@ export enum SchoolLevel {
 export enum ClassRole {
   STUDENT = 'STUDENT',
   FAMILY = 'FAMILY',
+  EDUCATOR = 'EDUCATOR',
   INTERPRETER = 'INTERPRETER',
   ASSISTANT = 'ASSISTANT',
 }

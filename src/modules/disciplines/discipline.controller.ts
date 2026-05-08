@@ -22,7 +22,6 @@ import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import {
   CreateDisciplineDocs,
   DeleteDisciplineDocs,
-  FindEnrolledDocs,
   FindMembersDocs,
   FindMineDocs,
   FindOneDisciplineDocs,
@@ -62,31 +61,22 @@ export class DisciplineController {
 
   // ── GET /disciplines/mine ─────────────────────────────────────────
   @FindMineDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get('mine')
   async findMine(@Request() req: AuthenticatedRequest) {
-    const disciplines = await this.disciplineService.findAllByTeacher(req.user.userId);
-    return { success: true, message: 'Disciplinas obtidas com sucesso', object: disciplines };
-  }
-
-  // ── GET /disciplines/enrolled ──────────────────────────────────────
-  @FindEnrolledDocs()
-  @Roles(Role.STUDENT, Role.GUARDIAN)
-  @Get('enrolled')
-  async findEnrolled(@Request() req: AuthenticatedRequest) {
-    const disciplines = await this.disciplineService.findAllByStudent(req.user.userId);
+    const disciplines = await this.disciplineService.findMine(req.user.userId);
     return { success: true, message: 'Disciplinas obtidas com sucesso', object: disciplines };
   }
 
   // ── POST /disciplines/join ─────────────────────────────────────────
   @JoinDisciplineDocs()
-  @Roles(Role.STUDENT, Role.GUARDIAN)
+  @Roles(Role.STUDENT, Role.GUARDIAN, Role.EDUCATOR, Role.ADMIN)
   @Post('join')
   async join(
     @Request() req: AuthenticatedRequest,
     @Body() dto: JoinDisciplineDto,
   ) {
-    const discipline = await this.disciplineService.join(req.user.userId, dto);
+    const discipline = await this.disciplineService.join(req.user.userId, req.user.role, dto);
     return { success: true, message: 'Matriculado com sucesso', object: discipline };
   }
 

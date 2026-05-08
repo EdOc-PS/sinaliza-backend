@@ -47,16 +47,6 @@ export function FindMineDocs() {
     );
 }
 
-export function FindEnrolledDocs() {
-    return applyDecorators(
-        ApiOperation({
-            summary: 'Disciplinas matriculadas (aluno/familiar)',
-            description: 'Lista as disciplinas em que o **STUDENT** ou **GUARDIAN** está matriculado.',
-        }),
-        ApiResponse({ status: 200, description: 'Lista de matrículas com disciplinas' }),
-    );
-}
-
 export function FindOneDisciplineDocs() {
     return applyDecorators(
         ApiOperation({ summary: 'Buscar disciplina por ID' }),
@@ -122,22 +112,32 @@ export function JoinDisciplineDocs() {
     return applyDecorators(
         ApiOperation({
             summary: 'Entrar em uma disciplina',
-            description: 'Disponível para **STUDENT** e **GUARDIAN**. Use o `classCode` fornecido pelo professor.',
+            description:
+                'Disponível para todas as roles. O `roleInClass` é derivado automaticamente da role do usuário logado:\n\n' +
+                '- `STUDENT` → `STUDENT`\n' +
+                '- `GUARDIAN` → `FAMILY`\n' +
+                '- `EDUCATOR` → `EDUCATOR`\n' +
+                '- `ADMIN` → `EDUCATOR`',
         }),
         ApiBody({
             type: JoinDisciplineDto,
             examples: {
                 aluno: {
                     summary: 'Aluno entrando na turma',
-                    value: { classCode: 'ABC1D2', roleInClass: 'STUDENT' },
+                    value: { classCode: 'ABC1D2' },
                 },
                 familiar: {
                     summary: 'Familiar acompanhando',
-                    value: { classCode: 'ABC1D2', roleInClass: 'FAMILY' },
+                    value: { classCode: 'ABC1D2' },
+                },
+                educador: {
+                    summary: 'Educador/Intérprete entrando como membro',
+                    value: { classCode: 'ABC1D2' },
                 },
             },
         }),
         ApiResponse({ status: 201, description: 'Matriculado com sucesso' }),
+        ApiResponse({ status: 403, description: 'Disciplina arquivada' }),
         ApiResponse({ status: 404, description: 'Código de disciplina inválido' }),
         ApiResponse({ status: 409, description: 'Usuário já matriculado nesta disciplina' }),
     );

@@ -4,7 +4,7 @@ import { CreateDisciplineDto } from '../dto/create-discipline.dto';
 import { UpdateDisciplineDto } from '../dto/update-discipline.dto';
 import { ClassRole } from '@common/enums/enum';
 
-// ── Select para listagem de cards (/mine, /enrolled) ─────────────────
+// ── Select para listagem de cards (/mine) ─────────────────
 // Dados mínimos para renderizar o card + teacherId para checks de ownership
 const disciplineCardSelect = {
   id: true,
