@@ -17,22 +17,26 @@ const ROLE_TO_CLASS_ROLE: Record<Role, ClassRole> = {
   [Role.ADMIN]:    ClassRole.EDUCATOR,
 };
 
+type LabelMap = Map<string, string>;
+
 // Detalhe completo (/disciplines/:id, create, update) — mantém objeto teacher
-const transformDiscipline = (discipline: any) => {
+const transformDiscipline = (discipline: any, labels?: LabelMap) => {
   const { _count, ...rest } = discipline;
   return {
     ...rest,
     userCount: _count?.enrollments || 0,
+    schoolLevelLabel: labels?.get(rest.schoolLevel) ?? rest.schoolLevel ?? null,
   };
 };
 
-// Card resumido (/disciplines/mine, /enrolled) — achata teacher.name → teacherName
-const transformDisciplineCard = (discipline: any) => {
+// Card resumido (/disciplines/mine) — achata teacher.name → teacherName
+const transformDisciplineCard = (discipline: any, labels?: LabelMap) => {
   const { _count, teacher, ...rest } = discipline;
   return {
     ...rest,
     teacherName: teacher?.name ?? null,
     userCount: _count?.enrollments || 0,
+    schoolLevelLabel: labels?.get(rest.schoolLevel) ?? rest.schoolLevel ?? null,
   };
 };
 
@@ -49,22 +53,24 @@ export class DisciplineService {
 
   // ── Listar todas as disciplinas do usuário (criadas + matriculadas) ─
   async findMine(userId: string) {
-    const [created, enrollments] = await Promise.all([
+    const [created, enrollments, params] = await Promise.all([
       this.disciplineRepository.findAllByTeacher(userId),
       this.disciplineRepository.findAllByStudent(userId),
+      this.disciplineRepository.findParams('SCHOOL_LEVEL'),
     ]);
 
+    const labels: LabelMap = new Map(params.map(p => [p.value, p.label]));
     const map = new Map<string, any>();
 
     for (const d of created) {
-      map.set(d.id, { ...transformDisciplineCard(d), canManage: true });
+      map.set(d.id, { ...transformDisciplineCard(d, labels), canManage: true });
     }
 
     for (const e of enrollments) {
       const d = e.discipline;
       if (!map.has(d.id)) {
         map.set(d.id, {
-          ...transformDisciplineCard(d),
+          ...transformDisciplineCard(d, labels),
           canManage: d.teacherId === userId,
         });
       }
@@ -89,12 +95,16 @@ export class DisciplineService {
 
   // ── Buscar disciplina por ID (validando acesso) ───────────────────
   async findById(id: string) {
-    const discipline = await this.disciplineRepository.findById(id);
+    const [discipline, params] = await Promise.all([
+      this.disciplineRepository.findById(id),
+      this.disciplineRepository.findParams('SCHOOL_LEVEL'),
+    ]);
     if (!discipline) throw new NotFoundException('Disciplina não encontrada');
-    return transformDiscipline(discipline);
+    const labels: LabelMap = new Map(params.map(p => [p.value, p.label]));
+    return transformDiscipline(discipline, labels);
   }
 
-  // ── Atualizar disciplina (apenas o professor dono) ────────────────
+  // ── Atualizar disciplina ────────────────
   async update(id: string, teacherId: string, dto: UpdateDisciplineDto) {
     const discipline = await this.findById(id);
 
@@ -105,7 +115,7 @@ export class DisciplineService {
     return this.disciplineRepository.update(id, dto);
   }
 
-  // ── Deletar disciplina (apenas o professor dono) ──────────────────
+  // ── Deletar disciplina  ──────────────────
   async delete(id: string, teacherId: string) {
     const discipline = await this.findById(id);
 

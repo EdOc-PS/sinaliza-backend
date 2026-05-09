@@ -40,10 +40,17 @@ export function CreateDisciplineDocs() {
 export function FindMineDocs() {
     return applyDecorators(
         ApiOperation({
-            summary: 'Minhas disciplinas (professor)',
-            description: 'Lista todas as disciplinas criadas pelo **EDUCATOR** autenticado.',
+            summary: 'Minhas disciplinas',
+            description:
+                'Lista **todas** as disciplinas do usuário autenticado — independente da role:\n\n' +
+                '- Disciplinas **criadas** pelo usuário (`canManage: true`)\n' +
+                '- Disciplinas em que o usuário está **matriculado** (`canManage` depende de ser o criador)\n\n' +
+                'Disponível para todas as roles: `STUDENT`, `EDUCATOR`, `GUARDIAN`, `ADMIN`.',
         }),
-        ApiResponse({ status: 200, description: 'Lista de disciplinas do professor' }),
+        ApiResponse({
+            status: 200,
+            description: 'Lista mesclada de disciplinas criadas + matriculadas com flag `canManage` e `schoolLevelLabel`',
+        }),
     );
 }
 
