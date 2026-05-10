@@ -4,8 +4,6 @@ import { CreateDisciplineDto } from '../dto/create-discipline.dto';
 import { UpdateDisciplineDto } from '../dto/update-discipline.dto';
 import { ClassRole } from '@common/enums/enum';
 
-// ── Select para listagem de cards (/mine) ─────────────────
-// Dados mínimos para renderizar o card + teacherId para checks de ownership
 const disciplineCardSelect = {
   id: true,
   name: true,
@@ -16,14 +14,13 @@ const disciplineCardSelect = {
   isActive: true,
   teacherId: true,
   teacher: {
-    select: { name: true },   // só o nome vira teacherName no service
+    select: { name: true },
   },
   _count: {
     select: { enrollments: true },
   },
 };
 
-// ── Select completo para detalhe (/disciplines/:id, update, delete) ───
 const disciplineDetailSelect = {
   id: true,
   name: true,
@@ -48,7 +45,6 @@ const disciplineDetailSelect = {
 export class DisciplineRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // ── Criar disciplina ──────────────────────────────────────────────
   async create(teacherId: string, dto: CreateDisciplineDto, classCode: string) {
     return this.prisma.discipline.create({
       data: {
@@ -64,7 +60,6 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Listar disciplinas do professor ───────────────────────────────
   async findAllByTeacher(teacherId: string) {
     return this.prisma.discipline.findMany({
       where: { teacherId },
@@ -73,7 +68,6 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Listar disciplinas em que o usuário está matriculado ──────────
   async findAllByStudent(userId: string) {
     return this.prisma.disciplineEnrollment.findMany({
       where: { userId },
@@ -86,7 +80,6 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Buscar disciplina por ID ──────────────────────────────────────
   async findById(id: string) {
     return this.prisma.discipline.findUnique({
       where: { id },
@@ -94,7 +87,6 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Buscar disciplina por classCode ───────────────────────────────
   async findByClassCode(classCode: string) {
     return this.prisma.discipline.findUnique({
       where: { classCode },
@@ -102,7 +94,6 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Atualizar disciplina ──────────────────────────────────────────
   async update(id: string, dto: UpdateDisciplineDto) {
     return this.prisma.discipline.update({
       where: { id },
@@ -111,26 +102,22 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Deletar disciplina ────────────────────────────────────────────
   async delete(id: string) {
     return this.prisma.discipline.delete({ where: { id } });
   }
 
-  // ── Matricular usuário na disciplina ─────────────────────────────
   async enroll(userId: string, disciplineId: string, roleInClass: ClassRole) {
     return this.prisma.disciplineEnrollment.create({
       data: { userId, disciplineId, roleInClass },
     });
   }
 
-  // ── Verificar se usuário já está matriculado ──────────────────────
   async findEnrollment(userId: string, disciplineId: string) {
     return this.prisma.disciplineEnrollment.findUnique({
       where: { userId_disciplineId: { userId, disciplineId } },
     });
   }
 
-  // ── Listar membros de uma disciplina ─────────────────────────────
   async findMembers(disciplineId: string) {
     return this.prisma.disciplineEnrollment.findMany({
       where: { disciplineId },
@@ -145,14 +132,12 @@ export class DisciplineRepository {
     });
   }
 
-  // ── Remover matrícula ─────────────────────────────────────────────
   async unenroll(userId: string, disciplineId: string) {
     return this.prisma.disciplineEnrollment.delete({
       where: { userId_disciplineId: { userId, disciplineId } },
     });
   }
 
-  // ── Listar parâmetros por tipo ────────────────────────────────────
   async findParams(type: string) {
     return this.prisma.param.findMany({
       where: { type, isActive: true },

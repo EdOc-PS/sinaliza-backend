@@ -38,7 +38,7 @@ import {
 export class DisciplineController {
   constructor(private readonly disciplineService: DisciplineService) { }
 
-  // ── POST /disciplines ─────────────────────────────────────────────
+  // POST /disciplines
   @CreateDisciplineDocs()
   @Roles(Role.EDUCATOR, Role.ADMIN)
   @Post()
@@ -50,7 +50,7 @@ export class DisciplineController {
     return { success: true, message: 'Disciplina criada com sucesso', object: discipline };
   }
 
-  // ── GET /disciplines/options ───────────────────────────────
+  // GET /disciplines/options
   @FindSchoolLevelsDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get('options')
@@ -59,7 +59,7 @@ export class DisciplineController {
     return { success: true, message: 'Níveis escolares obtidos com sucesso', object: levels };
   }
 
-  // ── GET /disciplines/mine ─────────────────────────────────────────
+  // GET /disciplines/mine
   @FindMineDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get('mine')
@@ -68,7 +68,7 @@ export class DisciplineController {
     return { success: true, message: 'Disciplinas obtidas com sucesso', object: disciplines };
   }
 
-  // ── POST /disciplines/join ─────────────────────────────────────────
+  // POST /disciplines/join
   @JoinDisciplineDocs()
   @Roles(Role.STUDENT, Role.GUARDIAN, Role.EDUCATOR, Role.ADMIN)
   @Post('join')
@@ -80,7 +80,7 @@ export class DisciplineController {
     return { success: true, message: 'Matriculado com sucesso', object: discipline };
   }
 
-  // ── GET /disciplines/:id ──────────────────────────────────────────
+  // GET /disciplines/:id
   @FindOneDisciplineDocs()
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -88,7 +88,7 @@ export class DisciplineController {
     return { success: true, message: 'Disciplina obtida com sucesso', object: discipline };
   }
 
-  // ── GET /disciplines/:id/members ──────────────────────────────────
+  // GET /disciplines/:id/members
   @FindMembersDocs()
   @Roles(Role.EDUCATOR, Role.ADMIN)
   @Get(':id/members')
@@ -100,7 +100,7 @@ export class DisciplineController {
     return { success: true, message: 'Membros obtidos com sucesso', object: members };
   }
 
-  // ── PATCH /disciplines/:id ────────────────────────────────────────
+  // PATCH /disciplines/:id
   @UpdateDisciplineDocs()
   @Roles(Role.EDUCATOR, Role.ADMIN)
   @Patch(':id')
@@ -113,7 +113,7 @@ export class DisciplineController {
     return { success: true, message: 'Disciplina atualizada com sucesso', object: discipline };
   }
 
-  // ── DELETE /disciplines/:id ───────────────────────────────────────
+  // DELETE /disciplines/:id
   @DeleteDisciplineDocs()
   @Roles(Role.EDUCATOR, Role.ADMIN)
   @Delete(':id')
@@ -125,7 +125,7 @@ export class DisciplineController {
     return { success: true, message: 'Disciplina excluída com sucesso' };
   }
 
-  // ── DELETE /disciplines/:id/leave ────────────────────────────────
+  // DELETE /disciplines/:id/leave
   @LeaveDisciplineDocs()
   @Roles(Role.STUDENT, Role.GUARDIAN)
   @Delete(':id/leave')

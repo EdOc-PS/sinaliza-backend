@@ -14,17 +14,12 @@ import {
     ValidateNested,
 } from 'class-validator'
 
-// ─────────────────────────────────────────────
-// Dados de Perfil (dentro de dataProfile)
-// ─────────────────────────────────────────────
-
 export class DataProfileDto {
     @ApiPropertyOptional({ example: 'IFMG Ouro Preto', description: 'Instituto/escola' })
     @IsString()
     @IsOptional()
     institute?: string
 
-    // STUDENT
     @ApiPropertyOptional({ example: 'Ensino Médio', description: '[STUDENT]' })
     @IsString()
     @IsOptional()
@@ -35,7 +30,6 @@ export class DataProfileDto {
     @IsOptional()
     necessidadesEspeciais?: string
 
-    // EDUCATOR
     @ApiPropertyOptional({ example: 'TEACHER', enum: EducatorType, description: '[EDUCATOR] Professor ou Intérprete' })
     @IsEnum(EducatorType)
     @IsOptional()
@@ -51,7 +45,6 @@ export class DataProfileDto {
     @IsOptional()
     specialty?: string
 
-    // EDUCATOR / INTERPRETER
     @ApiPropertyOptional({ example: 'ProLibras 2023', description: '[EDUCATOR / INTERPRETER]' })
     @IsString()
     @IsOptional()
@@ -67,7 +60,6 @@ export class DataProfileDto {
     @IsOptional()
     proficienciaLibras?: LibrasLevel
 
-    // GUARDIAN
     @ApiPropertyOptional({ example: 'mãe', description: '[GUARDIAN]' })
     @IsString()
     @IsOptional()
@@ -78,10 +70,6 @@ export class DataProfileDto {
     @IsOptional()
     studentEmail?: string
 }
-
-// ─────────────────────────────────────────────
-// DTO Principal
-// ─────────────────────────────────────────────
 
 export class RegisterDto {
     @ApiProperty({ example: 'João Silva', description: 'Nome completo' })

@@ -59,9 +59,7 @@ enum EducatorType {
   INTERPRETER
 }
 
-//
 // EDUCATOR (absorve Professor e Intérprete)
-
 model Educator {
   id           String       @id @default(uuid())
   userId       String       @unique
@@ -82,9 +80,8 @@ model Educator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-//
-// STUDENT
 
+// STUDENT
 model Student {
   id                    String  @id @default(uuid())
   userId                String  @unique
@@ -95,9 +92,8 @@ model Student {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-//
-// GUARDIAN (Responsável)
 
+// GUARDIAN (Responsável)
 model Guardian {
   id           String  @id @default(uuid())
   userId       String  @unique
@@ -107,10 +103,7 @@ model Guardian {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// ─────────────────────────────────────────────
 // DISCIPLINE (Turma)
-// ─────────────────────────────────────────────
-
 enum SchoolLevel {
   ENSINO_MEDIO_1 
   ENSINO_MEDIO_2 
@@ -146,10 +139,7 @@ model Discipline {
   @@index([classCode])
 }
 
-// ─────────────────────────────────────────────
 // DISCIPLINE ENROLLMENT (Matrícula)
-// ─────────────────────────────────────────────
-
 model DisciplineEnrollment {
   id           String    @id @default(uuid())
   userId       String
@@ -167,10 +157,17 @@ model DisciplineEnrollment {
   @@index([userId])
 }
 
-// ─────────────────────────────────────────────
-// PARAM (Tabela genérica de parâmetros de selects)
-// ─────────────────────────────────────────────
+// HAND CONFIG (Configuração de mão para sinais)
+model HandConfig {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  imgUrl    String
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// PARAM (Tabela genérica de parâmetros de selects)
 model Param {
   id       String  @id @default(uuid())
   type     String  // ex: "SCHOOL_LEVEL", "SCHOOL_YEAR", "PARENTESCO"

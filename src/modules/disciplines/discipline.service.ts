@@ -44,14 +44,12 @@ const transformDisciplineCard = (discipline: any, labels?: LabelMap) => {
 export class DisciplineService {
   constructor(private readonly disciplineRepository: DisciplineRepository) {}
 
-  // ── Criar disciplina ──────────────────────────────────────────────
   async create(teacherId: string, dto: CreateDisciplineDto) {
     const classCode = this.generateClassCode();
     const discipline = await this.disciplineRepository.create(teacherId, dto, classCode);
     return transformDiscipline(discipline);
   }
 
-  // ── Listar todas as disciplinas do usuário (criadas + matriculadas) ─
   async findMine(userId: string) {
     const [created, enrollments, params] = await Promise.all([
       this.disciplineRepository.findAllByTeacher(userId),
@@ -79,7 +77,6 @@ export class DisciplineService {
     return Array.from(map.values());
   }
 
-  // ── @deprecated — mantidos para retrocompatibilidade ─────────────
   async findAllByTeacher(teacherId: string) {
     const disciplines = await this.disciplineRepository.findAllByTeacher(teacherId);
     return disciplines.map(d => ({ ...transformDisciplineCard(d), canManage: true }));
@@ -93,7 +90,6 @@ export class DisciplineService {
     }));
   }
 
-  // ── Buscar disciplina por ID (validando acesso) ───────────────────
   async findById(id: string) {
     const [discipline, params] = await Promise.all([
       this.disciplineRepository.findById(id),
@@ -104,7 +100,6 @@ export class DisciplineService {
     return transformDiscipline(discipline, labels);
   }
 
-  // ── Atualizar disciplina ────────────────
   async update(id: string, teacherId: string, dto: UpdateDisciplineDto) {
     const discipline = await this.findById(id);
 
@@ -115,7 +110,6 @@ export class DisciplineService {
     return this.disciplineRepository.update(id, dto);
   }
 
-  // ── Deletar disciplina  ──────────────────
   async delete(id: string, teacherId: string) {
     const discipline = await this.findById(id);
 
@@ -126,7 +120,6 @@ export class DisciplineService {
     return this.disciplineRepository.delete(id);
   }
 
-  // ── Entrar na disciplina pelo classCode ───────────────────────────
   async join(userId: string, userRole: Role, dto: JoinDisciplineDto) {
     const discipline = await this.disciplineRepository.findByClassCode(dto.classCode);
 
@@ -141,27 +134,21 @@ export class DisciplineService {
     return transformDiscipline(discipline);
   }
 
-  // ── Listar membros de uma disciplina ─────────────────────────────
   async findMembers(id: string, requesterId: string) {
     const discipline = await this.findById(id);
-
     return this.disciplineRepository.findMembers(id);
   }
 
-  // ── Sair da disciplina ────────────────────────────────────────────
   async leave(userId: string, disciplineId: string) {
     const enrollment = await this.disciplineRepository.findEnrollment(userId, disciplineId);
     if (!enrollment) throw new NotFoundException('Matrícula não encontrada');
-
     return this.disciplineRepository.unenroll(userId, disciplineId);
   }
 
-  // ── Listar níveis escolares ───────────────────────────────────────
   async findSchoolLevels() {
     return this.disciplineRepository.findParams('SCHOOL_LEVEL');
   }
 
-  // ── Gerar classCode aleatório ─────────────────────────────────────
   private generateClassCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     return Array.from({ length: 6 }, () =>

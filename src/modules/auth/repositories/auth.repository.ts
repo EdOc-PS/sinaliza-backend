@@ -38,11 +38,8 @@ export class AuthRepository {
         const db = this.prisma as any;
 
         return db.$transaction(async (tx: any) => {
-
-            // 1. Persiste o usuário base
             const user = await tx.user.create({ data: userData });
 
-            // 2. Persiste a entidade de perfil com os dados já preparados pelo service
             if (profileData) {
                 const profileInsert: Record<string, unknown> = { userId: user.id, ...profileData.data };
 
@@ -53,7 +50,6 @@ export class AuthRepository {
                 }
             }
 
-            // 3. Retorna o usuário com o perfil incluído
             return tx.user.findUnique({
                 where: { id: user.id },
                 include: { student: true, educator: true, guardian: true },

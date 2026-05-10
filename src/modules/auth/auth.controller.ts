@@ -13,14 +13,11 @@ import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-
-
-    // Decoradores personalizados para documentação Swagger
+    // POST /auth/login
     @LoginDocs()
     @Post('login')
     async login(@Body() loginRequest: LoginDto) {
         const response = await this.authService.login(loginRequest);
-
         return {
             success: true,
             message: 'Login realizado com sucesso',
@@ -28,13 +25,12 @@ export class AuthController {
         }
     }
 
-    // Decoradores personalizados para documentação Swagger
+    // POST /auth/register
     @RegisterDocs()
     @Post('register')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async createUser(@Body() dto: RegisterDto): Promise<ApiResponse<any>> {
         const user = await this.authService.register(dto);
-
         return {
             success: true,
             message: 'Usuário criado com sucesso',
@@ -42,12 +38,12 @@ export class AuthController {
         };
     }
 
+    // GET /auth/me
     @GetMeDocs()
     @UseGuards(JwtAuthGuard)
     @Get('me')
     async getMe(@Request() req: AuthenticatedRequest) {
         const user = await this.authService.getMe(req.user.userId);
-
         return {
             success: true,
             message: 'Usuário obtido com sucesso',

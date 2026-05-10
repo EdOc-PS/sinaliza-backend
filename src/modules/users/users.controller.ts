@@ -5,17 +5,14 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DeleteDocs, FindByIdDocs, FindDocs, UpdateDocs } from '@swagger/users';
 
-//UseGuards(JwtAuthGuard) é usado para proteger as rotas, garantindo que apenas usuários autenticados possam acessá-las. 
-//ApiBearerAuth é usado para indicar que as rotas deste controlador requerem autenticação via token Bearer (JWT).
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 @ApiTags('Users')
-
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) { }
 
-
+    // GET /users
     @FindDocs()
     @Get()
     async findAll() {
@@ -28,6 +25,7 @@ export class UsersController {
         }
     }
 
+    // GET /users/:id
     @FindByIdDocs()
     @Get(":id")
     async findUser(@Param("id") id: string) {
@@ -42,6 +40,7 @@ export class UsersController {
     }
 
 
+    // DELETE /users/:id
     @DeleteDocs()
     @Delete(":id")
     async deleteUser(@Param("id") id: string) {
@@ -52,6 +51,7 @@ export class UsersController {
         };
     }
 
+    // PATCH /users/:id
     @UpdateDocs()
     @Patch(":id")
     async updateUser(@Param("id") id: string, @Body() updatedUser: UpdateUserDto) {

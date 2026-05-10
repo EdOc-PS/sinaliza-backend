@@ -18,7 +18,6 @@ export class AuthService {
         private jwtService: JwtService
     ) { }
 
-    // ──  login do usuário ──────────────────────────────────────────
     async login(loginRequest: LoginDto) {
         const user = await this.usersService.findByEmail(loginRequest.email);
 
@@ -33,14 +32,12 @@ export class AuthService {
         return { access_token: token, user };
     }
 
-    // ──  registro de novo usuário ──────────────────────────────────────────
     async register(dto: RegisterDto) {
         const existingUser = await this.usersService.findByEmail(dto.email);
         if (existingUser) throw new UnauthorizedException('Email já registrado, por favor utilize outro email');
 
         const hashPassword = await bcrypt.hash(dto.password, 10);
 
-        // ── Dados base do usuário ──────────────────────────────────────────
         const userData = {
             name: dto.name,
             email: dto.email,
@@ -51,13 +48,11 @@ export class AuthService {
             role: dto.role,
         };
 
-        // ── Regra de negócio: monta o perfil conforme o role ──────────────
         const profileData = this.buildProfileData(dto);
 
         return this.authRepository.createAccount(userData, profileData);
     }
 
-    // ──  obter dados do usuário autenticado ──────────────────────────────────────────
     async getMe(userId: string) {
         return this.usersService.findUser(userId);
     }
