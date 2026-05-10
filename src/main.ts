@@ -38,7 +38,7 @@ async function bootstrap() {
     .setVersion('0.2')
     .addTag('Auth', 'Autenticação e registro de usuários')
     .addTag('Disciplines', 'Gerenciamento de disciplinas e matrículas')
-    .addTag('Hand Configs', 'Gerenciamento de configurações de mão')
+    .addTag('Hand Config', 'Gerenciamento do configuração de mão')
     .addTag('Users', 'Gerenciamento de usuários')
     
     .addBearerAuth(
