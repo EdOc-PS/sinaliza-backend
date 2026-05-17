@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
-import { CreateHandConfigDto } from '../dto/create-hand-config.dto';
-import { UpdateHandConfigDto } from '../dto/update-hand-config.dto';
+
+interface CreateHandConfigData {
+  name: string;
+  imgUrl: string;
+}
+
+interface UpdateHandConfigData {
+  name?: string;
+  imgUrl?: string;
+}
 
 const handConfigSelect = {
   id: true,
@@ -15,15 +23,18 @@ const handConfigSelect = {
 export class HandConfigRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateHandConfigDto) {
+  async create(data: CreateHandConfigData) {
     return this.prisma.handConfig.create({
-      data: dto,
+      data,
       select: handConfigSelect,
     });
   }
 
-  async findAll() {
+  async findAll(search?: string) {
     return this.prisma.handConfig.findMany({
+      where: search
+        ? { name: { contains: search, mode: 'insensitive' } }
+        : undefined,
       select: handConfigSelect,
       orderBy: { name: 'asc' },
     });
@@ -50,10 +61,10 @@ export class HandConfigRepository {
     return !!handConfig;
   }
 
-  async update(id: string, dto: UpdateHandConfigDto) {
+  async update(id: string, data: UpdateHandConfigData) {
     return this.prisma.handConfig.update({
       where: { id },
-      data: dto,
+      data,
       select: handConfigSelect,
     });
   }

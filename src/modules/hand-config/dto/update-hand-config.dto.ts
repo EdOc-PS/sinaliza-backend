@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUrl, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateHandConfigDto {
@@ -8,9 +8,6 @@ export class UpdateHandConfigDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ example: 'https://storage.example.com/hands/letra-b.png' })
-  @IsOptional()
-  @IsString()
-  @IsUrl()
-  imgUrl?: string;
+  @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'Nova imagem (opcional)' })
+  image?: any;
 }

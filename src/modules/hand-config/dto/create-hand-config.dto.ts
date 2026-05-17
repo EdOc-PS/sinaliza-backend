@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateHandConfigDto {
@@ -7,9 +7,6 @@ export class CreateHandConfigDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'https://storage.example.com/hands/letra-a.png' })
-  @IsString()
-  @IsNotEmpty()
-  @IsUrl()
-  imgUrl: string;
+  @ApiProperty({ type: 'string', format: 'binary', description: 'Imagem da configuração de mão' })
+  image: any;
 }
