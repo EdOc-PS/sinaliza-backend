@@ -10,7 +10,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -135,6 +134,7 @@ model Discipline {
 
   teacher     User                   @relation("TeacherDisciplines", fields: [teacherId], references: [id])
   enrollments DisciplineEnrollment[]
+  signs       Sign[]
 
   @@index([teacherId])
   @@index([classCode])
@@ -166,6 +166,43 @@ model HandConfig {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  signs Sign[]
+}
+
+// SIGN (Sinal de Libras)
+enum GrammaticalClass {
+  VERB        // Verbo
+  ADJECTIVE   // Adjetivo
+  NOUN        // Substantivo
+  OTHER       // Outros
+}
+
+model Sign {
+  id                   String           @id @default(uuid())
+  name                 String           // Palavra em português
+  grammaticalClass     GrammaticalClass
+  handConfigId         String
+  videoUrl             String?          // URL do vídeo upado no R2
+  anotherUrl           String?          // URL alternativa (ex: YouTube)
+  imgUrl               String?          // Imagem ilustrativa (opcional)
+  examplePt            String?          // Exemplo em português
+  exampleLibras        String?          // Exemplo em Libras
+  movementDescription  String?          // Descrição do movimento
+  tags                 String[]         @default([])
+  creatorId            String
+  disciplineId         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  handConfig HandConfig  @relation(fields: [handConfigId], references: [id])
+  discipline Discipline? @relation(fields: [disciplineId], references: [id])
+
+  @@index([handConfigId])
+  @@index([creatorId])
+  @@index([grammaticalClass])
+  @@index([disciplineId])
 }
 
 // PARAM (Tabela genérica de parâmetros de selects)

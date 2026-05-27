@@ -4,6 +4,7 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { DisciplineModule } from '@modules/disciplines/discipline.module';
 import { HandConfigModule } from '@modules/hand-config/hand-config.module';
 import { R2Module } from '@modules/r2/r2.module';
+import { SignModule } from '@modules/sign/sign.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { R2Module } from '@modules/r2/r2.module';
     DisciplineModule,
     HandConfigModule,
     R2Module,
+    SignModule,
   ],
   controllers: [],
   providers: [],
