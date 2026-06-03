@@ -37,6 +37,8 @@ model User {
   // Relações com Disciplinas
   disciplines           Discipline[]           @relation("TeacherDisciplines")
   disciplineEnrollments DisciplineEnrollment[]
+
+  favorites Favorite[]
 }
 
 enum Role {
@@ -198,11 +200,27 @@ model Sign {
 
   handConfig HandConfig  @relation(fields: [handConfigId], references: [id])
   discipline Discipline? @relation(fields: [disciplineId], references: [id])
+  favorites  Favorite[]
 
   @@index([handConfigId])
   @@index([creatorId])
   @@index([grammaticalClass])
   @@index([disciplineId])
+}
+
+// FAVORITE (Sinais favoritados pelo usuário)
+model Favorite {
+  userId String
+  signId String
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sign Sign @relation(fields: [signId], references: [id], onDelete: Cascade)
+
+  @@id([userId, signId])
+  @@index([userId])
+  @@index([signId])
 }
 
 // PARAM (Tabela genérica de parâmetros de selects)

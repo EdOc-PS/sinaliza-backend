@@ -145,6 +145,13 @@ export class DisciplineService {
     return this.disciplineRepository.unenroll(userId, disciplineId);
   }
 
+  async findSigns(disciplineId: string) {
+    const discipline = await this.disciplineRepository.findById(disciplineId);
+    if (!discipline) throw new NotFoundException('Disciplina não encontrada');
+
+    return this.disciplineRepository.findSignsByDiscipline(disciplineId);
+  }
+
   async findSchoolLevels() {
     return this.disciplineRepository.findParams('SCHOOL_LEVEL');
   }

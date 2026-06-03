@@ -22,6 +22,7 @@ import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import {
   CreateDisciplineDocs,
   DeleteDisciplineDocs,
+  FindDisciplineSignsDocs,
   FindMembersDocs,
   FindMineDocs,
   FindOneDisciplineDocs,
@@ -86,6 +87,15 @@ export class DisciplineController {
   async findOne(@Param('id') id: string) {
     const discipline = await this.disciplineService.findById(id);
     return { success: true, message: 'Disciplina obtida com sucesso', object: discipline };
+  }
+
+  // GET /disciplines/:id/signs
+  @FindDisciplineSignsDocs()
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Get(':id/signs')
+  async findSigns(@Param('id') id: string) {
+    const signs = await this.disciplineService.findSigns(id);
+    return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 
   // GET /disciplines/:id/members

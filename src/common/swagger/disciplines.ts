@@ -174,6 +174,47 @@ export function FindSchoolLevelsDocs() {
     );
 }
 
+export function FindDisciplineSignsDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Listar sinais da disciplina',
+            description:
+                'Retorna todos os sinais cadastrados para esta disciplina, ordenados por nome.\n\n' +
+                'Cada sinal inclui: `id`, `name`, `grammaticalClass`, `videoUrl`, `anotherUrl`, `imgUrl`, `tags` e `handConfig`.\n\n' +
+                'Disponível para todas as roles — use para montar a tela de detalhe de uma disciplina.',
+        }),
+        ApiParam({ name: 'id', description: 'UUID da disciplina' }),
+        ApiResponse({
+            status: 200,
+            description: 'Lista de sinais da disciplina ordenada por nome',
+            schema: {
+                example: {
+                    success: true,
+                    message: 'Sinais obtidos com sucesso',
+                    object: [
+                        {
+                            id: 'uuid-do-sinal',
+                            name: 'Bom dia',
+                            grammaticalClass: 'VERB',
+                            videoUrl: 'https://r2.example.com/signs/videos/abc.mp4',
+                            anotherUrl: null,
+                            imgUrl: 'https://r2.example.com/signs/images/abc.jpg',
+                            tags: ['saudação', 'cotidiano'],
+                            handConfig: {
+                                id: 'uuid-da-config',
+                                name: 'Letra A',
+                                imgUrl: 'https://r2.example.com/hand-configs/a.png',
+                            },
+                            createdAt: '2026-05-01T10:00:00.000Z',
+                        },
+                    ],
+                },
+            },
+        }),
+        ApiResponse({ status: 404, description: 'Disciplina não encontrada' }),
+    );
+}
+
 export function LeaveDisciplineDocs() {
     return applyDecorators(
         ApiOperation({ summary: 'Sair de uma disciplina' }),

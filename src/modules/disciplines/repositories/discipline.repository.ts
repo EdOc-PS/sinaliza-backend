@@ -138,6 +138,24 @@ export class DisciplineRepository {
     });
   }
 
+  async findSignsByDiscipline(disciplineId: string) {
+    return this.prisma.sign.findMany({
+      where: { disciplineId },
+      select: {
+        id: true,
+        name: true,
+        grammaticalClass: true,
+        videoUrl: true,
+        anotherUrl: true,
+        imgUrl: true,
+        tags: true,
+        handConfig: { select: { id: true, name: true, imgUrl: true } },
+        createdAt: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findParams(type: string) {
     return this.prisma.param.findMany({
       where: { type, isActive: true },
