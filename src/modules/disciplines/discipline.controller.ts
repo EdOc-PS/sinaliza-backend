@@ -15,6 +15,7 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import { DisciplineService } from './discipline.service';
+import { FavoriteService } from '@modules/favorite/favorite.service';
 import { CreateDisciplineDto } from './dto/create-discipline.dto';
 import { UpdateDisciplineDto } from './dto/update-discipline.dto';
 import { JoinDisciplineDto } from './dto/join-discipline.dto';
@@ -37,7 +38,10 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('disciplines')
 export class DisciplineController {
-  constructor(private readonly disciplineService: DisciplineService) { }
+  constructor(
+    private readonly disciplineService: DisciplineService,
+    private readonly favoriteService: FavoriteService,
+  ) { }
 
   // POST /disciplines
   @CreateDisciplineDocs()
@@ -96,6 +100,17 @@ export class DisciplineController {
   async findSigns(@Param('id') id: string) {
     const signs = await this.disciplineService.findSigns(id);
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
+  }
+
+  // GET /disciplines/:id/signs/favorites
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Get(':id/signs/favorites')
+  async findFavoriteSigns(
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const favorites = await this.favoriteService.findByUserAndDiscipline(req.user.userId, id);
+    return { success: true, message: 'Favoritos da disciplina obtidos com sucesso', object: favorites };
   }
 
   // GET /disciplines/:id/members
