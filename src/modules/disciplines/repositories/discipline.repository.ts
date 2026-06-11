@@ -34,7 +34,12 @@ const disciplineDetailSelect = {
   createdAt: true,
   updatedAt: true,
   teacher: {
-    select: { id: true, name: true, avatar: true },
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      educator: { select: { educatorType: true } },
+    },
   },
   _count: {
     select: { enrollments: true },
@@ -125,7 +130,13 @@ export class DisciplineRepository {
         roleInClass: true,
         createdAt: true,
         user: {
-          select: { id: true, name: true, avatar: true, role: true },
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            role: true,
+            educator: { select: { educatorType: true } },
+          },
         },
       },
       orderBy: { createdAt: 'asc' },

@@ -19,11 +19,19 @@ const ROLE_TO_CLASS_ROLE: Record<Role, ClassRole> = {
 
 type LabelMap = Map<string, string>;
 
+// Achata user.educator.educatorType -> user.educatorType
+const flattenEducatorType = (user: any) => {
+  if (!user) return user;
+  const { educator, ...rest } = user;
+  return { ...rest, educatorType: educator?.educatorType ?? null };
+};
+
 // Detalhe completo (/disciplines/:id, create, update) — mantém objeto teacher
 const transformDiscipline = (discipline: any, labels?: LabelMap) => {
-  const { _count, ...rest } = discipline;
+  const { _count, teacher, ...rest } = discipline;
   return {
     ...rest,
+    teacher: flattenEducatorType(teacher),
     userCount: _count?.enrollments || 0,
     schoolLevelLabel: labels?.get(rest.schoolLevel) ?? rest.schoolLevel ?? null,
   };
@@ -136,7 +144,8 @@ export class DisciplineService {
 
   async findMembers(id: string, requesterId: string) {
     const discipline = await this.findById(id);
-    return this.disciplineRepository.findMembers(id);
+    const members = await this.disciplineRepository.findMembers(id);
+    return members.map((m) => ({ ...m, user: flattenEducatorType(m.user) }));
   }
 
   async leave(userId: string, disciplineId: string) {
