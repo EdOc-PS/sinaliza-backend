@@ -4,6 +4,7 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { DisciplineModule } from '@modules/disciplines/discipline.module';
 import { FavoriteModule } from '@modules/favorite/favorite.module';
 import { HandConfigModule } from '@modules/hand-config/hand-config.module';
+import { HistoryModule } from '@modules/history/history.module';
 import { R2Module } from '@modules/r2/r2.module';
 import { SignModule } from '@modules/sign/sign.module';
 
@@ -14,6 +15,7 @@ import { SignModule } from '@modules/sign/sign.module';
     DisciplineModule,
     FavoriteModule,
     HandConfigModule,
+    HistoryModule,
     R2Module,
     SignModule,
   ],

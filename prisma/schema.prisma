@@ -30,15 +30,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  educator  Educator?
-  student   Student?
-  guardian  Guardian?
+  educator Educator?
+  student  Student?
+  guardian Guardian?
 
   // Relações com Disciplinas
   disciplines           Discipline[]           @relation("TeacherDisciplines")
   disciplineEnrollments DisciplineEnrollment[]
 
   favorites Favorite[]
+  history   History[]
 }
 
 enum Role {
@@ -57,11 +58,11 @@ enum LibrasLevel {
 
 // Identifica se o Educator é Professor ou Intérprete dentro da plataforma
 enum EducatorType {
-  TEACHER  
+  TEACHER
   INTERPRETER
 }
 
-// EDUCATOR (absorve Professor e Intérprete)
+// EDUCATOR (Professor e Intérprete)
 model Educator {
   id           String       @id @default(uuid())
   userId       String       @unique
@@ -82,7 +83,6 @@ model Educator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 // STUDENT
 model Student {
   id                    String  @id @default(uuid())
@@ -93,7 +93,6 @@ model Student {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
 
 // GUARDIAN (Responsável)
 model Guardian {
@@ -107,8 +106,8 @@ model Guardian {
 
 // DISCIPLINE (Turma)
 enum SchoolLevel {
-  ENSINO_MEDIO_1 
-  ENSINO_MEDIO_2 
+  ENSINO_MEDIO_1
+  ENSINO_MEDIO_2
   ENSINO_MEDIO_3
 }
 
@@ -121,14 +120,14 @@ enum ClassRole {
 }
 
 model Discipline {
-  id              String      @id @default(uuid())
+  id              String       @id @default(uuid())
   name            String
   description     String?
-  colorBackground String?     // Hexadecimal: ex "#BACA57"
-  classCode       String      @unique // Gerado pelo service (ex: "ABC1D2")
-  schoolYear      Int?         // ex: 2026
+  colorBackground String? // Hexadecimal: ex "#BACA57"
+  classCode       String       @unique // Gerado pelo service (ex: "ABC1D2")
+  schoolYear      Int? // ex: 2026
   schoolLevel     SchoolLevel?
-  isActive        Boolean     @default(true)
+  isActive        Boolean      @default(true)
   teacherId       String
 
   createdAt DateTime @default(now())
@@ -162,9 +161,9 @@ model DisciplineEnrollment {
 
 // HAND CONFIG (Configuração de mão para sinais)
 model HandConfig {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  imgUrl    String
+  id     String @id @default(uuid())
+  name   String @unique
+  imgUrl String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -174,26 +173,26 @@ model HandConfig {
 
 // SIGN (Sinal de Libras)
 enum GrammaticalClass {
-  VERB        // Verbo
-  ADJECTIVE   // Adjetivo
-  NOUN        // Substantivo
-  OTHER       // Outros
+  VERB // Verbo
+  ADJECTIVE // Adjetivo
+  NOUN // Substantivo
+  OTHER // Outros
 }
 
 model Sign {
-  id                   String           @id @default(uuid())
-  name                 String           // Palavra em português
-  grammaticalClass     GrammaticalClass
-  handConfigId         String
-  videoUrl             String?          // URL do vídeo upado no R2
-  anotherUrl           String?          // URL alternativa (ex: YouTube)
-  imgUrl               String?          // Imagem ilustrativa (opcional)
-  examplePt            String?          // Exemplo em português
-  exampleLibras        String?          // Exemplo em Libras
-  movementDescription  String?          // Descrição do movimento
-  tags                 String[]         @default([])
-  creatorId            String
-  disciplineId         String?
+  id                  String           @id @default(uuid())
+  name                String // Palavra em português
+  grammaticalClass    GrammaticalClass
+  handConfigId        String
+  videoUrl            String? // URL do vídeo upado no R2
+  anotherUrl          String? // URL alternativa (ex: YouTube)
+  imgUrl              String? // Imagem ilustrativa (opcional)
+  examplePt           String? // Exemplo em português
+  exampleLibras       String? // Exemplo em Libras
+  movementDescription String? // Descrição do movimento
+  tags                String[]         @default([])
+  creatorId           String
+  disciplineId        String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -201,6 +200,7 @@ model Sign {
   handConfig HandConfig  @relation(fields: [handConfigId], references: [id])
   discipline Discipline? @relation(fields: [disciplineId], references: [id])
   favorites  Favorite[]
+  history    History[]
 
   @@index([handConfigId])
   @@index([creatorId])
@@ -223,15 +223,31 @@ model Favorite {
   @@index([signId])
 }
 
+// HISTÓRICO
+model History {
+  userId String
+  signId String
+
+  accessedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sign Sign @relation(fields: [signId], references: [id], onDelete: Cascade)
+
+  @@id([userId, signId])
+  @@index([userId])
+  @@index([signId])
+  @@index([accessedAt])
+}
+
 // PARAM (Tabela genérica de parâmetros de selects)
 model Param {
   id       String  @id @default(uuid())
-  type     String  // ex: "SCHOOL_LEVEL", "SCHOOL_YEAR", "PARENTESCO"
-  label    String  // ex: "1º Ano do Ensino Médio"
-  value    String  // ex: "ENSINO_MEDIO_1"
+  type     String // ex: "SCHOOL_LEVEL", "SCHOOL_YEAR", "PARENTESCO"
+  label    String // ex: "1º Ano do Ensino Médio"
+  value    String // ex: "ENSINO_MEDIO_1"
   order    Int     @default(0)
   isActive Boolean @default(true)
 
-  @@index([type])
   @@unique([type, value])
+  @@index([type])
 }
