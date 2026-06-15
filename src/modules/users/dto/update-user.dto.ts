@@ -1,6 +1,8 @@
 import { ApiPropertyOptional } from "@nestjs/swagger"
-import { Transform } from "class-transformer"
-import { IsBoolean, IsDate, IsEmail, IsOptional, IsPhoneNumber, IsString, IsUrl, MinLength } from "class-validator"
+import { Transform, Type } from "class-transformer"
+import { IsBoolean, IsDate, IsEmail, IsObject, IsOptional, IsPhoneNumber, IsString, IsUrl, MinLength, ValidateNested } from "class-validator"
+
+import { DataProfileDto } from "@/modules/auth/dto/register.dto"
 
 export class UpdateUserDto {
     @ApiPropertyOptional({
@@ -63,10 +65,28 @@ export class UpdateUserDto {
     avatar?: string
 
     @ApiPropertyOptional({
+        example: 'Professora de Libras apaixonada por educação inclusiva.',
+        description: 'Biografia do usuário',
+    })
+    @IsOptional()
+    @IsString()
+    bio?: string
+
+    @ApiPropertyOptional({
         example: true,
         description: 'Status ativo/inativo do usuário',
     })
     @IsOptional()
     @IsBoolean()
     status?: boolean
+
+    @ApiPropertyOptional({
+        description: 'Dados específicos do perfil (conteúdo varia conforme role)',
+        type: DataProfileDto,
+    })
+    @IsObject()
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => DataProfileDto)
+    dataProfile?: DataProfileDto
 }

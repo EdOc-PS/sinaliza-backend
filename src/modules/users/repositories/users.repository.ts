@@ -12,9 +12,45 @@ export class UsersRepository {
   }
 
   async findOne(id: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
+      include: {
+        educator: true,
+        student: true,
+        guardian: true,
+      },
     });
+
+    if (!user) return null;
+
+    // Achata o educatorType (TEACHER | INTERPRETER), o institute e os dados específicos do perfil no objeto do usuário
+    const { educator, student, guardian, ...rest } = user;
+    return {
+      ...rest,
+      educatorType: educator?.educatorType ?? null,
+      institute: educator?.institute ?? student?.institute ?? null,
+      dataProfile: educator
+        ? {
+            institute: educator.institute,
+            department: educator.department,
+            specialty: educator.specialty,
+            certificate: educator.certificate,
+            areaAtuacao: educator.areaAtuacao,
+            proficienciaLibras: educator.proficienciaLibras,
+          }
+        : student
+          ? {
+              institute: student.institute,
+              grauEscolar: student.grauEscolar,
+              necessidadesEspeciais: student.necessidadesEspeciais,
+            }
+          : guardian
+            ? {
+                parentesco: guardian.parentesco,
+                studentEmail: guardian.studentEmail,
+              }
+            : null,
+    };
   }
 
   async findByEmail(email: string) {
@@ -30,9 +66,46 @@ export class UsersRepository {
   }
 
   async update(id: string, updatedUser: UpdateUserDto) {
-    return this.prisma.user.update({
+    const { dataProfile, ...userData } = updatedUser;
+
+    const user = await this.prisma.user.update({
       where: { id },
-      data: updatedUser,
+      data: userData,
     });
+
+    if (dataProfile) {
+      if (user.role === 'STUDENT') {
+        await this.prisma.student.update({
+          where: { userId: id },
+          data: {
+            institute: dataProfile.institute,
+            grauEscolar: dataProfile.grauEscolar,
+            necessidadesEspeciais: dataProfile.necessidadesEspeciais,
+          },
+        });
+      } else if (user.role === 'EDUCATOR') {
+        await this.prisma.educator.update({
+          where: { userId: id },
+          data: {
+            institute: dataProfile.institute,
+            department: dataProfile.department,
+            specialty: dataProfile.specialty,
+            certificate: dataProfile.certificate,
+            areaAtuacao: dataProfile.areaAtuacao,
+            proficienciaLibras: dataProfile.proficienciaLibras,
+          },
+        });
+      } else if (user.role === 'GUARDIAN') {
+        await this.prisma.guardian.update({
+          where: { userId: id },
+          data: {
+            parentesco: dataProfile.parentesco,
+            studentEmail: dataProfile.studentEmail,
+          },
+        });
+      }
+    }
+
+    return this.findOne(id);
   }
 }

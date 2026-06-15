@@ -32,11 +32,11 @@ export class HistoryRepository {
   async findByUser(userId: string, limit: number) {
     const rows = await this.prisma.history.findMany({
       where: { userId },
-      select: slimSignSelect,
+      select: { ...slimSignSelect, accessedAt: true },
       orderBy: { accessedAt: 'desc' },
       take: limit,
     });
-    return rows.map((r) => r.sign);
+    return rows.map((r) => ({ ...r.sign, accessedAt: r.accessedAt }));
   }
 
   // Remove um sinal específico do histórico do usuário
