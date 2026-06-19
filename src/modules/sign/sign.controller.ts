@@ -62,9 +62,9 @@ export class SignController {
   @FindSignOptionsDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get('options')
-  async findOptions() {
-    const options = await this.signService.findOptions();
-    return { success: true, message: 'Classes gramaticais obtidas com sucesso', object: options };
+  async findOptions(@Request() req: AuthenticatedRequest) {
+    const options = await this.signService.findOptions(req.user.userId);
+    return { success: true, message: 'Opções obtidas com sucesso', object: options };
   }
 
   // GET /sign?search=&grammaticalClass=&handConfigId=&tag=

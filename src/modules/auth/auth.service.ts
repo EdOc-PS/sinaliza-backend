@@ -25,7 +25,7 @@ export class AuthService {
         if (!user.status) throw new UnauthorizedException('Usuário inativo');
 
         const isPasswordValid = await bcrypt.compare(loginRequest.password, user.password);
-        if (!isPasswordValid) throw new UnauthorizedException('Senha inválidas');
+        if (!isPasswordValid) throw new UnauthorizedException('Senha inválida, verifique e tente novamente');
 
         const token = this.jwtService.sign({ userId: user.id, email: user.email, role: user.role });
 

@@ -49,6 +49,7 @@ const signSelect = {
   exampleLibras: true,
   movementDescription: true,
   tags: true,
+  disciplineId: true,
   creatorId: true,
   createdAt: true,
   updatedAt: true,

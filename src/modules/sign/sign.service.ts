@@ -4,6 +4,7 @@ import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
 import { R2Service } from '@modules/r2/r2.service';
 import { PrismaService } from '@/database/prisma.service';
+import { DisciplineService } from '@modules/disciplines/discipline.service';
 
 interface SignFiles {
   video?: Express.Multer.File;
@@ -16,6 +17,7 @@ export class SignService {
     private readonly signRepository: SignRepository,
     private readonly r2Service: R2Service,
     private readonly prisma: PrismaService,
+    private readonly disciplineService: DisciplineService,
   ) {}
 
   async create(dto: CreateSignDto, creatorId: string, files: SignFiles) {
@@ -132,12 +134,20 @@ export class SignService {
     });
   }
 
-  async findOptions() {
-    return this.prisma.param.findMany({
-      where: { type: 'GRAMMATICAL_CLASS', isActive: true },
-      select: { label: true, value: true },
-      orderBy: { order: 'asc' },
-    });
+  async findOptions(userId: string) {
+    const [grammaticalClasses, disciplines] = await Promise.all([
+      this.prisma.param.findMany({
+        where: { type: 'GRAMMATICAL_CLASS', isActive: true },
+        select: { label: true, value: true },
+        orderBy: { order: 'asc' },
+      }),
+      this.disciplineService.findMine(userId),
+    ]);
+
+    return {
+      grammaticalClasses,
+      disciplines: disciplines.map((d: any) => ({ value: d.id, label: d.name })),
+    };
   }
 
   async delete(id: string) {
