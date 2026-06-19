@@ -20,6 +20,11 @@ export class UpdateSignDto {
   @IsUUID()
   handConfigId?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  disciplineId?: string;
+
   @ApiPropertyOptional({ example: 'https://youtube.com/watch?v=xxx' })
   @IsOptional()
   @IsString()

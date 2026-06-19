@@ -6,6 +6,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import { FavoriteService } from './favorite.service';
+import { AddFavoriteDocs, FindAllFavoritesDocs, RemoveFavoriteDocs } from '@/common/swagger/favorite';
 
 @ApiTags('Favorites')
 @ApiBearerAuth('access-token')
@@ -15,6 +16,7 @@ export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   // POST /favorite/:signId
+  @AddFavoriteDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Post(':signId')
   async add(
@@ -26,6 +28,7 @@ export class FavoriteController {
   }
 
   // DELETE /favorite/:signId
+  @RemoveFavoriteDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Delete(':signId')
   async remove(
@@ -37,6 +40,7 @@ export class FavoriteController {
   }
 
   // GET /favorite
+  @FindAllFavoritesDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get()
   async findAll(@Request() req: AuthenticatedRequest) {

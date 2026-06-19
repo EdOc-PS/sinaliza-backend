@@ -81,7 +81,7 @@ export class DisciplineController {
     @Request() req: AuthenticatedRequest,
     @Body() dto: JoinDisciplineDto,
   ) {
-    const discipline = await this.disciplineService.join(req.user.userId, req.user.role, dto);
+    const discipline = await this.disciplineService.join(req.user.userId, req.user.roles, dto);
     return { success: true, message: 'Matriculado com sucesso', object: discipline };
   }
 

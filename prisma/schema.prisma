@@ -25,7 +25,7 @@ model User {
 
   status Boolean @default(true)
 
-  role Role @default(STUDENT)
+  roles Role[] @default([STUDENT])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

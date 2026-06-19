@@ -1,9 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateRolesDto } from './dto/update-roles.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+import { Role } from '@common/enums/enum';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { DeleteDocs, FindByIdDocs, FindDocs, UpdateDocs } from '@swagger/users';
+import { DeleteDocs, FindByIdDocs, FindDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -39,6 +43,20 @@ export class UsersController {
         }
     }
 
+
+    // PATCH /users/:id/roles
+    @UpdateRolesDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.ADMIN)
+    @Patch(":id/roles")
+    async updateRoles(@Param("id") id: string, @Body() dto: UpdateRolesDto) {
+        const user = await this.usersService.updateRoles(id, dto.roles);
+        return {
+            success: true,
+            message: 'Perfis do usuário atualizados com sucesso!',
+            object: user
+        };
+    }
 
     // DELETE /users/:id
     @DeleteDocs()

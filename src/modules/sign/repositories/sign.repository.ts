@@ -21,6 +21,7 @@ interface UpdateSignData {
   name?: string;
   grammaticalClass?: GrammaticalClass;
   handConfigId?: string;
+  disciplineId?: string | null;
   videoUrl?: string | null;
   anotherUrl?: string | null;
   imgUrl?: string | null;

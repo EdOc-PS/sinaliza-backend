@@ -2,6 +2,7 @@ import { PrismaService } from '@/database/prisma.service';
 import { Injectable } from '@nestjs/common';
 
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { Role } from '@common/enums/enum';
 
 @Injectable()
 export class UsersRepository {
@@ -65,6 +66,14 @@ export class UsersRepository {
     });
   }
 
+  async updateRoles(id: string, roles: Role[]) {
+    await this.prisma.user.update({
+      where: { id },
+      data: { roles },
+    });
+    return this.findOne(id);
+  }
+
   async update(id: string, updatedUser: UpdateUserDto) {
     const { dataProfile, ...userData } = updatedUser;
 
@@ -74,7 +83,8 @@ export class UsersRepository {
     });
 
     if (dataProfile) {
-      if (user.role === 'STUDENT') {
+      // Atualiza cada perfil que o usuário possui (um usuário pode ter mais de um)
+      if (user.roles.includes('STUDENT')) {
         await this.prisma.student.update({
           where: { userId: id },
           data: {
@@ -83,7 +93,8 @@ export class UsersRepository {
             necessidadesEspeciais: dataProfile.necessidadesEspeciais,
           },
         });
-      } else if (user.role === 'EDUCATOR') {
+      }
+      if (user.roles.includes('EDUCATOR')) {
         await this.prisma.educator.update({
           where: { userId: id },
           data: {
@@ -95,7 +106,8 @@ export class UsersRepository {
             proficienciaLibras: dataProfile.proficienciaLibras,
           },
         });
-      } else if (user.role === 'GUARDIAN') {
+      }
+      if (user.roles.includes('GUARDIAN')) {
         await this.prisma.guardian.update({
           where: { userId: id },
           data: {

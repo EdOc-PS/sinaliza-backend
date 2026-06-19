@@ -17,6 +17,13 @@ const ROLE_TO_CLASS_ROLE: Record<Role, ClassRole> = {
   [Role.ADMIN]:    ClassRole.EDUCATOR,
 };
 
+// Deriva o papel na turma a partir das roles do usuário (maior privilégio primeiro)
+const resolveClassRole = (roles: Role[]): ClassRole => {
+  const priority: Role[] = [Role.EDUCATOR, Role.GUARDIAN, Role.STUDENT, Role.ADMIN];
+  const role = priority.find((r) => roles.includes(r)) ?? Role.STUDENT;
+  return ROLE_TO_CLASS_ROLE[role];
+};
+
 type LabelMap = Map<string, string>;
 
 // Achata user.educator.educatorType -> user.educatorType
@@ -128,7 +135,7 @@ export class DisciplineService {
     return this.disciplineRepository.delete(id);
   }
 
-  async join(userId: string, userRole: Role, dto: JoinDisciplineDto) {
+  async join(userId: string, userRoles: Role[], dto: JoinDisciplineDto) {
     const discipline = await this.disciplineRepository.findByClassCode(dto.classCode);
 
     if (!discipline) throw new NotFoundException('Código de disciplina inválido');
@@ -137,7 +144,7 @@ export class DisciplineService {
     const alreadyEnrolled = await this.disciplineRepository.findEnrollment(userId, discipline.id);
     if (alreadyEnrolled) throw new ConflictException('Você já está matriculado nesta disciplina');
 
-    const roleInClass = ROLE_TO_CLASS_ROLE[userRole];
+    const roleInClass = resolveClassRole(userRoles);
     await this.disciplineRepository.enroll(userId, discipline.id, roleInClass);
     return transformDiscipline(discipline);
   }

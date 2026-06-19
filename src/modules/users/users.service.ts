@@ -1,6 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { UsersRepository } from "./repositories/users.repository";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { Role } from "@common/enums/enum";
+import { assertValidRoleCombination } from "@common/utils/roles";
 
 @Injectable()
 export class UsersService {
@@ -44,6 +46,13 @@ export class UsersService {
     await this.findByIdOrFail(id);
 
     return this.usersRepository.update(id, updatedUser);
+  }
+
+  async updateRoles(id: string, roles: Role[]) {
+    await this.findByIdOrFail(id);
+    assertValidRoleCombination(roles);
+
+    return this.usersRepository.updateRoles(id, roles);
   }
 
   async delete(id: string) {

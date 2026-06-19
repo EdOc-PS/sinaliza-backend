@@ -27,7 +27,7 @@ export class AuthService {
         const isPasswordValid = await bcrypt.compare(loginRequest.password, user.password);
         if (!isPasswordValid) throw new UnauthorizedException('Senha inválida, verifique e tente novamente');
 
-        const token = this.jwtService.sign({ userId: user.id, email: user.email, role: user.role });
+        const token = this.jwtService.sign({ userId: user.id, email: user.email, roles: user.roles });
 
         return { access_token: token, user };
     }
@@ -45,7 +45,7 @@ export class AuthService {
             phone: dto.phone,
             birthdate: dto.birthdate,
             bio: dto.bio,
-            role: dto.role,
+            roles: [dto.role],
         };
 
         const profileData = this.buildProfileData(dto);

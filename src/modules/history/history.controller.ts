@@ -6,6 +6,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import { HistoryService } from './history.service';
+import { ClearHistoryDocs, FindAllHistoryDocs, RegisterHistoryDocs, RemoveHistoryItemDocs } from '@/common/swagger/history';
 
 @ApiTags('History')
 @ApiBearerAuth('access-token')
@@ -15,6 +16,7 @@ export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}
 
   // POST /history/:signId
+  @RegisterHistoryDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Post(':signId')
   async register(
@@ -26,6 +28,7 @@ export class HistoryController {
   }
 
   // GET /history
+  @FindAllHistoryDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Get()
   async findAll(@Request() req: AuthenticatedRequest) {
@@ -34,6 +37,7 @@ export class HistoryController {
   }
 
   // DELETE /history
+  @ClearHistoryDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Delete()
   async clear(@Request() req: AuthenticatedRequest) {
@@ -42,6 +46,7 @@ export class HistoryController {
   }
 
   // DELETE /history/:signId
+  @RemoveHistoryItemDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
   @Delete(':signId')
   async remove(

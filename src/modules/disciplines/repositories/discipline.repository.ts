@@ -134,7 +134,7 @@ export class DisciplineRepository {
             id: true,
             name: true,
             avatar: true,
-            role: true,
+            roles: true,
             educator: { select: { educatorType: true } },
           },
         },

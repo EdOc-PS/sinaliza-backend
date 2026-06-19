@@ -124,6 +124,7 @@ export class SignService {
       name: dto.name,
       grammaticalClass: dto.grammaticalClass,
       handConfigId: dto.handConfigId,
+      disciplineId: dto.disciplineId !== undefined ? (dto.disciplineId || null) : undefined,
       videoUrl,
       anotherUrl: dto.anotherUrl,
       imgUrl,

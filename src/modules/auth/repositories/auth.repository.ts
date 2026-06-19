@@ -9,7 +9,7 @@ type UserData = {
     phone?: string;
     birthdate?: Date;
     bio?: string;
-    role: string;
+    roles: Role[];
 };
 
 type EducatorData = {
