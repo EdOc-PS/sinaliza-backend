@@ -6,6 +6,7 @@ import { FavoriteModule } from '@modules/favorite/favorite.module';
 import { HandConfigModule } from '@modules/hand-config/hand-config.module';
 import { HistoryModule } from '@modules/history/history.module';
 import { R2Module } from '@modules/r2/r2.module';
+import { SearchModule } from '@modules/search/search.module';
 import { SignModule } from '@modules/sign/sign.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { SignModule } from '@modules/sign/sign.module';
     HandConfigModule,
     HistoryModule,
     R2Module,
+    SearchModule,
     SignModule,
   ],
   controllers: [],
