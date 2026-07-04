@@ -1,11 +1,27 @@
 import { UpdateUserDto } from '@modules/users/dto/update-user.dto';
 import { UpdateRolesDto } from '@modules/users/dto/update-roles.dto';
+import { CreateEducatorDto } from '@modules/users/dto/create-educator.dto';
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
+export function CreateEducatorDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Cadastrar educador (professor/intérprete)',
+            description:
+                'Apenas **MANAGER**. Cria uma conta com a role EDUCATOR e o perfil de educador. ' +
+                'O tipo (TEACHER ou INTERPRETER) e a senha inicial são definidos pelo gestor.',
+        }),
+        ApiBody({ type: CreateEducatorDto }),
+        ApiResponse({ status: 201, description: 'Educador criado' }),
+        ApiResponse({ status: 400, description: 'Dados inválidos ou email já registrado' }),
+        ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
+    );
+}
+
 export function FindDocs() {
     return applyDecorators(
-        ApiOperation({ summary: 'Listar todos os usuários', description: 'Apenas ADMIN.' }),
+        ApiOperation({ summary: 'Listar todos os usuários', description: 'Apenas MANAGER.' }),
         ApiResponse({ status: 200, description: 'Lista de usuários' }),
         ApiResponse({ status: 403, description: 'Acesso negado' }),
     );
@@ -22,7 +38,7 @@ export function FindByIdDocs() {
 
 export function DeleteDocs() {
     return applyDecorators(
-        ApiOperation({ summary: 'Remover usuário por ID', description: 'Apenas ADMIN.' }),
+        ApiOperation({ summary: 'Remover usuário por ID', description: 'Apenas MANAGER.' }),
         ApiParam({ name: 'id', description: 'UUID do usuário' }),
         ApiResponse({ status: 200, description: 'Usuário removido' }),
         ApiResponse({ status: 404, description: 'Usuário não encontrado' }),
@@ -34,7 +50,7 @@ export function UpdateRolesDocs() {
         ApiOperation({
             summary: 'Atualizar perfis (roles) do usuário',
             description:
-                'Apenas **ADMIN**. Define a lista de perfis do usuário. STUDENT é exclusivo (não combina com EDUCATOR/GUARDIAN); ADMIN combina com qualquer perfil.',
+                'Apenas **MANAGER**. Define a lista de perfis do usuário. STUDENT é exclusivo (não combina com EDUCATOR/GUARDIAN); MANAGER combina com qualquer perfil.',
         }),
         ApiParam({ name: 'id', description: 'UUID do usuário' }),
         ApiBody({
@@ -42,7 +58,7 @@ export function UpdateRolesDocs() {
             examples: {
                 adminEducator: {
                     summary: 'Tornar Admin + Educador',
-                    value: { roles: ['ADMIN', 'EDUCATOR'] },
+                    value: { roles: ['MANAGER', 'EDUCATOR'] },
                 },
                 educatorGuardian: {
                     summary: 'Educador + Familiar',
@@ -52,7 +68,7 @@ export function UpdateRolesDocs() {
         }),
         ApiResponse({ status: 200, description: 'Perfis atualizados' }),
         ApiResponse({ status: 400, description: 'Combinação de perfis inválida' }),
-        ApiResponse({ status: 403, description: 'Apenas ADMIN' }),
+        ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
         ApiResponse({ status: 404, description: 'Usuário não encontrado' }),
     );
 }

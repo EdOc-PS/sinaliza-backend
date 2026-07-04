@@ -7,7 +7,7 @@ export function CreateHandConfigDocs() {
     return applyDecorators(
         ApiOperation({
             summary: 'Criar configuração de mão',
-            description: 'Apenas **EDUCATOR** e **ADMIN**. Cadastra uma nova configuração de mão com nome e URL da imagem.',
+            description: 'Apenas **EDUCATOR** e **MANAGER**. Cadastra uma nova configuração de mão com nome e URL da imagem.',
         }),
         ApiBody({
             type: CreateHandConfigDto,
@@ -20,7 +20,7 @@ export function CreateHandConfigDocs() {
         }),
         ApiResponse({ status: 201, description: 'Configuração de mão criada' }),
         ApiResponse({ status: 400, description: 'Dados inválidos ou nome duplicado' }),
-        ApiResponse({ status: 403, description: 'Apenas EDUCATOR ou ADMIN' }),
+        ApiResponse({ status: 403, description: 'Apenas EDUCATOR ou MANAGER' }),
     );
 }
 
@@ -50,7 +50,7 @@ export function UpdateHandConfigDocs() {
     return applyDecorators(
         ApiOperation({
             summary: 'Atualizar configuração de mão',
-            description: 'Apenas **EDUCATOR** e **ADMIN**.',
+            description: 'Apenas **EDUCATOR** e **MANAGER**.',
         }),
         ApiParam({ name: 'id', description: 'UUID da configuração de mão' }),
         ApiBody({
@@ -69,7 +69,7 @@ export function DeleteHandConfigDocs() {
     return applyDecorators(
         ApiOperation({
             summary: 'Excluir configuração de mão',
-            description: 'Apenas **EDUCATOR** e **ADMIN**.',
+            description: 'Apenas **EDUCATOR** e **MANAGER**.',
         }),
         ApiParam({ name: 'id', description: 'UUID da configuração de mão' }),
         ApiResponse({ status: 200, description: 'Configuração de mão excluída' }),

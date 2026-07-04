@@ -1,6 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import * as bcrypt from "bcrypt";
 import { UsersRepository } from "./repositories/users.repository";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { CreateEducatorDto } from "./dto/create-educator.dto";
 import { Role } from "@common/enums/enum";
 import { assertValidRoleCombination } from "@common/utils/roles";
 
@@ -11,6 +13,36 @@ export class UsersService {
 
   findAll() {
     return this.usersRepository.findAll();
+  }
+
+  // Cadastro de educador (professor/intérprete) feito por um MANAGER
+  async createEducator(dto: CreateEducatorDto) {
+    const existing = await this.usersRepository.findByEmail(dto.email);
+    if (existing) {
+      throw new BadRequestException('Email já registrado, utilize outro email');
+    }
+
+    const hashPassword = await bcrypt.hash(dto.password, 10);
+    const profile = dto.dataProfile;
+
+    return this.usersRepository.createEducatorAccount(
+      {
+        name: dto.name,
+        email: dto.email,
+        password: hashPassword,
+        phone: dto.phone,
+        bio: dto.bio,
+      },
+      {
+        institute: profile.institute ?? '',
+        educatorType: dto.educatorType,
+        department: profile.department,
+        specialty: profile.specialty,
+        certificate: profile.certificate,
+        areaAtuacao: profile.areaAtuacao,
+        proficienciaLibras: profile.proficienciaLibras,
+      },
+    );
   }
 
   findUser(id: string) {

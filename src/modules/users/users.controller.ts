@@ -1,13 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRolesDto } from './dto/update-roles.dto';
+import { CreateEducatorDto } from './dto/create-educator.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { DeleteDocs, FindByIdDocs, FindDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
+import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -29,6 +30,20 @@ export class UsersController {
         }
     }
 
+    // POST /users/educator
+    @CreateEducatorDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
+    @Post("educator")
+    async createEducator(@Body() dto: CreateEducatorDto) {
+        const user = await this.usersService.createEducator(dto);
+        return {
+            success: true,
+            message: 'Educador cadastrado com sucesso!',
+            object: user
+        };
+    }
+
     // GET /users/:id
     @FindByIdDocs()
     @Get(":id")
@@ -47,7 +62,7 @@ export class UsersController {
     // PATCH /users/:id/roles
     @UpdateRolesDocs()
     @UseGuards(RolesGuard)
-    @Roles(Role.ADMIN)
+    @Roles(Role.MANAGER)
     @Patch(":id/roles")
     async updateRoles(@Param("id") id: string, @Body() dto: UpdateRolesDto) {
         const user = await this.usersService.updateRoles(id, dto.roles);

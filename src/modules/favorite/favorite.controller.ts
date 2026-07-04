@@ -17,7 +17,7 @@ export class FavoriteController {
 
   // POST /favorite/:signId
   @AddFavoriteDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Post(':signId')
   async add(
     @Param('signId') signId: string,
@@ -29,7 +29,7 @@ export class FavoriteController {
 
   // DELETE /favorite/:signId
   @RemoveFavoriteDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Delete(':signId')
   async remove(
     @Param('signId') signId: string,
@@ -41,7 +41,7 @@ export class FavoriteController {
 
   // GET /favorite
   @FindAllFavoritesDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get()
   async findAll(@Request() req: AuthenticatedRequest) {
     const favorites = await this.favoriteService.findByUser(req.user.userId);

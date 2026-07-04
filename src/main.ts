@@ -32,7 +32,7 @@ async function bootstrap() {
     .setTitle('Sinaliza — API')
     .setDescription(
       'API do repositório digital de sinais de Libras.\n\n' +
-      '**Roles disponíveis:** `STUDENT` · `EDUCATOR` · `GUARDIAN` · `ADMIN`\n\n' +
+      '**Roles disponíveis:** `STUDENT` · `EDUCATOR` · `GUARDIAN` · `MANAGER`\n\n' +
       '**Autenticação:** JWT Bearer — faça login em `/auth/login` e use o token retornado.',
     )
     .setVersion('0.2')

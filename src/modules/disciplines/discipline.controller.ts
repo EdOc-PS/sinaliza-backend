@@ -45,7 +45,7 @@ export class DisciplineController {
 
   // POST /disciplines
   @CreateDisciplineDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @Post()
   async create(
     @Request() req: AuthenticatedRequest,
@@ -57,7 +57,7 @@ export class DisciplineController {
 
   // GET /disciplines/options
   @FindSchoolLevelsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('options')
   async findSchoolLevels() {
     const levels = await this.disciplineService.findSchoolLevels();
@@ -66,7 +66,7 @@ export class DisciplineController {
 
   // GET /disciplines/mine
   @FindMineDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('mine')
   async findMine(@Request() req: AuthenticatedRequest) {
     const disciplines = await this.disciplineService.findMine(req.user.userId);
@@ -75,7 +75,7 @@ export class DisciplineController {
 
   // POST /disciplines/join
   @JoinDisciplineDocs()
-  @Roles(Role.STUDENT, Role.GUARDIAN, Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.GUARDIAN, Role.EDUCATOR, Role.MANAGER)
   @Post('join')
   async join(
     @Request() req: AuthenticatedRequest,
@@ -95,7 +95,7 @@ export class DisciplineController {
 
   // GET /disciplines/:id/signs
   @FindDisciplineSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get(':id/signs')
   async findSigns(@Param('id') id: string) {
     const signs = await this.disciplineService.findSigns(id);
@@ -103,7 +103,7 @@ export class DisciplineController {
   }
 
   // GET /disciplines/:id/signs/favorites
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get(':id/signs/favorites')
   async findFavoriteSigns(
     @Param('id') id: string,
@@ -115,7 +115,7 @@ export class DisciplineController {
 
   // GET /disciplines/:id/members
   @FindMembersDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @Get(':id/members')
   async findMembers(
     @Param('id') id: string,
@@ -127,7 +127,7 @@ export class DisciplineController {
 
   // PATCH /disciplines/:id
   @UpdateDisciplineDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -140,7 +140,7 @@ export class DisciplineController {
 
   // DELETE /disciplines/:id
   @DeleteDisciplineDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @Delete(':id')
   async delete(
     @Param('id') id: string,

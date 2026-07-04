@@ -6,11 +6,11 @@ export function CreateSignDocs() {
   return applyDecorators(
     ApiOperation({
       summary: 'Criar sinal',
-      description: 'Apenas **EDUCATOR** e **ADMIN**. Faz upload de vídeo (opcional) e imagem (opcional) para o R2. É necessário enviar um vídeo OU informar `anotherUrl`.',
+      description: 'Apenas **EDUCATOR** e **MANAGER**. Faz upload de vídeo (opcional) e imagem (opcional) para o R2. É necessário enviar um vídeo OU informar `anotherUrl`.',
     }),
     ApiResponse({ status: 201, description: 'Sinal criado' }),
     ApiResponse({ status: 400, description: 'Dados inválidos ou nome duplicado' }),
-    ApiResponse({ status: 403, description: 'Apenas EDUCATOR ou ADMIN' }),
+    ApiResponse({ status: 403, description: 'Apenas EDUCATOR ou MANAGER' }),
   );
 }
 
@@ -41,7 +41,7 @@ export function UpdateSignDocs() {
   return applyDecorators(
     ApiOperation({
       summary: 'Atualizar sinal',
-      description: 'Apenas **EDUCATOR** e **ADMIN**. Aceita upload de novos vídeo/imagem que substituem os antigos no R2.',
+      description: 'Apenas **EDUCATOR** e **MANAGER**. Aceita upload de novos vídeo/imagem que substituem os antigos no R2.',
     }),
     ApiParam({ name: 'id', description: 'UUID do sinal' }),
     ApiResponse({ status: 200, description: 'Sinal atualizado' }),
@@ -63,7 +63,7 @@ export function DeleteSignDocs() {
   return applyDecorators(
     ApiOperation({
       summary: 'Excluir sinal',
-      description: 'Apenas **EDUCATOR** e **ADMIN**. Remove vídeo e imagem do R2 junto com o registro.',
+      description: 'Apenas **EDUCATOR** e **MANAGER**. Remove vídeo e imagem do R2 junto com o registro.',
     }),
     ApiParam({ name: 'id', description: 'UUID do sinal' }),
     ApiResponse({ status: 200, description: 'Sinal excluído' }),

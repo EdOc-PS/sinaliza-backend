@@ -39,7 +39,7 @@ export class SignController {
 
   // POST /sign
   @CreateSignDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'video', maxCount: 1 },
@@ -60,7 +60,7 @@ export class SignController {
 
   // GET /sign/options
   @FindSignOptionsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('options')
   async findOptions(@Request() req: AuthenticatedRequest) {
     const options = await this.signService.findOptions(req.user.userId);
@@ -69,7 +69,7 @@ export class SignController {
 
   // GET /sign?search=&grammaticalClass=&handConfigId=&tag=
   @FindAllSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get()
   async findAll(
     @Query('search') search?: string,
@@ -83,7 +83,7 @@ export class SignController {
 
   // GET /sign/:id
   @FindOneSignDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const sign = await this.signService.findById(id);
@@ -92,7 +92,7 @@ export class SignController {
 
   // PATCH /sign/:id
   @UpdateSignDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'video', maxCount: 1 },
@@ -113,7 +113,7 @@ export class SignController {
 
   // DELETE /sign/:id
   @DeleteSignDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @Delete(':id')
   async delete(@Param('id') id: string) {
     await this.signService.delete(id);

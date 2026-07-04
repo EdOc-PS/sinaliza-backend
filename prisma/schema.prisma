@@ -46,7 +46,7 @@ enum Role {
   STUDENT
   EDUCATOR
   GUARDIAN
-  ADMIN
+  MANAGER
 }
 
 enum LibrasLevel {

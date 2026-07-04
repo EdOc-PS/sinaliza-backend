@@ -45,7 +45,7 @@ export function FindMineDocs() {
                 'Lista **todas** as disciplinas do usuário autenticado — independente da role:\n\n' +
                 '- Disciplinas **criadas** pelo usuário (`canManage: true`)\n' +
                 '- Disciplinas em que o usuário está **matriculado** (`canManage` depende de ser o criador)\n\n' +
-                'Disponível para todas as roles: `STUDENT`, `EDUCATOR`, `GUARDIAN`, `ADMIN`.',
+                'Disponível para todas as roles: `STUDENT`, `EDUCATOR`, `GUARDIAN`, `MANAGER`.',
         }),
         ApiResponse({
             status: 200,
@@ -124,7 +124,7 @@ export function JoinDisciplineDocs() {
                 '- `STUDENT` → `STUDENT`\n' +
                 '- `GUARDIAN` → `FAMILY`\n' +
                 '- `EDUCATOR` → `EDUCATOR`\n' +
-                '- `ADMIN` → `EDUCATOR`',
+                '- `MANAGER` → `EDUCATOR`',
         }),
         ApiBody({
             type: JoinDisciplineDto,

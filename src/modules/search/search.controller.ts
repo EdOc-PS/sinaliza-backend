@@ -20,7 +20,7 @@ export class SearchController {
 
   // GET /search/signs?search=&handConfigId=
   @SearchSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('signs')
   async searchSigns(
     @Request() req: AuthenticatedRequest,
@@ -34,7 +34,7 @@ export class SearchController {
 
   // GET /search/disciplines/:disciplineId/signs?search=&handConfigId=
   @SearchDisciplineSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('disciplines/:disciplineId/signs')
   async searchDisciplineSigns(
     @Request() req: AuthenticatedRequest,
@@ -53,7 +53,7 @@ export class SearchController {
 
   // GET /search/signs/:signId/related
   @RelatedSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('signs/:signId/related')
   async findRelatedSigns(
     @Request() req: AuthenticatedRequest,

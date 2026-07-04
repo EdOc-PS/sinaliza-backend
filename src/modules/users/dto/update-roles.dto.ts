@@ -6,9 +6,9 @@ export class UpdateRolesDto {
   @ApiProperty({
     enum: Role,
     isArray: true,
-    example: ['ADMIN', 'EDUCATOR'],
+    example: ['MANAGER', 'EDUCATOR'],
     description:
-      'Lista de perfis do usuário. STUDENT não pode ser combinado com EDUCATOR/GUARDIAN; ADMIN combina com qualquer perfil.',
+      'Lista de perfis do usuário. STUDENT não pode ser combinado com EDUCATOR/GUARDIAN; MANAGER combina com qualquer perfil.',
   })
   @IsArray()
   @ArrayNotEmpty()

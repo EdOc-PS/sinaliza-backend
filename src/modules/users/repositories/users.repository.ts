@@ -12,6 +12,41 @@ export class UsersRepository {
     return this.prisma.user.findMany();
   }
 
+  // Cria uma conta de EDUCATOR (usado pelo MANAGER) — usuário + perfil de educador numa transação
+  async createEducatorAccount(
+    userData: {
+      name: string;
+      email: string;
+      password: string;
+      phone?: string;
+      bio?: string;
+    },
+    educatorData: {
+      institute: string;
+      educatorType: string;
+      department?: string;
+      specialty?: string;
+      certificate?: string;
+      areaAtuacao?: string;
+      proficienciaLibras?: string;
+    },
+  ) {
+    const userId = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { ...userData, roles: [Role.EDUCATOR] },
+      });
+
+      await tx.educator.create({
+        // educatorType/proficienciaLibras chegam como string; o schema usa enums
+        data: { userId: user.id, ...educatorData } as never,
+      });
+
+      return user.id;
+    });
+
+    return this.findOne(userId);
+  }
+
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },

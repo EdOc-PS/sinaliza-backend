@@ -14,12 +14,12 @@ const ROLE_TO_CLASS_ROLE: Record<Role, ClassRole> = {
   [Role.STUDENT]:  ClassRole.STUDENT,
   [Role.GUARDIAN]: ClassRole.FAMILY,
   [Role.EDUCATOR]: ClassRole.EDUCATOR,
-  [Role.ADMIN]:    ClassRole.EDUCATOR,
+  [Role.MANAGER]:    ClassRole.EDUCATOR,
 };
 
 // Deriva o papel na turma a partir das roles do usuário (maior privilégio primeiro)
 const resolveClassRole = (roles: Role[]): ClassRole => {
-  const priority: Role[] = [Role.EDUCATOR, Role.GUARDIAN, Role.STUDENT, Role.ADMIN];
+  const priority: Role[] = [Role.EDUCATOR, Role.GUARDIAN, Role.STUDENT, Role.MANAGER];
   const role = priority.find((r) => roles.includes(r)) ?? Role.STUDENT;
   return ROLE_TO_CLASS_ROLE[role];
 };

@@ -28,7 +28,7 @@ export class HandConfigController {
 
   // POST /hand-config
   @CreateHandConfigDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
   @Post()
@@ -43,7 +43,7 @@ export class HandConfigController {
 
   // GET /hand-config?search=
   @FindAllHandConfigsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get()
   async findAll(@Query('search') search?: string) {
     const handConfigs = await this.handConfigService.findAll(search);
@@ -52,7 +52,7 @@ export class HandConfigController {
 
   // GET /hand-config/search/:name
   @FindOneHandConfigDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get('search/:name')
   async findOne(@Param('name') name: string) {
     const handConfig = await this.handConfigService.findByName(name);
@@ -61,7 +61,7 @@ export class HandConfigController {
 
   // PATCH /hand-config/:id
   @UpdateHandConfigDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
   @Patch(':id')
@@ -76,7 +76,7 @@ export class HandConfigController {
 
   // DELETE /hand-config/:id
   @DeleteHandConfigDocs()
-  @Roles(Role.EDUCATOR, Role.ADMIN)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
   @Delete(':id')
   async delete(@Param('id') id: string) {
     await this.handConfigService.delete(id);

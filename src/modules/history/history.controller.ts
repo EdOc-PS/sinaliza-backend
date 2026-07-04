@@ -17,7 +17,7 @@ export class HistoryController {
 
   // POST /history/:signId
   @RegisterHistoryDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Post(':signId')
   async register(
     @Param('signId') signId: string,
@@ -29,7 +29,7 @@ export class HistoryController {
 
   // GET /history
   @FindAllHistoryDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get()
   async findAll(@Request() req: AuthenticatedRequest) {
     const history = await this.historyService.findByUser(req.user.userId);
@@ -38,7 +38,7 @@ export class HistoryController {
 
   // DELETE /history
   @ClearHistoryDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Delete()
   async clear(@Request() req: AuthenticatedRequest) {
     await this.historyService.clear(req.user.userId);
@@ -47,7 +47,7 @@ export class HistoryController {
 
   // DELETE /history/:signId
   @RemoveHistoryItemDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.ADMIN)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Delete(':signId')
   async remove(
     @Param('signId') signId: string,
