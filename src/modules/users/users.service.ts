@@ -23,6 +23,14 @@ export class UsersService {
     return this.usersRepository.findEducators(search);
   }
 
+  // Lista usuários por role — restrito a STUDENT ou EDUCATOR (nunca ambos ao mesmo tempo)
+  findMembersByRole(role: Role, search?: string) {
+    if (role !== Role.STUDENT && role !== Role.EDUCATOR) {
+      throw new BadRequestException('Role inválida. Use STUDENT ou EDUCATOR.');
+    }
+    return this.usersRepository.findByRole(role, search);
+  }
+
   // Cadastro de educador (professor/intérprete) feito por um MANAGER
   async createEducator(dto: CreateEducatorDto) {
     const existing = await this.usersRepository.findByEmail(dto.email);

@@ -38,6 +38,17 @@ export class AuthController {
         };
     }
 
+    // GET /auth/formOptions (público)
+    @Get('formOptions')
+    async getFormOptions() {
+        const options = await this.authService.getFormOptions();
+        return {
+            success: true,
+            message: 'Opções de formulário obtidas com sucesso',
+            object: options,
+        };
+    }
+
     // GET /auth/me
     @GetMeDocs()
     @UseGuards(JwtAuthGuard)

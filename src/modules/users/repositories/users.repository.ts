@@ -12,11 +12,11 @@ export class UsersRepository {
     return this.prisma.user.findMany();
   }
 
-  // Lista apenas educadores (role EDUCATOR), com filtro opcional por nome/email
-  async findEducators(search?: string) {
-    const educators = await this.prisma.user.findMany({
+  // Lista usuários que possuem uma role específica, com filtro opcional por nome/email
+  async findByRole(role: Role, search?: string) {
+    const users = await this.prisma.user.findMany({
       where: {
-        roles: { has: Role.EDUCATOR },
+        roles: { has: role },
         ...(search && {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
@@ -29,17 +29,23 @@ export class UsersRepository {
         name: true,
         email: true,
         avatar: true,
+        roles: true,
         createdAt: true,
         educator: { select: { educatorType: true } },
       },
       orderBy: { name: 'asc' },
     });
 
-    // Achata o educatorType no objeto
-    return educators.map(({ educator, ...rest }) => ({
+    // Achata o educatorType no objeto (null para não-educadores)
+    return users.map(({ educator, ...rest }) => ({
       ...rest,
       educatorType: educator?.educatorType ?? null,
     }));
+  }
+
+  // Lista apenas educadores (atalho de findByRole)
+  findEducators(search?: string) {
+    return this.findByRole(Role.EDUCATOR, search);
   }
 
   // Cria uma conta de EDUCATOR (usado pelo MANAGER) — usuário + perfil de educador numa transação

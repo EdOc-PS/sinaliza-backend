@@ -8,7 +8,7 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
+import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, FindMembersDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -55,6 +55,23 @@ export class UsersController {
             success: true,
             message: 'Educadores encontrados com sucesso!',
             object: educators
+        };
+    }
+
+    // GET /users/members?role=STUDENT|EDUCATOR&search=
+    @FindMembersDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
+    @Get("members")
+    async findMembers(
+        @Query("role") role: Role,
+        @Query("search") search?: string,
+    ) {
+        const users = await this.usersService.findMembersByRole(role, search);
+        return {
+            success: true,
+            message: 'Usuários encontrados com sucesso!',
+            object: users
         };
     }
 

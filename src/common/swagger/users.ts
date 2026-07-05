@@ -16,6 +16,22 @@ export function FindEducatorsDocs() {
     );
 }
 
+export function FindMembersDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Listar usuários por role (STUDENT ou EDUCATOR)',
+            description:
+                'Apenas **MANAGER**. Lista usuários de **uma** role por vez — alterna entre `STUDENT` e `EDUCATOR` ' +
+                '(nunca ambos na mesma lista). Filtro opcional por nome ou email.',
+        }),
+        ApiQuery({ name: 'role', required: true, enum: ['STUDENT', 'EDUCATOR'], description: 'Role a listar' }),
+        ApiQuery({ name: 'search', required: false, description: 'Busca parcial por nome ou email' }),
+        ApiResponse({ status: 200, description: 'Lista de usuários da role informada' }),
+        ApiResponse({ status: 400, description: 'Role inválida (use STUDENT ou EDUCATOR)' }),
+        ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
+    );
+}
+
 export function CreateEducatorDocs() {
     return applyDecorators(
         ApiOperation({
