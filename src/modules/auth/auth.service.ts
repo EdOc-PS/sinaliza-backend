@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
+import { InstitutionsService } from '../institutions/institutions.service';
 import { AuthRepository } from './repositories/auth.repository';
 import { Role } from '@common/enums/enum';
 
@@ -15,6 +16,7 @@ export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly authRepository: AuthRepository,
+        private readonly institutionsService: InstitutionsService,
         private jwtService: JwtService
     ) { }
 
@@ -37,6 +39,7 @@ export class AuthService {
         if (existingUser) throw new UnauthorizedException('Email já registrado, por favor utilize outro email');
 
         const hashPassword = await bcrypt.hash(dto.password, 10);
+        const institutionId = await this.institutionsService.getDefaultInstitutionId();
 
         const userData = {
             name: dto.name,
@@ -46,6 +49,7 @@ export class AuthService {
             birthdate: dto.birthdate,
             bio: dto.bio,
             roles: [dto.role],
+            institutionId,
         };
 
         const profileData = this.buildProfileData(dto);
@@ -65,7 +69,6 @@ export class AuthService {
                 return {
                     type: Role.STUDENT as const,
                     data: {
-                        institute: profile.institute,
                         grauEscolar: profile.grauEscolar ?? '',
                         necessidadesEspeciais: profile.necessidadesEspeciais ?? '',
                     },
@@ -75,7 +78,6 @@ export class AuthService {
                 return {
                     type: Role.EDUCATOR as const,
                     data: {
-                        institute: profile.institute ?? '',
                         educatorType: profile.educatorType ?? 'TEACHER',
                         department: profile.department,
                         specialty: profile.specialty,

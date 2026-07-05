@@ -2,7 +2,19 @@ import { UpdateUserDto } from '@modules/users/dto/update-user.dto';
 import { UpdateRolesDto } from '@modules/users/dto/update-roles.dto';
 import { CreateEducatorDto } from '@modules/users/dto/create-educator.dto';
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+
+export function FindEducatorsDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Listar educadores',
+            description: 'Apenas **MANAGER**. Lista usuários com a role EDUCATOR. Filtro opcional por nome ou email.',
+        }),
+        ApiQuery({ name: 'search', required: false, description: 'Busca parcial por nome ou email do educador' }),
+        ApiResponse({ status: 200, description: 'Lista de educadores' }),
+        ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
+    );
+}
 
 export function CreateEducatorDocs() {
     return applyDecorators(

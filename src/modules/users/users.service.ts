@@ -5,14 +5,22 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { CreateEducatorDto } from "./dto/create-educator.dto";
 import { Role } from "@common/enums/enum";
 import { assertValidRoleCombination } from "@common/utils/roles";
+import { InstitutionsService } from "../institutions/institutions.service";
 
 @Injectable()
 export class UsersService {
 
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    private usersRepository: UsersRepository,
+    private readonly institutionsService: InstitutionsService,
+  ) {}
 
   findAll() {
     return this.usersRepository.findAll();
+  }
+
+  findEducators(search?: string) {
+    return this.usersRepository.findEducators(search);
   }
 
   // Cadastro de educador (professor/intérprete) feito por um MANAGER
@@ -23,6 +31,7 @@ export class UsersService {
     }
 
     const hashPassword = await bcrypt.hash(dto.password, 10);
+    const institutionId = await this.institutionsService.getDefaultInstitutionId();
     const profile = dto.dataProfile;
 
     return this.usersRepository.createEducatorAccount(
@@ -32,9 +41,9 @@ export class UsersService {
         password: hashPassword,
         phone: dto.phone,
         bio: dto.bio,
+        institutionId,
       },
       {
-        institute: profile.institute ?? '',
         educatorType: dto.educatorType,
         department: profile.department,
         specialty: profile.specialty,

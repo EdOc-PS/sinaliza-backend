@@ -27,8 +27,14 @@ model User {
 
   roles Role[] @default([STUDENT])
 
+  // Instituição à qual o usuário pertence (nullable: super-admin futuro não pertence a nenhuma).
+  // "Administrar instituições" será uma relação separada (ex: InstitutionAdmin), não este FK.
+  institutionId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  institution Institution? @relation(fields: [institutionId], references: [id])
 
   educator Educator?
   student  Student?
@@ -68,9 +74,6 @@ model Educator {
   userId       String       @unique
   educatorType EducatorType @default(TEACHER)
 
-  // Dados comuns
-  institute String
-
   // Dados específicos do Professor (opcionais para Intérprete)
   department String?
   specialty  String?
@@ -87,7 +90,6 @@ model Educator {
 model Student {
   id                    String  @id @default(uuid())
   userId                String  @unique
-  institute             String?
   grauEscolar           String
   necessidadesEspeciais String
 
@@ -129,16 +131,19 @@ model Discipline {
   schoolLevel     SchoolLevel?
   isActive        Boolean      @default(true)
   teacherId       String
+  institutionId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   teacher     User                   @relation("TeacherDisciplines", fields: [teacherId], references: [id])
+  institution Institution?           @relation(fields: [institutionId], references: [id])
   enrollments DisciplineEnrollment[]
   signs       Sign[]
 
   @@index([teacherId])
   @@index([classCode])
+  @@index([institutionId])
 }
 
 // DISCIPLINE ENROLLMENT (Matrícula)
@@ -161,14 +166,18 @@ model DisciplineEnrollment {
 
 // HAND CONFIG (Configuração de mão para sinais)
 model HandConfig {
-  id     String @id @default(uuid())
-  name   String @unique
-  imgUrl String
+  id            String  @id @default(uuid())
+  name          String  @unique
+  imgUrl        String
+  institutionId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  signs Sign[]
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  signs       Sign[]
+
+  @@index([institutionId])
 }
 
 // SIGN (Sinal de Libras)
@@ -193,19 +202,22 @@ model Sign {
   tags                String[]         @default([])
   creatorId           String
   disciplineId        String?
+  institutionId       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  handConfig HandConfig  @relation(fields: [handConfigId], references: [id])
-  discipline Discipline? @relation(fields: [disciplineId], references: [id])
-  favorites  Favorite[]
-  history    History[]
+  handConfig  HandConfig   @relation(fields: [handConfigId], references: [id])
+  discipline  Discipline?  @relation(fields: [disciplineId], references: [id])
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  favorites   Favorite[]
+  history     History[]
 
   @@index([handConfigId])
   @@index([creatorId])
   @@index([grammaticalClass])
   @@index([disciplineId])
+  @@index([institutionId])
 }
 
 // FAVORITE (Sinais favoritados pelo usuário)
@@ -237,6 +249,32 @@ model History {
   @@index([userId])
   @@index([signId])
   @@index([accessedAt])
+}
+
+// INSTITUTION
+model Institution {
+  id   String @id @default(uuid())
+  cnpj String @unique
+  name String 
+
+  zipCode      String 
+  street       String
+  number       String 
+  complement   String? 
+  neighborhood String 
+  city         String
+  state        String 
+
+  contactEmail String
+  contactPhone String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  disciplines Discipline[]
+  signs       Sign[]
+  handConfigs HandConfig[]
 }
 
 // PARAM (Tabela genérica de parâmetros de selects)

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRolesDto } from './dto/update-roles.dto';
 import { CreateEducatorDto } from './dto/create-educator.dto';
@@ -8,7 +8,7 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
+import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -41,6 +41,20 @@ export class UsersController {
             success: true,
             message: 'Educador cadastrado com sucesso!',
             object: user
+        };
+    }
+
+    // GET /users/educators?search=
+    @FindEducatorsDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
+    @Get("educators")
+    async findEducators(@Query("search") search?: string) {
+        const educators = await this.usersService.findEducators(search);
+        return {
+            success: true,
+            message: 'Educadores encontrados com sucesso!',
+            object: educators
         };
     }
 

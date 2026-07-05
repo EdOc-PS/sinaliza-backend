@@ -28,7 +28,6 @@ export function RegisterDocs() {
                         bio: 'Estudante de TI no IFMG.',
                         role: 'STUDENT',
                         dataProfile: {
-                            institute: 'IFMG Ouro Preto',
                             grauEscolar: 'Ensino Médio',
                             necessidadesEspeciais: 'Surdez bilateral',
                         },
@@ -42,7 +41,6 @@ export function RegisterDocs() {
                         password: 'senha123',
                         role: 'EDUCATOR',
                         dataProfile: {
-                            institute: 'IFMG Ouro Preto',
                             educatorType: 'TEACHER',
                             department: 'Pedagogia',
                             specialty: 'Libras e Inclusão',
@@ -57,7 +55,6 @@ export function RegisterDocs() {
                         password: 'senha123',
                         role: 'EDUCATOR',
                         dataProfile: {
-                            institute: 'IFMG Ouro Preto',
                             educatorType: 'INTERPRETER',
                             certificate: 'ProLibras 2023',
                             areaAtuacao: 'Interpretação em sala de aula',

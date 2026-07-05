@@ -12,6 +12,36 @@ export class UsersRepository {
     return this.prisma.user.findMany();
   }
 
+  // Lista apenas educadores (role EDUCATOR), com filtro opcional por nome/email
+  async findEducators(search?: string) {
+    const educators = await this.prisma.user.findMany({
+      where: {
+        roles: { has: Role.EDUCATOR },
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        createdAt: true,
+        educator: { select: { educatorType: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // Achata o educatorType no objeto
+    return educators.map(({ educator, ...rest }) => ({
+      ...rest,
+      educatorType: educator?.educatorType ?? null,
+    }));
+  }
+
   // Cria uma conta de EDUCATOR (usado pelo MANAGER) — usuário + perfil de educador numa transação
   async createEducatorAccount(
     userData: {
@@ -20,9 +50,9 @@ export class UsersRepository {
       password: string;
       phone?: string;
       bio?: string;
+      institutionId?: string | null;
     },
     educatorData: {
-      institute: string;
       educatorType: string;
       department?: string;
       specialty?: string;
@@ -54,20 +84,19 @@ export class UsersRepository {
         educator: true,
         student: true,
         guardian: true,
+        institution: { select: { name: true } },
       },
     });
 
     if (!user) return null;
 
-    // Achata o educatorType (TEACHER | INTERPRETER), o institute e os dados específicos do perfil no objeto do usuário
+    // Achata o educatorType (TEACHER | INTERPRETER) e os dados específicos do perfil no objeto do usuário.
     const { educator, student, guardian, ...rest } = user;
     return {
       ...rest,
       educatorType: educator?.educatorType ?? null,
-      institute: educator?.institute ?? student?.institute ?? null,
       dataProfile: educator
         ? {
-            institute: educator.institute,
             department: educator.department,
             specialty: educator.specialty,
             certificate: educator.certificate,
@@ -76,7 +105,6 @@ export class UsersRepository {
           }
         : student
           ? {
-              institute: student.institute,
               grauEscolar: student.grauEscolar,
               necessidadesEspeciais: student.necessidadesEspeciais,
             }
@@ -123,7 +151,6 @@ export class UsersRepository {
         await this.prisma.student.update({
           where: { userId: id },
           data: {
-            institute: dataProfile.institute,
             grauEscolar: dataProfile.grauEscolar,
             necessidadesEspeciais: dataProfile.necessidadesEspeciais,
           },
@@ -133,7 +160,6 @@ export class UsersRepository {
         await this.prisma.educator.update({
           where: { userId: id },
           data: {
-            institute: dataProfile.institute,
             department: dataProfile.department,
             specialty: dataProfile.specialty,
             certificate: dataProfile.certificate,

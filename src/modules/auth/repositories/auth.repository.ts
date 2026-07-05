@@ -10,10 +10,10 @@ type UserData = {
     birthdate?: Date;
     bio?: string;
     roles: Role[];
+    institutionId?: string | null;
 };
 
 type EducatorData = {
-    institute: string;
     educatorType: string;
     department?: string;
     specialty?: string;
@@ -23,7 +23,7 @@ type EducatorData = {
 };
 
 type ProfileData =
-    | { type: Role.STUDENT;  data: { institute?: string; grauEscolar: string; necessidadesEspeciais: string } }
+    | { type: Role.STUDENT;  data: { grauEscolar: string; necessidadesEspeciais: string } }
     | { type: Role.EDUCATOR; data: EducatorData }
     | { type: Role.GUARDIAN; data: { parentesco: string; studentEmail?: string } }
     | null;

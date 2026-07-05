@@ -15,11 +15,6 @@ import {
 } from 'class-validator'
 
 export class DataProfileDto {
-    @ApiPropertyOptional({ example: 'IFMG Ouro Preto', description: 'Instituto/escola' })
-    @IsString()
-    @IsOptional()
-    institute?: string
-
     @ApiPropertyOptional({ example: 'Ensino Médio', description: '[STUDENT]' })
     @IsString()
     @IsOptional()

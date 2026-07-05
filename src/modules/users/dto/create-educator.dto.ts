@@ -16,7 +16,7 @@ import {
 import { DataProfileDto } from '@modules/auth/dto/register.dto';
 
 // DTO usado pelo MANAGER para cadastrar um EDUCATOR (professor ou intérprete).
-// Reaproveita DataProfileDto (campos de institute/department/specialty/certificate/etc).
+// Reaproveita DataProfileDto (campos de department/specialty/certificate/etc).
 export class CreateEducatorDto {
   @ApiProperty({ example: 'Maria Souza', description: 'Nome completo' })
   @IsString()
