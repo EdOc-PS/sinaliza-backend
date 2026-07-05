@@ -2,13 +2,14 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } f
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRolesDto } from './dto/update-roles.dto';
 import { CreateEducatorDto } from './dto/create-educator.dto';
+import { UpdateApprovalDto } from './dto/update-approval.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, FindMembersDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
+import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, FindMembersDocs, UpdateApprovalDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -72,6 +73,20 @@ export class UsersController {
             success: true,
             message: 'Usuários encontrados com sucesso!',
             object: users
+        };
+    }
+
+    // PATCH /users/:id/approval
+    @UpdateApprovalDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
+    @Patch(":id/approval")
+    async updateApproval(@Param("id") id: string, @Body() dto: UpdateApprovalDto) {
+        const user = await this.usersService.updateApproval(id, dto.status);
+        return {
+            success: true,
+            message: 'Status de aprovação atualizado com sucesso!',
+            object: user
         };
     }
 

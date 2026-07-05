@@ -2,7 +2,7 @@ import { PrismaService } from '@/database/prisma.service';
 import { Injectable } from '@nestjs/common';
 
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { Role } from '@common/enums/enum';
+import { Role, ApprovalStatus } from '@common/enums/enum';
 
 @Injectable()
 export class UsersRepository {
@@ -32,20 +32,32 @@ export class UsersRepository {
         roles: true,
         createdAt: true,
         educator: { select: { educatorType: true } },
+        student: { select: { status: true } },
+        guardian: { select: { status: true } },
       },
       orderBy: { name: 'asc' },
     });
 
-    // Achata o educatorType no objeto (null para não-educadores)
-    return users.map(({ educator, ...rest }) => ({
+    // Achata o educatorType e o status de aprovação (student/guardian) no objeto
+    return users.map(({ educator, student, guardian, ...rest }) => ({
       ...rest,
       educatorType: educator?.educatorType ?? null,
+      approvalStatus: student?.status ?? guardian?.status ?? null,
     }));
   }
 
   // Lista apenas educadores (atalho de findByRole)
   findEducators(search?: string) {
     return this.findByRole(Role.EDUCATOR, search);
+  }
+
+  // Atualiza o status de aprovação do perfil (student e/ou guardian) do usuário
+  async updateApprovalStatus(userId: string, status: ApprovalStatus) {
+    await this.prisma.$transaction([
+      this.prisma.student.updateMany({ where: { userId }, data: { status } }),
+      this.prisma.guardian.updateMany({ where: { userId }, data: { status } }),
+    ]);
+    return this.findOne(userId);
   }
 
   // Cria uma conta de EDUCATOR (usado pelo MANAGER) — usuário + perfil de educador numa transação

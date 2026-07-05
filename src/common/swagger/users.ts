@@ -19,16 +19,29 @@ export function FindEducatorsDocs() {
 export function FindMembersDocs() {
     return applyDecorators(
         ApiOperation({
-            summary: 'Listar usuários por role (STUDENT ou EDUCATOR)',
+            summary: 'Listar usuários por role',
             description:
-                'Apenas **MANAGER**. Lista usuários de **uma** role por vez — alterna entre `STUDENT` e `EDUCATOR` ' +
-                '(nunca ambos na mesma lista). Filtro opcional por nome ou email.',
+                'Apenas **MANAGER**. Lista usuários de **uma** role por vez — `STUDENT`, `EDUCATOR` ou `GUARDIAN` ' +
+                '(nunca combinadas na mesma lista). Inclui o status de aprovação (para student/guardian). Filtro opcional por nome ou email.',
         }),
-        ApiQuery({ name: 'role', required: true, enum: ['STUDENT', 'EDUCATOR'], description: 'Role a listar' }),
+        ApiQuery({ name: 'role', required: true, enum: ['STUDENT', 'EDUCATOR', 'GUARDIAN'], description: 'Role a listar' }),
         ApiQuery({ name: 'search', required: false, description: 'Busca parcial por nome ou email' }),
         ApiResponse({ status: 200, description: 'Lista de usuários da role informada' }),
-        ApiResponse({ status: 400, description: 'Role inválida (use STUDENT ou EDUCATOR)' }),
+        ApiResponse({ status: 400, description: 'Role inválida (use STUDENT, EDUCATOR ou GUARDIAN)' }),
         ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
+    );
+}
+
+export function UpdateApprovalDocs() {
+    return applyDecorators(
+        ApiOperation({
+            summary: 'Aprovar/recusar conta pendente',
+            description: 'Apenas **MANAGER**. Define o status de aprovação (`APPROVED`/`REJECTED`/`PENDING`) do perfil student/guardian.',
+        }),
+        ApiParam({ name: 'id', description: 'UUID do usuário' }),
+        ApiResponse({ status: 200, description: 'Status atualizado' }),
+        ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
+        ApiResponse({ status: 404, description: 'Usuário não encontrado' }),
     );
 }
 

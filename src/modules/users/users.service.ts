@@ -3,7 +3,7 @@ import * as bcrypt from "bcrypt";
 import { UsersRepository } from "./repositories/users.repository";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { CreateEducatorDto } from "./dto/create-educator.dto";
-import { Role } from "@common/enums/enum";
+import { Role, ApprovalStatus } from "@common/enums/enum";
 import { assertValidRoleCombination } from "@common/utils/roles";
 import { InstitutionsService } from "../institutions/institutions.service";
 
@@ -23,12 +23,19 @@ export class UsersService {
     return this.usersRepository.findEducators(search);
   }
 
-  // Lista usuários por role — restrito a STUDENT ou EDUCATOR (nunca ambos ao mesmo tempo)
+  // Lista usuários por role — restrito às roles funcionais (uma por vez, nunca combinadas)
   findMembersByRole(role: Role, search?: string) {
-    if (role !== Role.STUDENT && role !== Role.EDUCATOR) {
-      throw new BadRequestException('Role inválida. Use STUDENT ou EDUCATOR.');
+    const allowed: Role[] = [Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN];
+    if (!allowed.includes(role)) {
+      throw new BadRequestException('Role inválida. Use STUDENT, EDUCATOR ou GUARDIAN.');
     }
     return this.usersRepository.findByRole(role, search);
+  }
+
+  // Aprova ou recusa uma conta pendente (perfil student/guardian)
+  async updateApproval(id: string, status: ApprovalStatus) {
+    await this.findByIdOrFail(id);
+    return this.usersRepository.updateApprovalStatus(id, status);
   }
 
   // Cadastro de educador (professor/intérprete) feito por um MANAGER

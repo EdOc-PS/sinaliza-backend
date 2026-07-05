@@ -10,6 +10,12 @@ export enum EducatorType {
   INTERPRETER = 'INTERPRETER',
 }
 
+export enum ApprovalStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
 export enum LibrasLevel {
   BASICO = 'BASICO',
   INTERMEDIARIO = 'INTERMEDIARIO',

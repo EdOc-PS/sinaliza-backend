@@ -68,6 +68,13 @@ enum EducatorType {
   INTERPRETER
 }
 
+// Status de aprovação de contas criadas publicamente (STUDENT/GUARDIAN)
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // EDUCATOR (Professor e Intérprete)
 model Educator {
   id           String       @id @default(uuid())
@@ -88,20 +95,22 @@ model Educator {
 
 // STUDENT
 model Student {
-  id                    String  @id @default(uuid())
-  userId                String  @unique
+  id                    String         @id @default(uuid())
+  userId                String         @unique
   grauEscolar           String
   necessidadesEspeciais String
+  status                ApprovalStatus @default(PENDING)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // GUARDIAN (Responsável)
 model Guardian {
-  id           String  @id @default(uuid())
-  userId       String  @unique
+  id           String         @id @default(uuid())
+  userId       String         @unique
   parentesco   String
   studentEmail String?
+  status       ApprovalStatus @default(PENDING)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
