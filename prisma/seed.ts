@@ -25,14 +25,6 @@ const params = [
   { type: 'SCHOOL_LEVEL', label: '1º Ano do Ensino Médio', value: 'ENSINO_MEDIO_1', order: 1 },
   { type: 'SCHOOL_LEVEL', label: '2º Ano do Ensino Médio', value: 'ENSINO_MEDIO_2', order: 2 },
   { type: 'SCHOOL_LEVEL', label: '3º Ano do Ensino Médio', value: 'ENSINO_MEDIO_3', order: 3 },
-
-  // SCHOOL_GRADE (grau escolar do estudante)
-  { type: 'SCHOOL_GRADE', label: 'Ensino Fundamental Incompleto', value: 'ENSINO_FUNDAMENTAL_INCOMPLETO', order: 1 },
-  { type: 'SCHOOL_GRADE', label: 'Ensino Fundamental Completo',   value: 'ENSINO_FUNDAMENTAL_COMPLETO',   order: 2 },
-  { type: 'SCHOOL_GRADE', label: 'Ensino Médio Incompleto',       value: 'ENSINO_MEDIO_INCOMPLETO',       order: 3 },
-  { type: 'SCHOOL_GRADE', label: 'Ensino Médio Completo',         value: 'ENSINO_MEDIO_COMPLETO',         order: 4 },
-  { type: 'SCHOOL_GRADE', label: 'Ensino Superior Incompleto',    value: 'ENSINO_SUPERIOR_INCOMPLETO',    order: 5 },
-  { type: 'SCHOOL_GRADE', label: 'Ensino Superior Completo',      value: 'ENSINO_SUPERIOR_COMPLETO',      order: 6 },
 ];
 
 async function main() {

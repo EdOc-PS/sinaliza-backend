@@ -7,7 +7,6 @@ import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
 import { InstitutionsService } from '../institutions/institutions.service';
 import { AuthRepository } from './repositories/auth.repository';
-import { PrismaService } from '@/database/prisma.service';
 import { Role } from '@common/enums/enum';
 
 
@@ -18,20 +17,8 @@ export class AuthService {
         private readonly usersService: UsersService,
         private readonly authRepository: AuthRepository,
         private readonly institutionsService: InstitutionsService,
-        private readonly prisma: PrismaService,
         private jwtService: JwtService
     ) { }
-
-    // Opções de selects usadas nos formulários públicos (ex: cadastro)
-    async getFormOptions() {
-        const schoolGrades = await this.prisma.param.findMany({
-            where: { type: 'SCHOOL_GRADE', isActive: true },
-            select: { label: true, value: true },
-            orderBy: { order: 'asc' },
-        });
-
-        return { schoolGrades };
-    }
 
     async login(loginRequest: LoginDto) {
         const user = await this.usersService.findByEmail(loginRequest.email);
@@ -44,7 +31,10 @@ export class AuthService {
 
         const token = this.jwtService.sign({ userId: user.id, email: user.email, roles: user.roles });
 
-        return { access_token: token, user };
+        // Retorna o usuário enriquecido (inclui approvalStatus para o front decidir sobre pendência)
+        const enrichedUser = await this.usersService.findUser(user.id);
+
+        return { access_token: token, user: enrichedUser };
     }
 
     async register(dto: RegisterDto) {

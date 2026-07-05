@@ -113,6 +113,7 @@ export class UsersRepository {
     return {
       ...rest,
       educatorType: educator?.educatorType ?? null,
+      approvalStatus: student?.status ?? guardian?.status ?? null,
       dataProfile: educator
         ? {
             department: educator.department,
