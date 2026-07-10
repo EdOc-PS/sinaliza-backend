@@ -16,6 +16,7 @@ import { type AuthenticatedRequest } from '@common/interfaces/authenticated';
 import { SignService } from './sign.service';
 import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
+import { signMulterOptions } from '@common/security/file-validation';
 import {
   CreateSignDocs,
   DeleteSignDocs,
@@ -44,7 +45,7 @@ export class SignController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'video', maxCount: 1 },
     { name: 'image', maxCount: 1 },
-  ]))
+  ], signMulterOptions))
   @Post()
   async create(
     @Request() req: AuthenticatedRequest,
@@ -97,7 +98,7 @@ export class SignController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'video', maxCount: 1 },
     { name: 'image', maxCount: 1 },
-  ]))
+  ], signMulterOptions))
   @Patch(':id')
   async update(
     @Param('id') id: string,

@@ -11,6 +11,7 @@ import { Role } from '@common/enums/enum';
 import { HandConfigService } from './hand-config.service';
 import { CreateHandConfigDto } from './dto/create-hand-config.dto';
 import { UpdateHandConfigDto } from './dto/update-hand-config.dto';
+import { imageMulterOptions } from '@common/security/file-validation';
 import {
   CreateHandConfigDocs,
   DeleteHandConfigDocs,
@@ -30,7 +31,7 @@ export class HandConfigController {
   @CreateHandConfigDocs()
   @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('image', imageMulterOptions))
   @Post()
   async create(
     @Body() dto: CreateHandConfigDto,
@@ -63,7 +64,7 @@ export class HandConfigController {
   @UpdateHandConfigDocs()
   @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('image', imageMulterOptions))
   @Patch(':id')
   async update(
     @Param('id') id: string,

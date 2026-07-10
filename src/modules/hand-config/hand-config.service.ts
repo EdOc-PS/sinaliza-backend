@@ -3,6 +3,7 @@ import { HandConfigRepository } from './repositories/hand-config.repository';
 import { CreateHandConfigDto } from './dto/create-hand-config.dto';
 import { UpdateHandConfigDto } from './dto/update-hand-config.dto';
 import { R2Service } from '@modules/r2/r2.service';
+import { assertValidImage } from '@common/security/file-validation';
 
 @Injectable()
 export class HandConfigService {
@@ -12,6 +13,8 @@ export class HandConfigService {
   ) {}
 
   async create(dto: CreateHandConfigDto, file: Express.Multer.File) {
+    assertValidImage(file);
+
     const nameExists = await this.handConfigRepository.existsByName(dto.name);
     if (nameExists) {
       throw new BadRequestException('Já existe uma configuração de mão com este nome');
@@ -38,6 +41,7 @@ export class HandConfigService {
     let imgUrl = handConfig.imgUrl;
 
     if (file) {
+      assertValidImage(file);
       // Deleta a imagem antiga do R2 e faz upload da nova
       if (handConfig.imgUrl) await this.r2Service.delete(handConfig.imgUrl);
       imgUrl = await this.r2Service.uploadImage(file, 'hand-configs');

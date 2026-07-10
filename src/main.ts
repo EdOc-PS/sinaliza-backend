@@ -1,12 +1,22 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { HttpExceptionFilter } from '@common/filters/exception.filter';
+import { MulterExceptionFilter } from '@common/filters/multer-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Headers de segurança (CSP, X-Content-Type-Options, HSTS, etc).
+  // crossOriginResourcePolicy relaxado para o Swagger UI carregar assets.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+  // Limita o tamanho do corpo JSON (uploads têm limite próprio no Multer)
+  app.useBodyParser('json', { limit: '1mb' });
 
   // CORS
   app.enableCors({
@@ -14,7 +24,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(), new MulterExceptionFilter());
 
   // Validação e transformação automática de payloads
   app.useGlobalPipes(

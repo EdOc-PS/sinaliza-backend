@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaService } from '@/database/prisma.service';
 
@@ -13,9 +14,22 @@ import { JwtStrategy } from './jwt.strategy';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({
-      secret: 'my-secret-key',
-      signOptions: { expiresIn: '2h' },
+    // Assina e verifica com o MESMO secret vindo do .env (JWT_SECRET).
+    // Falha o boot se o secret não estiver definido — nunca cai num valor default.
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET não definido no ambiente (.env).');
+        }
+        const expiresIn = config.get<string>('JWT_EXPIRE') ?? '2h';
+        return {
+          secret,
+          signOptions: { expiresIn: expiresIn as unknown as number },
+        };
+      },
     }),
     UsersModule,
     InstitutionsModule,

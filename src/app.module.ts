@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from '@modules/auth/auth.module';
 import { DisciplineModule } from '@modules/disciplines/discipline.module';
 import { FavoriteModule } from '@modules/favorite/favorite.module';
@@ -12,6 +14,9 @@ import { SignModule } from '@modules/sign/sign.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // Rate limiting global: no máx. 100 requisições / minuto por IP.
+    // Rotas sensíveis (login/register) têm limite mais rígido via @Throttle no controller.
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     AuthModule,
     DisciplineModule,
     FavoriteModule,
@@ -22,6 +27,9 @@ import { SignModule } from '@modules/sign/sign.module';
     SignModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    // Aplica o rate limit em todas as rotas
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

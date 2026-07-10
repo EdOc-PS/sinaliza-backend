@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -13,7 +14,8 @@ import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-    // POST /auth/login
+    // POST /auth/login — anti brute-force: máx. 5 tentativas / minuto por IP
+    @Throttle({ default: { ttl: 60_000, limit: 5 } })
     @LoginDocs()
     @Post('login')
     async login(@Body() loginRequest: LoginDto) {
@@ -25,7 +27,8 @@ export class AuthController {
         }
     }
 
-    // POST /auth/register
+    // POST /auth/register — limita criação de contas em massa: máx. 10 / minuto por IP
+    @Throttle({ default: { ttl: 60_000, limit: 10 } })
     @RegisterDocs()
     @Post('register')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

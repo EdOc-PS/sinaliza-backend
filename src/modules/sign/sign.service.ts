@@ -5,6 +5,7 @@ import { UpdateSignDto } from './dto/update-sign.dto';
 import { R2Service } from '@modules/r2/r2.service';
 import { PrismaService } from '@/database/prisma.service';
 import { DisciplineService } from '@modules/disciplines/discipline.service';
+import { assertValidImage, assertValidVideo } from '@common/security/file-validation';
 
 interface SignFiles {
   video?: Express.Multer.File;
@@ -48,6 +49,10 @@ export class SignService {
     if (nameExists) {
       throw new BadRequestException('Já existe um sinal com este nome.');
     }
+
+    // Valida o conteúdo real dos arquivos antes de subir ao R2
+    if (files.video) assertValidVideo(files.video);
+    if (files.image) assertValidImage(files.image);
 
     // Uploads no R2
     let videoUrl: string | null = null;
@@ -104,6 +109,10 @@ export class SignService {
         throw new BadRequestException('Configuração de mão não encontrada.');
       }
     }
+
+    // Valida o conteúdo real dos arquivos antes de substituir
+    if (files.video) assertValidVideo(files.video);
+    if (files.image) assertValidImage(files.image);
 
     let videoUrl = sign.videoUrl;
     let imgUrl = sign.imgUrl;

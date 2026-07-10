@@ -2,6 +2,8 @@
 import { Injectable } from '@nestjs/common'
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
+import { randomUUID } from 'crypto'
+import { sanitizeFileName } from '@common/security/file-validation'
 
 @Injectable()
 export class R2Service {
@@ -23,15 +25,22 @@ export class R2Service {
     this.publicUrl = this.configService.get<string>('R2_PUBLIC_URL')!
   }
 
+  // Gera uma key segura: pasta/uuid-nome-sanitizado
+  private buildKey(folder: string, originalName: string): string {
+    return `${folder}/${randomUUID()}-${sanitizeFileName(originalName)}`
+  }
+
   // Upload de imagem
   async uploadImage(file: Express.Multer.File, folder: string): Promise<string> {
-    const key = `${folder}/${Date.now()}-${file.originalname}`
+    const key = this.buildKey(folder, file.originalname)
 
     await this.s3.send(new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       Body: file.buffer,
       ContentType: file.mimetype,
+      // Força download em vez de execução caso o objeto seja acessado diretamente
+      ContentDisposition: 'inline',
     }))
 
     return `${this.publicUrl}/${key}`
@@ -39,16 +48,16 @@ export class R2Service {
 
   // Upload de vídeo
   async uploadVideo(file: Express.Multer.File, folder: string): Promise<string> {
-    const key = `${folder}/${Date.now()}-${file.originalname}`
+    const key = this.buildKey(folder, file.originalname)
 
     await this.s3.send(new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       Body: file.buffer,
       ContentType: file.mimetype,
+      ContentDisposition: 'inline',
       // Metadados extras pro vídeo
       Metadata: {
-        originalName: file.originalname,
         uploadedAt: new Date().toISOString(),
       },
     }))
