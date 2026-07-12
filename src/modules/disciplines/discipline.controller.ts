@@ -19,6 +19,7 @@ import { FavoriteService } from '@modules/favorite/favorite.service';
 import { CreateDisciplineDto } from './dto/create-discipline.dto';
 import { UpdateDisciplineDto } from './dto/update-discipline.dto';
 import { JoinDisciplineDto } from './dto/join-discipline.dto';
+import { AddMemberDto } from './dto/add-member.dto';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import {
   CreateDisciplineDocs,
@@ -115,7 +116,7 @@ export class DisciplineController {
 
   // GET /disciplines/:id/members
   @FindMembersDocs()
-  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.GUARDIAN, Role.EDUCATOR, Role.MANAGER)
   @Get(':id/members')
   async findMembers(
     @Param('id') id: string,
@@ -123,6 +124,30 @@ export class DisciplineController {
   ) {
     const members = await this.disciplineService.findMembers(id, req.user.userId);
     return { success: true, message: 'Membros obtidos com sucesso', object: members };
+  }
+
+  // POST /disciplines/:id/members — professor adiciona participante pelo email
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Post(':id/members')
+  async addMember(
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: AddMemberDto,
+  ) {
+    const member = await this.disciplineService.addMember(id, req.user.userId, dto.email);
+    return { success: true, message: 'Participante adicionado com sucesso', object: member };
+  }
+
+  // DELETE /disciplines/:id/members/:userId — professor remove participante
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Delete(':id/members/:userId')
+  async removeMember(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    await this.disciplineService.removeMember(id, req.user.userId, userId);
+    return { success: true, message: 'Participante removido com sucesso' };
   }
 
   // PATCH /disciplines/:id

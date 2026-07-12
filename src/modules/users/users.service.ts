@@ -49,6 +49,9 @@ export class UsersService {
     const institutionId = await this.institutionsService.getDefaultInstitutionId();
     const profile = dto.dataProfile;
 
+    // Gestor opcional: educador pode nascer com o perfil de MANAGER
+    const roles = dto.isManager ? [Role.EDUCATOR, Role.MANAGER] : [Role.EDUCATOR];
+
     return this.usersRepository.createEducatorAccount(
       {
         name: dto.name,
@@ -58,6 +61,7 @@ export class UsersService {
         bio: dto.bio,
         institutionId,
       },
+      roles,
       {
         educatorType: dto.educatorType,
         department: profile.department,

@@ -150,9 +150,50 @@ export class DisciplineService {
   }
 
   async findMembers(id: string, requesterId: string) {
-    const discipline = await this.findById(id);
+    await this.findById(id);
     const members = await this.disciplineRepository.findMembers(id);
     return members.map((m) => ({ ...m, user: flattenEducatorType(m.user) }));
+  }
+
+  // Professor adiciona um participante pelo email
+  async addMember(disciplineId: string, teacherId: string, email: string) {
+    const discipline = await this.findById(disciplineId);
+    if (discipline.teacher.id !== teacherId) {
+      throw new ForbiddenException('Apenas o professor da disciplina pode adicionar participantes');
+    }
+
+    const user = await this.disciplineRepository.findUserByEmail(email);
+    if (!user) throw new NotFoundException('Nenhum usuário encontrado com este email');
+
+    if (user.id === discipline.teacher.id) {
+      throw new ConflictException('O professor já faz parte da disciplina');
+    }
+
+    const alreadyEnrolled = await this.disciplineRepository.findEnrollment(user.id, disciplineId);
+    if (alreadyEnrolled) throw new ConflictException('Este usuário já participa da disciplina');
+
+    const roleInClass = resolveClassRole(user.roles as Role[]);
+    await this.disciplineRepository.enroll(user.id, disciplineId, roleInClass);
+
+    const members = await this.disciplineRepository.findMembers(disciplineId);
+    const added = members.find((m) => m.user.id === user.id);
+    return added ? { ...added, user: flattenEducatorType(added.user) } : null;
+  }
+
+  // Professor remove um participante da disciplina
+  async removeMember(disciplineId: string, teacherId: string, userId: string) {
+    const discipline = await this.findById(disciplineId);
+    if (discipline.teacher.id !== teacherId) {
+      throw new ForbiddenException('Apenas o professor da disciplina pode remover participantes');
+    }
+    if (userId === discipline.teacher.id) {
+      throw new ForbiddenException('O professor da disciplina não pode ser removido');
+    }
+
+    const enrollment = await this.disciplineRepository.findEnrollment(userId, disciplineId);
+    if (!enrollment) throw new NotFoundException('Participante não encontrado nesta disciplina');
+
+    return this.disciplineRepository.unenroll(userId, disciplineId);
   }
 
   async leave(userId: string, disciplineId: string) {

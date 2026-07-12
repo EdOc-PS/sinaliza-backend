@@ -70,6 +70,7 @@ export class UsersRepository {
       bio?: string;
       institutionId?: string | null;
     },
+    roles: Role[],
     educatorData: {
       educatorType: string;
       department?: string;
@@ -81,7 +82,7 @@ export class UsersRepository {
   ) {
     const userId = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { ...userData, roles: [Role.EDUCATOR] },
+        data: { ...userData, roles },
       });
 
       await tx.educator.create({
@@ -179,6 +180,7 @@ export class UsersRepository {
         await this.prisma.educator.update({
           where: { userId: id },
           data: {
+            educatorType: dataProfile.educatorType,
             department: dataProfile.department,
             specialty: dataProfile.specialty,
             certificate: dataProfile.certificate,

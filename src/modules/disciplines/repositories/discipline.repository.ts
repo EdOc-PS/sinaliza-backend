@@ -123,6 +123,13 @@ export class DisciplineRepository {
     });
   }
 
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, roles: true },
+    });
+  }
+
   async findMembers(disciplineId: string) {
     return this.prisma.disciplineEnrollment.findMany({
       where: { disciplineId },

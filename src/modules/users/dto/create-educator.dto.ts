@@ -2,6 +2,7 @@ import { EducatorType } from '@common/enums/enum';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -39,6 +40,11 @@ export class CreateEducatorDto {
   @IsEnum(EducatorType)
   @IsNotEmpty()
   educatorType!: EducatorType;
+
+  @ApiPropertyOptional({ example: false, description: 'Se true, o educador também recebe o perfil de MANAGER (gestor)' })
+  @IsOptional()
+  @IsBoolean()
+  isManager?: boolean;
 
   @ApiPropertyOptional({ example: '+5511999999999', description: 'Telefone E.164' })
   @IsOptional()
