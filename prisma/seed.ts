@@ -13,18 +13,21 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// Parâmetros de selects usados pela aplicação (classes gramaticais e níveis escolares)
+// Parâmetros de selects (níveis escolares)
 const params = [
-  // GRAMMATICAL_CLASS
-  { type: 'GRAMMATICAL_CLASS', label: 'Verbo',       value: 'VERB',      order: 1 },
-  { type: 'GRAMMATICAL_CLASS', label: 'Adjetivo',    value: 'ADJECTIVE', order: 2 },
-  { type: 'GRAMMATICAL_CLASS', label: 'Substantivo', value: 'NOUN',      order: 3 },
-  { type: 'GRAMMATICAL_CLASS', label: 'Outros',      value: 'OTHER',     order: 4 },
-
   // SCHOOL_LEVEL
   { type: 'SCHOOL_LEVEL', label: '1º Ano do Ensino Médio', value: 'ENSINO_MEDIO_1', order: 1 },
   { type: 'SCHOOL_LEVEL', label: '2º Ano do Ensino Médio', value: 'ENSINO_MEDIO_2', order: 2 },
   { type: 'SCHOOL_LEVEL', label: '3º Ano do Ensino Médio', value: 'ENSINO_MEDIO_3', order: 3 },
+];
+
+// Categorias iniciais dos sinais (educadores podem criar mais)
+const categories = [
+  { name: 'Verbo',       value: 'VERBO' },
+  { name: 'Adjetivo',    value: 'ADJETIVO' },
+  { name: 'Substantivo', value: 'SUBSTANTIVO' },
+  { name: 'Animal',      value: 'ANIMAL' },
+  { name: 'Outros',      value: 'OUTROS' },
 ];
 
 async function main() {
@@ -36,7 +39,15 @@ async function main() {
     });
   }
 
-  console.log(`Seed concluído: ${params.length} parâmetros inseridos/atualizados.`);
+  for (const category of categories) {
+    await prisma.category.upsert({
+      where: { value: category.value },
+      update: { name: category.name },
+      create: category,
+    });
+  }
+
+  console.log(`Seed concluído: ${params.length} parâmetros e ${categories.length} categorias.`);
 }
 
 main()

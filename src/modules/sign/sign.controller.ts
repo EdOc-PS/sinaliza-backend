@@ -4,7 +4,6 @@ import {
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
-import type { GrammaticalClass } from '@prisma/client';
 
 import { JwtAuthGuard } from '@modules/auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -68,17 +67,17 @@ export class SignController {
     return { success: true, message: 'Opções obtidas com sucesso', object: options };
   }
 
-  // GET /sign?search=&grammaticalClass=&handConfigId=&tag=
+  // GET /sign?search=&categoryId=&handConfigId=&tag=
   @FindAllSignsDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
   @Get()
   async findAll(
     @Query('search') search?: string,
-    @Query('grammaticalClass') grammaticalClass?: GrammaticalClass,
+    @Query('categoryId') categoryId?: string,
     @Query('handConfigId') handConfigId?: string,
     @Query('tag') tag?: string,
   ) {
-    const signs = await this.signService.findAll({ search, grammaticalClass, handConfigId, tag });
+    const signs = await this.signService.findAll({ search, categoryId, handConfigId, tag });
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 

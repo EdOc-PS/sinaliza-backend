@@ -180,7 +180,7 @@ export function FindDisciplineSignsDocs() {
             summary: 'Listar sinais da disciplina',
             description:
                 'Retorna todos os sinais cadastrados para esta disciplina, ordenados por nome.\n\n' +
-                'Cada sinal inclui: `id`, `name`, `grammaticalClass`, `videoUrl`, `anotherUrl`, `imgUrl`, `tags` e `handConfig`.\n\n' +
+                'Cada sinal inclui: `id`, `name`, `category`, `videoUrl`, `anotherUrl`, `createdAt`.\n\n' +
                 'Disponível para todas as roles — use para montar a tela de detalhe de uma disciplina.',
         }),
         ApiParam({ name: 'id', description: 'UUID da disciplina' }),
@@ -195,7 +195,7 @@ export function FindDisciplineSignsDocs() {
                         {
                             id: 'uuid-do-sinal',
                             name: 'Bom dia',
-                            grammaticalClass: 'VERB',
+                            category: { id: 'uuid-cat', name: 'Verbo', value: 'VERBO' },
                             videoUrl: 'https://r2.example.com/signs/videos/abc.mp4',
                             anotherUrl: null,
                             imgUrl: 'https://r2.example.com/signs/images/abc.jpg',

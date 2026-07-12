@@ -148,7 +148,7 @@ model Discipline {
   teacher     User                   @relation("TeacherDisciplines", fields: [teacherId], references: [id])
   institution Institution?           @relation(fields: [institutionId], references: [id])
   enrollments DisciplineEnrollment[]
-  signs       Sign[]
+  signs       Sign[]                 @relation("DisciplineSigns")
 
   @@index([teacherId])
   @@index([classCode])
@@ -189,18 +189,23 @@ model HandConfig {
   @@index([institutionId])
 }
 
-// SIGN (Sinal de Libras)
-enum GrammaticalClass {
-  VERB // Verbo
-  ADJECTIVE // Adjetivo
-  NOUN // Substantivo
-  OTHER // Outros
+// CATEGORY (Categoria do sinal — criada pelos educadores; substitui a antiga classe gramatical)
+model Category {
+  id    String @id @default(uuid())
+  name  String // Rótulo exibido (ex: "Animal")
+  value String @unique // Código gerado do nome em UPPER_SNAKE (ex: "ANIMAL")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  signs Sign[]
 }
 
+// SIGN (Sinal de Libras)
 model Sign {
-  id                  String           @id @default(uuid())
+  id                  String  @id @default(uuid())
   name                String // Palavra em português
-  grammaticalClass    GrammaticalClass
+  categoryId          String
   handConfigId        String
   videoUrl            String? // URL do vídeo upado no R2
   anotherUrl          String? // URL alternativa (ex: YouTube)
@@ -208,24 +213,24 @@ model Sign {
   examplePt           String? // Exemplo em português
   exampleLibras       String? // Exemplo em Libras
   movementDescription String? // Descrição do movimento
-  tags                String[]         @default([])
+  tags                String[] @default([])
   creatorId           String
-  disciplineId        String?
   institutionId       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  category    Category     @relation(fields: [categoryId], references: [id])
   handConfig  HandConfig   @relation(fields: [handConfigId], references: [id])
-  discipline  Discipline?  @relation(fields: [disciplineId], references: [id])
+  // Um sinal pode pertencer a várias disciplinas (many-to-many)
+  disciplines Discipline[] @relation("DisciplineSigns")
   institution Institution? @relation(fields: [institutionId], references: [id])
   favorites   Favorite[]
   history     History[]
 
   @@index([handConfigId])
   @@index([creatorId])
-  @@index([grammaticalClass])
-  @@index([disciplineId])
+  @@index([categoryId])
   @@index([institutionId])
 }
 

@@ -1,6 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { GrammaticalClass } from '@prisma/client';
 
 export function CreateSignDocs() {
   return applyDecorators(
@@ -21,7 +20,7 @@ export function FindAllSignsDocs() {
       description: 'Lista todos os sinais. Suporta filtros via query string.',
     }),
     ApiQuery({ name: 'search', required: false, description: 'Busca parcial no nome do sinal' }),
-    ApiQuery({ name: 'grammaticalClass', required: false, enum: GrammaticalClass }),
+    ApiQuery({ name: 'categoryId', required: false, description: 'Filtrar por categoria (UUID)' }),
     ApiQuery({ name: 'handConfigId', required: false, description: 'Filtrar por configuração de mão' }),
     ApiQuery({ name: 'tag', required: false, description: 'Filtrar por tag específica' }),
     ApiResponse({ status: 200, description: 'Lista de sinais' }),

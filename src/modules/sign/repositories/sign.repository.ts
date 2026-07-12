@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
-import { GrammaticalClass } from '@prisma/client';
 
 interface CreateSignData {
   name: string;
-  grammaticalClass: GrammaticalClass;
+  categoryId: string;
   handConfigId: string;
   creatorId: string;
-  disciplineId?: string | null;
+  disciplineIds?: string[];
+  institutionId?: string | null;
   videoUrl?: string | null;
   anotherUrl?: string | null;
   imgUrl?: string | null;
@@ -19,9 +19,9 @@ interface CreateSignData {
 
 interface UpdateSignData {
   name?: string;
-  grammaticalClass?: GrammaticalClass;
+  categoryId?: string;
   handConfigId?: string;
-  disciplineId?: string | null;
+  disciplineIds?: string[];
   videoUrl?: string | null;
   anotherUrl?: string | null;
   imgUrl?: string | null;
@@ -33,7 +33,7 @@ interface UpdateSignData {
 
 interface FindAllFilters {
   search?: string;
-  grammaticalClass?: GrammaticalClass;
+  categoryId?: string;
   handConfigId?: string;
   tag?: string;
 }
@@ -41,8 +41,8 @@ interface FindAllFilters {
 const signSelect = {
   id: true,
   name: true,
-  grammaticalClass: true,
   handConfigId: true,
+  categoryId: true,
   videoUrl: true,
   anotherUrl: true,
   imgUrl: true,
@@ -50,12 +50,12 @@ const signSelect = {
   exampleLibras: true,
   movementDescription: true,
   tags: true,
-  disciplineId: true,
   creatorId: true,
   createdAt: true,
   updatedAt: true,
+  category: { select: { id: true, name: true, value: true } },
   handConfig: { select: { id: true, name: true, imgUrl: true } },
-  discipline: { select: { id: true, name: true } },
+  disciplines: { select: { id: true, name: true } },
 };
 
 @Injectable()
@@ -63,22 +63,26 @@ export class SignRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateSignData) {
+    const { disciplineIds, ...rest } = data;
     return this.prisma.sign.create({
       data: {
-        ...data,
+        ...rest,
         tags: data.tags ?? [],
+        ...(disciplineIds && disciplineIds.length > 0
+          ? { disciplines: { connect: disciplineIds.map((id) => ({ id })) } }
+          : {}),
       },
       select: signSelect,
     });
   }
 
   async findAll(filters: FindAllFilters = {}) {
-    const { search, grammaticalClass, handConfigId, tag } = filters;
+    const { search, categoryId, handConfigId, tag } = filters;
 
     return this.prisma.sign.findMany({
       where: {
         ...(search && { name: { contains: search, mode: 'insensitive' } }),
-        ...(grammaticalClass && { grammaticalClass }),
+        ...(categoryId && { categoryId }),
         ...(handConfigId && { handConfigId }),
         ...(tag && { tags: { has: tag } }),
       },
@@ -102,9 +106,16 @@ export class SignRepository {
   }
 
   async update(id: string, data: UpdateSignData) {
+    const { disciplineIds, ...rest } = data;
     return this.prisma.sign.update({
       where: { id },
-      data,
+      data: {
+        ...rest,
+        // Se disciplineIds veio, substitui o conjunto inteiro (set)
+        ...(disciplineIds !== undefined
+          ? { disciplines: { set: disciplineIds.map((did) => ({ id: did })) } }
+          : {}),
+      },
       select: signSelect,
     });
   }

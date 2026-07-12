@@ -1,6 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { GrammaticalClass } from '@prisma/client';
 
 export function SearchSignsDocs() {
   return applyDecorators(
@@ -13,7 +12,7 @@ export function SearchSignsDocs() {
     }),
     ApiQuery({ name: 'search', required: false, description: 'Busca parcial no nome ou tags do sinal' }),
     ApiQuery({ name: 'handConfigId', required: false, description: 'Filtrar pela configuração de mão (teclado visual)' }),
-    ApiQuery({ name: 'grammaticalClass', required: false, enum: GrammaticalClass, description: 'Filtrar por classe gramatical' }),
+    ApiQuery({ name: 'categoryId', required: false, description: 'Filtrar por categoria (UUID)' }),
     ApiResponse({ status: 200, description: 'Lista de sinais acessíveis ao usuário' }),
   );
 }
@@ -44,7 +43,7 @@ export function SearchDisciplineSignsDocs() {
     ApiParam({ name: 'disciplineId', description: 'UUID da disciplina' }),
     ApiQuery({ name: 'search', required: false, description: 'Busca parcial no nome ou tags do sinal' }),
     ApiQuery({ name: 'handConfigId', required: false, description: 'Filtrar pela configuração de mão (teclado visual)' }),
-    ApiQuery({ name: 'grammaticalClass', required: false, enum: GrammaticalClass, description: 'Filtrar por classe gramatical' }),
+    ApiQuery({ name: 'categoryId', required: false, description: 'Filtrar por categoria (UUID)' }),
     ApiResponse({ status: 200, description: 'Lista de sinais da disciplina' }),
     ApiResponse({ status: 404, description: 'Disciplina não encontrada ou sem acesso' }),
   );

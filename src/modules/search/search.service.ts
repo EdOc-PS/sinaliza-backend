@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { GrammaticalClass } from '@prisma/client';
 import { SearchRepository } from './repositories/search.repository';
 
 interface SearchFilters {
   search?: string;
   handConfigId?: string;
-  grammaticalClass?: GrammaticalClass;
+  categoryId?: string;
 }
 
 @Injectable()
@@ -36,13 +35,13 @@ export class SearchService {
       userId,
       signId,
       base.handConfigId,
-      base.grammaticalClass,
+      base.categoryId,
     );
 
     const relevance = (candidate: (typeof candidates)[number]) => {
       const sameConfig = candidate.handConfig?.id === base.handConfigId;
-      const sameClass = candidate.grammaticalClass === base.grammaticalClass;
-      if (sameConfig && sameClass) return 3;
+      const sameCategory = candidate.categoryId === base.categoryId;
+      if (sameConfig && sameCategory) return 3;
       if (sameConfig) return 2;
       return 1;
     };

@@ -7,10 +7,10 @@ const slimSignSelect = {
     select: {
       id: true,
       name: true,
-      grammaticalClass: true,
       videoUrl: true,
       anotherUrl: true,
       createdAt: true,
+      category: { select: { id: true, name: true, value: true } },
     },
   },
 };

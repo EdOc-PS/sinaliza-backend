@@ -36,14 +36,14 @@ export class SignService {
       throw new BadRequestException('Configuração de mão não encontrada.');
     }
 
-    if (dto.disciplineId) {
-      const disciplineExists = await this.prisma.discipline.findUnique({
-        where: { id: dto.disciplineId },
-      });
-      if (!disciplineExists) {
-        throw new BadRequestException('Disciplina não encontrada.');
-      }
+    const categoryExists = await this.prisma.category.findUnique({
+      where: { id: dto.categoryId },
+    });
+    if (!categoryExists) {
+      throw new BadRequestException('Categoria não encontrada.');
     }
+
+    await this.assertDisciplinesExist(dto.disciplineIds);
 
     const nameExists = await this.signRepository.existsByName(dto.name);
     if (nameExists) {
@@ -67,10 +67,10 @@ export class SignService {
 
     return this.signRepository.create({
       name: dto.name,
-      grammaticalClass: dto.grammaticalClass,
+      categoryId: dto.categoryId,
       handConfigId: dto.handConfigId,
       creatorId,
-      disciplineId: dto.disciplineId ?? null,
+      disciplineIds: dto.disciplineIds ?? [],
       videoUrl,
       anotherUrl: dto.anotherUrl ?? null,
       imgUrl,
@@ -81,9 +81,20 @@ export class SignService {
     });
   }
 
+  // Garante que todas as disciplinas informadas existem
+  private async assertDisciplinesExist(disciplineIds?: string[]) {
+    if (!disciplineIds || disciplineIds.length === 0) return;
+    const count = await this.prisma.discipline.count({
+      where: { id: { in: disciplineIds } },
+    });
+    if (count !== disciplineIds.length) {
+      throw new BadRequestException('Uma ou mais disciplinas não foram encontradas.');
+    }
+  }
+
   async findAll(filters: {
     search?: string;
-    grammaticalClass?: any;
+    categoryId?: string;
     handConfigId?: string;
     tag?: string;
   }) {
@@ -110,6 +121,18 @@ export class SignService {
       }
     }
 
+    // Se mudou a categoria, valida existência
+    if (dto.categoryId && dto.categoryId !== sign.categoryId) {
+      const categoryExists = await this.prisma.category.findUnique({
+        where: { id: dto.categoryId },
+      });
+      if (!categoryExists) {
+        throw new BadRequestException('Categoria não encontrada.');
+      }
+    }
+
+    await this.assertDisciplinesExist(dto.disciplineIds);
+
     // Valida o conteúdo real dos arquivos antes de substituir
     if (files.video) assertValidVideo(files.video);
     if (files.image) assertValidImage(files.image);
@@ -131,9 +154,9 @@ export class SignService {
 
     return this.signRepository.update(id, {
       name: dto.name,
-      grammaticalClass: dto.grammaticalClass,
+      categoryId: dto.categoryId,
       handConfigId: dto.handConfigId,
-      disciplineId: dto.disciplineId !== undefined ? (dto.disciplineId || null) : undefined,
+      disciplineIds: dto.disciplineIds,
       videoUrl,
       anotherUrl: dto.anotherUrl,
       imgUrl,
@@ -145,17 +168,16 @@ export class SignService {
   }
 
   async findOptions(userId: string) {
-    const [grammaticalClasses, disciplines] = await Promise.all([
-      this.prisma.param.findMany({
-        where: { type: 'GRAMMATICAL_CLASS', isActive: true },
-        select: { label: true, value: true },
-        orderBy: { order: 'asc' },
+    const [categories, disciplines] = await Promise.all([
+      this.prisma.category.findMany({
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
       }),
       this.disciplineService.findMine(userId),
     ]);
 
     return {
-      grammaticalClasses,
+      categories: categories.map((c) => ({ value: c.id, label: c.name })),
       disciplines: disciplines.map((d: any) => ({ value: d.id, label: d.name })),
     };
   }

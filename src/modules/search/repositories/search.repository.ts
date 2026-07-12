@@ -1,23 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
-import { Prisma, GrammaticalClass } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 interface SearchFilters {
   search?: string;
   handConfigId?: string;
-  grammaticalClass?: GrammaticalClass;
+  categoryId?: string;
 }
 
-// Card resumido (mesmo shape consumido pelo SignCard no front) + disciplina de origem
+// Card resumido (mesmo shape consumido pelo SignCard no front) + disciplinas de origem
 const signCardSelect = {
   id: true,
   name: true,
-  grammaticalClass: true,
+  categoryId: true,
   videoUrl: true,
   anotherUrl: true,
   createdAt: true,
+  category: { select: { id: true, name: true, value: true } },
   handConfig: { select: { id: true, name: true, imgUrl: true } },
-  discipline: { select: { id: true, name: true } },
+  disciplines: { select: { id: true, name: true } },
 };
 
 @Injectable()
@@ -35,7 +36,7 @@ export class SearchRepository {
   }
 
   private buildSignFilter(filters: SearchFilters): Prisma.SignWhereInput {
-    const { search, handConfigId, grammaticalClass } = filters;
+    const { search, handConfigId, categoryId } = filters;
     return {
       ...(search && {
         OR: [
@@ -44,7 +45,7 @@ export class SearchRepository {
         ],
       }),
       ...(handConfigId && { handConfigId }),
-      ...(grammaticalClass && { grammaticalClass }),
+      ...(categoryId && { categoryId }),
     };
   }
 
@@ -52,7 +53,7 @@ export class SearchRepository {
   async searchAccessibleSigns(userId: string, filters: SearchFilters) {
     return this.prisma.sign.findMany({
       where: {
-        discipline: { is: this.accessibleDisciplineFilter(userId) },
+        disciplines: { some: this.accessibleDisciplineFilter(userId) },
         ...this.buildSignFilter(filters),
       },
       select: signCardSelect,
@@ -64,7 +65,7 @@ export class SearchRepository {
   async searchSignsInDiscipline(disciplineId: string, filters: SearchFilters) {
     return this.prisma.sign.findMany({
       where: {
-        disciplineId,
+        disciplines: { some: { id: disciplineId } },
         ...this.buildSignFilter(filters),
       },
       select: signCardSelect,
@@ -76,23 +77,23 @@ export class SearchRepository {
   async findSignBasics(signId: string) {
     return this.prisma.sign.findUnique({
       where: { id: signId },
-      select: { handConfigId: true, grammaticalClass: true },
+      select: { handConfigId: true, categoryId: true },
     });
   }
 
-  // Candidatos a "semelhante": mesma config de mão OU mesma classe gramatical,
+  // Candidatos a "semelhante": mesma config de mão OU mesma categoria,
   // acessíveis ao usuário (disciplina que participa) e excluindo o próprio sinal
   async findRelatedCandidates(
     userId: string,
     signId: string,
     handConfigId: string,
-    grammaticalClass: GrammaticalClass,
+    categoryId: string,
   ) {
     return this.prisma.sign.findMany({
       where: {
         id: { not: signId },
-        discipline: { is: this.accessibleDisciplineFilter(userId) },
-        OR: [{ handConfigId }, { grammaticalClass }],
+        disciplines: { some: this.accessibleDisciplineFilter(userId) },
+        OR: [{ handConfigId }, { categoryId }],
       },
       select: signCardSelect,
       orderBy: { name: 'asc' },

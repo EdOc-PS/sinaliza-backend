@@ -1,6 +1,5 @@
 import { Controller, Get, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import type { GrammaticalClass } from '@prisma/client';
 
 import { JwtAuthGuard } from '@modules/auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -26,9 +25,9 @@ export class SearchController {
     @Request() req: AuthenticatedRequest,
     @Query('search') search?: string,
     @Query('handConfigId') handConfigId?: string,
-    @Query('grammaticalClass') grammaticalClass?: GrammaticalClass,
+    @Query('categoryId') categoryId?: string,
   ) {
-    const signs = await this.searchService.searchSigns(req.user.userId, { search, handConfigId, grammaticalClass });
+    const signs = await this.searchService.searchSigns(req.user.userId, { search, handConfigId, categoryId });
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 
@@ -41,12 +40,12 @@ export class SearchController {
     @Param('disciplineId') disciplineId: string,
     @Query('search') search?: string,
     @Query('handConfigId') handConfigId?: string,
-    @Query('grammaticalClass') grammaticalClass?: GrammaticalClass,
+    @Query('categoryId') categoryId?: string,
   ) {
     const signs = await this.searchService.searchDisciplineSigns(
       req.user.userId,
       disciplineId,
-      { search, handConfigId, grammaticalClass },
+      { search, handConfigId, categoryId },
     );
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }

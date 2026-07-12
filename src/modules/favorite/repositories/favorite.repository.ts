@@ -7,10 +7,10 @@ const slimSignSelect = {
     select: {
       id: true,
       name: true,
-      grammaticalClass: true,
       videoUrl: true,
       anotherUrl: true,
       createdAt: true,
+      category: { select: { id: true, name: true, value: true } },
     },
   },
 };
@@ -43,7 +43,7 @@ export class FavoriteRepository {
 
   async findByUserAndDiscipline(userId: string, disciplineId: string) {
     const rows = await this.prisma.favorite.findMany({
-      where: { userId, sign: { disciplineId } },
+      where: { userId, sign: { disciplines: { some: { id: disciplineId } } } },
       select: slimSignSelect,
       orderBy: { sign: { name: 'asc' } },
     });

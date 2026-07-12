@@ -1,7 +1,6 @@
-import { IsString, IsNotEmpty, IsEnum, IsUUID, IsOptional, IsUrl, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsUUID, IsOptional, IsUrl, IsArray } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { GrammaticalClass } from '@prisma/client';
 
 export class UpdateSignDto {
   @ApiPropertyOptional({ example: 'Aguentar' })
@@ -10,20 +9,28 @@ export class UpdateSignDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ enum: GrammaticalClass })
+  @ApiPropertyOptional({ description: 'UUID da categoria' })
   @IsOptional()
-  @IsEnum(GrammaticalClass)
-  grammaticalClass?: GrammaticalClass;
+  @IsUUID()
+  categoryId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
   handConfigId?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ isArray: true, type: String, description: 'Disciplinas do sinal (substitui o conjunto atual)' })
   @IsOptional()
-  @IsUUID()
-  disciplineId?: string;
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string') {
+      return value.split(',').map((v: string) => v.trim()).filter(Boolean);
+    }
+    return [];
+  })
+  disciplineIds?: string[];
 
   @ApiPropertyOptional({ example: 'https://youtube.com/watch?v=xxx' })
   @IsOptional()

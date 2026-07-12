@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from '@modules/auth/auth.module';
+import { CategoryModule } from '@modules/category/category.module';
 import { DisciplineModule } from '@modules/disciplines/discipline.module';
 import { FavoriteModule } from '@modules/favorite/favorite.module';
 import { HandConfigModule } from '@modules/hand-config/hand-config.module';
@@ -18,6 +19,7 @@ import { SignModule } from '@modules/sign/sign.module';
     // Rotas sensíveis (login/register) têm limite mais rígido via @Throttle no controller.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     AuthModule,
+    CategoryModule,
     DisciplineModule,
     FavoriteModule,
     HandConfigModule,
