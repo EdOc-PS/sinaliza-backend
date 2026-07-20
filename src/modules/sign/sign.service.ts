@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { SignRepository } from './repositories/sign.repository';
 import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
@@ -6,6 +6,7 @@ import { R2Service } from '@modules/r2/r2.service';
 import { PrismaService } from '@/database/prisma.service';
 import { DisciplineService } from '@modules/disciplines/discipline.service';
 import { assertValidImage, assertValidVideo } from '@common/security/file-validation';
+import { GlobalStatus, Role } from '@common/enums/enum';
 
 interface SignFiles {
   video?: Express.Multer.File;
@@ -191,5 +192,55 @@ export class SignService {
     if (sign.imgUrl) await this.r2Service.delete(sign.imgUrl);
 
     return this.signRepository.delete(id);
+  }
+
+  // Educador promove o sinal — entra na fila de aprovação do gestor
+  async promote(id: string, userId: string, userRoles: Role[]) {
+    const sign = await this.signRepository.findById(id);
+    if (!sign) throw new NotFoundException('Sinal não encontrado.');
+
+    const isManager = userRoles.includes(Role.MANAGER);
+    if (sign.creatorId !== userId && !isManager) {
+      throw new ForbiddenException('Apenas o criador do sinal pode promovê-lo.');
+    }
+
+    if (sign.globalStatus === GlobalStatus.PUBLIC) {
+      throw new ConflictException('Este sinal já é público.');
+    }
+    if (sign.globalStatus === GlobalStatus.PENDING) {
+      throw new ConflictException('Este sinal já está aguardando aprovação.');
+    }
+
+    return this.signRepository.updateGlobalStatus(id, GlobalStatus.PENDING);
+  }
+
+  // Gestor aprova ou recusa a promoção de um sinal pendente
+  async reviewPromotion(id: string, approve: boolean) {
+    const sign = await this.signRepository.findById(id);
+    if (!sign) throw new NotFoundException('Sinal não encontrado.');
+
+    if (sign.globalStatus !== GlobalStatus.PENDING) {
+      throw new ConflictException('Este sinal não está aguardando aprovação.');
+    }
+
+    return this.signRepository.updateGlobalStatus(
+      id,
+      approve ? GlobalStatus.PUBLIC : GlobalStatus.REJECTED,
+    );
+  }
+
+  // Promoções pendentes (área de trabalho do gestor)
+  async findPendingPromotions() {
+    return this.signRepository.findPendingPromotions();
+  }
+
+  // Glossário global — sinais públicos, endpoint aberto
+  async findGlobal(filters: {
+    search?: string;
+    categoryId?: string;
+    handConfigId?: string;
+    tag?: string;
+  }) {
+    return this.signRepository.findGlobal(filters);
   }
 }

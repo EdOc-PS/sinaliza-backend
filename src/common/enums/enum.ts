@@ -29,6 +29,13 @@ export enum SchoolLevel {
   ENSINO_MEDIO_3 = 'ENSINO_MEDIO_3',
 }
 
+export enum GlobalStatus {
+  PRIVATE = 'PRIVATE',
+  PENDING = 'PENDING',
+  PUBLIC = 'PUBLIC',
+  REJECTED = 'REJECTED',
+}
+
 export enum ClassRole {
   STUDENT = 'STUDENT',
   FAMILY = 'FAMILY',

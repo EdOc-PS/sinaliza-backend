@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
+import { GlobalStatus } from '@common/enums/enum';
 
 interface CreateSignData {
   name: string;
@@ -51,6 +52,7 @@ const signSelect = {
   movementDescription: true,
   tags: true,
   creatorId: true,
+  globalStatus: true,
   createdAt: true,
   updatedAt: true,
   category: { select: { id: true, name: true, value: true } },
@@ -122,5 +124,57 @@ export class SignRepository {
 
   async delete(id: string) {
     return this.prisma.sign.delete({ where: { id } });
+  }
+
+  // Atualiza o status de promoção ao glossário global
+  async updateGlobalStatus(id: string, globalStatus: GlobalStatus) {
+    return this.prisma.sign.update({
+      where: { id },
+      data: { globalStatus },
+      select: signSelect,
+    });
+  }
+
+  // Sinais aguardando aprovação do gestor (promoções pendentes)
+  async findPendingPromotions() {
+    return this.prisma.sign.findMany({
+      where: { globalStatus: GlobalStatus.PENDING },
+      select: {
+        id: true,
+        name: true,
+        videoUrl: true,
+        anotherUrl: true,
+        imgUrl: true,
+        createdAt: true,
+        category: { select: { id: true, name: true, value: true } },
+        disciplines: { select: { id: true, name: true } },
+      },
+      orderBy: { updatedAt: 'asc' },
+    });
+  }
+
+  // Sinais públicos (glossário global) — endpoint aberto, retorna dados slim
+  async findGlobal(filters: FindAllFilters = {}) {
+    const { search, categoryId, handConfigId, tag } = filters;
+
+    return this.prisma.sign.findMany({
+      where: {
+        globalStatus: GlobalStatus.PUBLIC,
+        ...(search && { name: { contains: search, mode: 'insensitive' } }),
+        ...(categoryId && { categoryId }),
+        ...(handConfigId && { handConfigId }),
+        ...(tag && { tags: { has: tag } }),
+      },
+      select: {
+        id: true,
+        name: true,
+        videoUrl: true,
+        anotherUrl: true,
+        imgUrl: true,
+        createdAt: true,
+        category: { select: { id: true, name: true, value: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 }

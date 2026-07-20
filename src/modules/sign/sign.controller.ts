@@ -15,6 +15,7 @@ import { type AuthenticatedRequest } from '@common/interfaces/authenticated';
 import { SignService } from './sign.service';
 import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
+import { ReviewPromotionDto } from './dto/review-promotion.dto';
 import { signMulterOptions } from '@common/security/file-validation';
 import {
   CreateSignDocs,
@@ -81,6 +82,14 @@ export class SignController {
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 
+  // GET /sign/promotions — sinais aguardando aprovação (educador visualiza, só gestor aprova/recusa)
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Get('promotions')
+  async findPendingPromotions() {
+    const signs = await this.signService.findPendingPromotions();
+    return { success: true, message: 'Promoções pendentes obtidas com sucesso', object: signs };
+  }
+
   // GET /sign/:id
   @FindOneSignDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
@@ -88,6 +97,32 @@ export class SignController {
   async findOne(@Param('id') id: string) {
     const sign = await this.signService.findById(id);
     return { success: true, message: 'Sinal obtido com sucesso', object: sign };
+  }
+
+  // PATCH /sign/:id/promote — educador envia o sinal para aprovação do gestor
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Patch(':id/promote')
+  async promote(
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const sign = await this.signService.promote(id, req.user.userId, req.user.roles);
+    return { success: true, message: 'Sinal enviado para aprovação do gestor', object: sign };
+  }
+
+  // PATCH /sign/:id/promotion — gestor aprova ou recusa a promoção
+  @Roles(Role.MANAGER)
+  @Patch(':id/promotion')
+  async reviewPromotion(
+    @Param('id') id: string,
+    @Body() dto: ReviewPromotionDto,
+  ) {
+    const sign = await this.signService.reviewPromotion(id, dto.approve);
+    return {
+      success: true,
+      message: dto.approve ? 'Sinal aprovado — agora é público!' : 'Promoção recusada',
+      object: sign,
+    };
   }
 
   // PATCH /sign/:id
