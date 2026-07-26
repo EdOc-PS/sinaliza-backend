@@ -16,6 +16,7 @@ import { SignService } from './sign.service';
 import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
 import { ReviewPromotionDto } from './dto/review-promotion.dto';
+import { PromoteSignDto } from './dto/promote-sign.dto';
 import { signMulterOptions } from '@common/security/file-validation';
 import {
   CreateSignDocs,
@@ -104,9 +105,10 @@ export class SignController {
   @Patch(':id/promote')
   async promote(
     @Param('id') id: string,
+    @Body() dto: PromoteSignDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    const sign = await this.signService.promote(id, req.user.userId, req.user.roles);
+    const sign = await this.signService.promote(id, req.user.userId, req.user.roles, dto.glossaryDisciplineIds);
     return { success: true, message: 'Sinal enviado para aprovação do gestor', object: sign };
   }
 

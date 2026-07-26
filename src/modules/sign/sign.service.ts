@@ -97,6 +97,7 @@ export class SignService {
     search?: string;
     categoryId?: string;
     handConfigId?: string;
+    glossaryDisciplineId?: string;
     tag?: string;
   }) {
     return this.signRepository.findAll(filters);
@@ -194,8 +195,9 @@ export class SignService {
     return this.signRepository.delete(id);
   }
 
-  // Educador promove o sinal — entra na fila de aprovação do gestor
-  async promote(id: string, userId: string, userRoles: Role[]) {
+  // Educador promove o sinal — entra na fila de aprovação do gestor.
+  // Pode associar o sinal a nenhuma, uma ou várias disciplinas do glossário.
+  async promote(id: string, userId: string, userRoles: Role[], glossaryDisciplineIds?: string[]) {
     const sign = await this.signRepository.findById(id);
     if (!sign) throw new NotFoundException('Sinal não encontrado.');
 
@@ -211,7 +213,18 @@ export class SignService {
       throw new ConflictException('Este sinal já está aguardando aprovação.');
     }
 
-    return this.signRepository.updateGlobalStatus(id, GlobalStatus.PENDING);
+    await this.assertGlossaryDisciplinesExist(glossaryDisciplineIds);
+
+    return this.signRepository.promote(id, glossaryDisciplineIds);
+  }
+
+  // Garante que todas as disciplinas do glossário informadas existem
+  private async assertGlossaryDisciplinesExist(ids?: string[]) {
+    if (!ids || ids.length === 0) return;
+    const count = await this.prisma.glossaryDiscipline.count({ where: { id: { in: ids } } });
+    if (count !== ids.length) {
+      throw new BadRequestException('Uma ou mais disciplinas do glossário não foram encontradas.');
+    }
   }
 
   // Gestor aprova ou recusa a promoção de um sinal pendente
@@ -234,11 +247,33 @@ export class SignService {
     return this.signRepository.findPendingPromotions();
   }
 
+  // Filtros do glossário público — categorias, configurações de mão e disciplinas.
+  // Endpoint aberto: o glossário público não tem token para chamar /category e /hand-config.
+  async findGlobalFilters() {
+    const [categories, handConfigs, glossaryDisciplines] = await Promise.all([
+      this.prisma.category.findMany({
+        select: { id: true, name: true, value: true },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.handConfig.findMany({
+        select: { id: true, name: true, imgUrl: true },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.glossaryDiscipline.findMany({
+        select: { id: true, name: true, description: true, _count: { select: { signs: true } } },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
+
+    return { categories, handConfigs, glossaryDisciplines };
+  }
+
   // Glossário global — sinais públicos, endpoint aberto
   async findGlobal(filters: {
     search?: string;
     categoryId?: string;
     handConfigId?: string;
+    glossaryDisciplineId?: string;
     tag?: string;
   }) {
     return this.signRepository.findGlobal(filters);

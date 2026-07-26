@@ -10,15 +10,23 @@ import { SignService } from './sign.service';
 export class GlossaryController {
   constructor(private readonly signService: SignService) {}
 
-  // GET /glossary?search=&categoryId=&handConfigId=&tag=
+  // GET /glossary/filters — categorias, configurações de mão e disciplinas (público)
+  @Get('filters')
+  async findFilters() {
+    const filters = await this.signService.findGlobalFilters();
+    return { success: true, message: 'Filtros do glossário obtidos com sucesso', object: filters };
+  }
+
+  // GET /glossary?search=&categoryId=&handConfigId=&glossaryDisciplineId=&tag=
   @Get()
   async findAll(
     @Query('search') search?: string,
     @Query('categoryId') categoryId?: string,
     @Query('handConfigId') handConfigId?: string,
+    @Query('glossaryDisciplineId') glossaryDisciplineId?: string,
     @Query('tag') tag?: string,
   ) {
-    const signs = await this.signService.findGlobal({ search, categoryId, handConfigId, tag });
+    const signs = await this.signService.findGlobal({ search, categoryId, handConfigId, glossaryDisciplineId, tag });
     return { success: true, message: 'Glossário obtido com sucesso', object: signs };
   }
 }

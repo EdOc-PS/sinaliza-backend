@@ -201,6 +201,21 @@ model Category {
   signs Sign[]
 }
 
+// GLOSSARY DISCIPLINE (Disciplina fixa do glossário global)
+// Criada pelo gestor. Diferente de Discipline (turma): não tem código de convite nem matrícula,
+// serve apenas para agrupar os sinais públicos em "disciplinas" no glossário global.
+model GlossaryDiscipline {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Um sinal pode pertencer a nenhuma, uma ou várias disciplinas do glossário (many-to-many)
+  signs Sign[] @relation("GlossaryDisciplineSigns")
+}
+
 // SIGN (Sinal de Libras)
 // Status de promoção do sinal ao glossário global (público)
 enum GlobalStatus {
@@ -234,6 +249,8 @@ model Sign {
   handConfig  HandConfig   @relation(fields: [handConfigId], references: [id])
   // Um sinal pode pertencer a várias disciplinas (many-to-many)
   disciplines Discipline[] @relation("DisciplineSigns")
+  // Disciplinas do glossário global às quais o sinal foi associado ao ser promovido
+  glossaryDisciplines GlossaryDiscipline[] @relation("GlossaryDisciplineSigns")
   institution Institution? @relation(fields: [institutionId], references: [id])
   favorites   Favorite[]
   history     History[]

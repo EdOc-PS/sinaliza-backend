@@ -36,6 +36,7 @@ interface FindAllFilters {
   search?: string;
   categoryId?: string;
   handConfigId?: string;
+  glossaryDisciplineId?: string;
   tag?: string;
 }
 
@@ -58,6 +59,7 @@ const signSelect = {
   category: { select: { id: true, name: true, value: true } },
   handConfig: { select: { id: true, name: true, imgUrl: true } },
   disciplines: { select: { id: true, name: true } },
+  glossaryDisciplines: { select: { id: true, name: true } },
 };
 
 @Injectable()
@@ -79,13 +81,14 @@ export class SignRepository {
   }
 
   async findAll(filters: FindAllFilters = {}) {
-    const { search, categoryId, handConfigId, tag } = filters;
+    const { search, categoryId, handConfigId, glossaryDisciplineId, tag } = filters;
 
     return this.prisma.sign.findMany({
       where: {
         ...(search && { name: { contains: search, mode: 'insensitive' } }),
         ...(categoryId && { categoryId }),
         ...(handConfigId && { handConfigId }),
+        ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: glossaryDisciplineId } } }),
         ...(tag && { tags: { has: tag } }),
       },
       select: signSelect,
@@ -135,6 +138,21 @@ export class SignRepository {
     });
   }
 
+  // Promove o sinal (status PENDING) e associa às disciplinas do glossário informadas.
+  // Se glossaryDisciplineIds vier, substitui o conjunto inteiro (set); [] limpa as associações.
+  async promote(id: string, glossaryDisciplineIds?: string[]) {
+    return this.prisma.sign.update({
+      where: { id },
+      data: {
+        globalStatus: GlobalStatus.PENDING,
+        ...(glossaryDisciplineIds !== undefined
+          ? { glossaryDisciplines: { set: glossaryDisciplineIds.map((gid) => ({ id: gid })) } }
+          : {}),
+      },
+      select: signSelect,
+    });
+  }
+
   // Sinais aguardando aprovação do gestor (promoções pendentes)
   async findPendingPromotions() {
     return this.prisma.sign.findMany({
@@ -155,7 +173,7 @@ export class SignRepository {
 
   // Sinais públicos (glossário global) — endpoint aberto, retorna dados slim
   async findGlobal(filters: FindAllFilters = {}) {
-    const { search, categoryId, handConfigId, tag } = filters;
+    const { search, categoryId, handConfigId, glossaryDisciplineId, tag } = filters;
 
     return this.prisma.sign.findMany({
       where: {
@@ -163,6 +181,7 @@ export class SignRepository {
         ...(search && { name: { contains: search, mode: 'insensitive' } }),
         ...(categoryId && { categoryId }),
         ...(handConfigId && { handConfigId }),
+        ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: glossaryDisciplineId } } }),
         ...(tag && { tags: { has: tag } }),
       },
       select: {
@@ -173,6 +192,7 @@ export class SignRepository {
         imgUrl: true,
         createdAt: true,
         category: { select: { id: true, name: true, value: true } },
+        glossaryDisciplines: { select: { id: true, name: true } },
       },
       orderBy: { name: 'asc' },
     });
