@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
 import { InstitutionsService } from '../institutions/institutions.service';
 import { AuthRepository } from './repositories/auth.repository';
+import { DisciplineService } from '../disciplines/discipline.service';
 import { Role } from '@common/enums/enum';
 
 
@@ -17,6 +18,7 @@ export class AuthService {
         private readonly usersService: UsersService,
         private readonly authRepository: AuthRepository,
         private readonly institutionsService: InstitutionsService,
+        private readonly disciplineService: DisciplineService,
         private jwtService: JwtService
     ) { }
 
@@ -57,7 +59,12 @@ export class AuthService {
 
         const profileData = this.buildProfileData(dto);
 
-        return this.authRepository.createAccount(userData, profileData);
+        const account = await this.authRepository.createAccount(userData, profileData);
+
+        // Todo usuário entra automaticamente na disciplina Contexto
+        await this.disciplineService.enrollInContext(account.id, [dto.role]);
+
+        return account;
     }
 
     async getMe(userId: string) {

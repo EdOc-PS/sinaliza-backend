@@ -26,7 +26,7 @@ export class CreateEducatorDto {
   name!: string;
 
   @ApiProperty({ example: 'educador@email.com', description: 'Email único' })
-  @IsEmail()
+  @IsEmail({}, { message: 'Informe um e-mail válido.' })
   @IsNotEmpty()
   email!: string;
 

@@ -6,6 +6,7 @@ import { CreateEducatorDto } from "./dto/create-educator.dto";
 import { Role, ApprovalStatus } from "@common/enums/enum";
 import { assertValidRoleCombination } from "@common/utils/roles";
 import { InstitutionsService } from "../institutions/institutions.service";
+import { DisciplineService } from "../disciplines/discipline.service";
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,7 @@ export class UsersService {
   constructor(
     private usersRepository: UsersRepository,
     private readonly institutionsService: InstitutionsService,
+    private readonly disciplineService: DisciplineService,
   ) {}
 
   findAll() {
@@ -52,7 +54,7 @@ export class UsersService {
     // Gestor opcional: educador pode nascer com o perfil de MANAGER
     const roles = dto.isManager ? [Role.EDUCATOR, Role.MANAGER] : [Role.EDUCATOR];
 
-    return this.usersRepository.createEducatorAccount(
+    const educator = await this.usersRepository.createEducatorAccount(
       {
         name: dto.name,
         email: dto.email,
@@ -71,6 +73,11 @@ export class UsersService {
         proficienciaLibras: profile.proficienciaLibras,
       },
     );
+
+    // Educador também entra automaticamente na disciplina Contexto
+    if (educator) await this.disciplineService.enrollInContext(educator.id, roles);
+
+    return educator;
   }
 
   findUser(id: string) {

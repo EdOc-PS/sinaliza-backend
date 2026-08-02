@@ -11,9 +11,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus()
     const exceptionResponse: any = exception.getResponse()
 
+    // O ValidationPipe devolve `message` como array de erros; sem tratar, o front
+    // exibia tudo concatenado por vírgula. Junta numa frase e preserva a lista.
+    const raw = exceptionResponse?.message ?? exceptionResponse
+    const isList = Array.isArray(raw)
+
     response.status(status).json({
       success: false,
-      message: exceptionResponse.message || exceptionResponse
+      message: isList ? raw.join(' · ') : raw,
+      ...(isList ? { errors: raw } : {}),
     })
   }
 }

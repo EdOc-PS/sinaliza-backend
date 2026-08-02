@@ -46,6 +46,8 @@ model User {
 
   favorites Favorite[]
   history   History[]
+
+  essayCompletions EssayPromptCompletion[]
 }
 
 enum Role {
@@ -139,6 +141,9 @@ model Discipline {
   schoolYear      Int? // ex: 2026
   schoolLevel     SchoolLevel?
   isActive        Boolean      @default(true)
+  // Disciplina "Contexto": todos os alunos e educadores são matriculados
+  // automaticamente e ela ganha as abas de propostas e exemplos de redação.
+  isContext       Boolean      @default(false)
   teacherId       String
   institutionId   String?
 
@@ -150,9 +155,64 @@ model Discipline {
   enrollments DisciplineEnrollment[]
   signs       Sign[]                 @relation("DisciplineSigns")
 
+  // Conteúdo da disciplina Contexto (integração com o projeto de redação)
+  essayPrompts  EssayPrompt[]
+  essayExamples EssayExample[]
+
   @@index([teacherId])
   @@index([classCode])
   @@index([institutionId])
+  @@index([isContext])
+}
+
+// ESSAY PROMPT (Proposta de redação — lista de tarefas da disciplina Contexto)
+model EssayPrompt {
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  order        Int     @default(0)
+  disciplineId String
+  creatorId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  discipline  Discipline              @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  completions EssayPromptCompletion[]
+
+  @@index([disciplineId])
+}
+
+// Conclusão individual: cada aluno marca as próprias propostas
+model EssayPromptCompletion {
+  userId   String
+  promptId String
+
+  completedAt DateTime @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt EssayPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@id([userId, promptId])
+  @@index([userId])
+  @@index([promptId])
+}
+
+// ESSAY EXAMPLE (Exemplo de redação — arquivo PDF/imagem no R2)
+model EssayExample {
+  id           String  @id @default(uuid())
+  title        String
+  description  String?
+  fileUrl      String
+  disciplineId String
+  creatorId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+
+  @@index([disciplineId])
 }
 
 // DISCIPLINE ENROLLMENT (Matrícula)

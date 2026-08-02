@@ -20,7 +20,7 @@ export class UpdateUserDto {
         description: 'Email único do usuário',
     })
     @IsOptional()
-    @IsEmail()
+    @IsEmail({}, { message: 'Informe um e-mail válido.' })
     email?: string
 
     @ApiPropertyOptional({

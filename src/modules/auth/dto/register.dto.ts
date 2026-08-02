@@ -61,7 +61,7 @@ export class DataProfileDto {
     parentesco?: string
 
     @ApiPropertyOptional({ example: 'aluno@email.com', description: '[GUARDIAN]' })
-    @IsEmail()
+    @IsEmail({}, { message: 'Informe um e-mail válido.' })
     @IsOptional()
     studentEmail?: string
 }
@@ -74,7 +74,7 @@ export class RegisterDto {
     name!: string
 
     @ApiProperty({ example: 'usuario@email.com', description: 'Email único' })
-    @IsEmail()
+    @IsEmail({}, { message: 'Informe um e-mail válido.' })
     @IsNotEmpty()
     email!: string
 

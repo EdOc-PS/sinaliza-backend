@@ -66,6 +66,21 @@ export class R2Service {
   }
 
   // Deletar arquivo
+  // Upload de documento (PDF/imagem) — exemplos de redação
+  async uploadDocument(file: Express.Multer.File, folder: string): Promise<string> {
+    const key = this.buildKey(folder, file.originalname)
+
+    await this.s3.send(new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ContentDisposition: 'inline',
+    }))
+
+    return `${this.publicUrl}/${key}`
+  }
+
   async delete(fileUrl: string): Promise<void> {
     // Extrai a key da URL
     const key = fileUrl.replace(`${this.publicUrl}/`, '')

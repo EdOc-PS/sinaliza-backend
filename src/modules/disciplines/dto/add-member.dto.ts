@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AddMemberDto {
   @ApiProperty({ example: 'aluno@email.com', description: 'Email do usuário a ser adicionado à disciplina' })
-  @IsEmail()
+  @IsEmail({}, { message: 'Informe um e-mail válido.' })
   @IsNotEmpty()
   email: string;
 }

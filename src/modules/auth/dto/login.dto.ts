@@ -6,7 +6,7 @@ export class LoginDto {
         example: 'usuario@email.com',
         description: 'Email do usuário para autenticação',
     })
-    @IsEmail()
+    @IsEmail({}, { message: 'Informe um e-mail válido.' })
     @IsNotEmpty()
     email!: string
 

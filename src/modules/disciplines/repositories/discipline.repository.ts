@@ -12,6 +12,7 @@ const disciplineCardSelect = {
   schoolYear: true,
   schoolLevel: true,
   isActive: true,
+  isContext: true,
   teacherId: true,
   teacher: {
     select: { name: true },
@@ -30,6 +31,7 @@ const disciplineDetailSelect = {
   schoolYear: true,
   schoolLevel: true,
   isActive: true,
+  isContext: true,
   teacherId: true,
   createdAt: true,
   updatedAt: true,
@@ -114,6 +116,23 @@ export class DisciplineRepository {
   async enroll(userId: string, disciplineId: string, roleInClass: ClassRole) {
     return this.prisma.disciplineEnrollment.create({
       data: { userId, disciplineId, roleInClass },
+    });
+  }
+
+  // Disciplina Contexto (matrícula automática de alunos e educadores)
+  async findContextDiscipline() {
+    return this.prisma.discipline.findFirst({
+      where: { isContext: true },
+      select: { id: true },
+    });
+  }
+
+  // Matrícula idempotente — não falha se o usuário já estiver na disciplina
+  async enrollIfAbsent(userId: string, disciplineId: string, roleInClass: ClassRole) {
+    return this.prisma.disciplineEnrollment.upsert({
+      where: { userId_disciplineId: { userId, disciplineId } },
+      create: { userId, disciplineId, roleInClass },
+      update: {},
     });
   }
 

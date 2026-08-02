@@ -65,6 +65,23 @@ export class DisciplineService {
     return transformDiscipline(discipline);
   }
 
+  // Matricula o usuário na disciplina Contexto, se ela existir.
+  // Chamado no cadastro (register e criação de educador) — silencioso de propósito:
+  // uma falha aqui não pode impedir a criação da conta.
+  async enrollInContext(userId: string, roles: Role[]) {
+    try {
+      const context = await this.disciplineRepository.findContextDiscipline();
+      if (!context) return null;
+      return await this.disciplineRepository.enrollIfAbsent(
+        userId,
+        context.id,
+        resolveClassRole(roles),
+      );
+    } catch {
+      return null;
+    }
+  }
+
   async findMine(userId: string) {
     const [created, enrollments, params] = await Promise.all([
       this.disciplineRepository.findAllByTeacher(userId),

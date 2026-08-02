@@ -7,6 +7,7 @@ import type { Request } from 'express';
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; //  5 MB
 export const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+export const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10 MB
 
 // MIME e extensões permitidos (defesa em camadas — nenhum deles é confiável sozinho)
 const IMAGE_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
@@ -15,7 +16,11 @@ const IMAGE_EXT = ['.png', '.jpg', '.jpeg', '.webp'];
 const VIDEO_MIME = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
 const VIDEO_EXT = ['.mp4', '.webm', '.ogg', '.mov'];
 
-type FileKind = 'image' | 'video';
+// Exemplos de redação: PDF ou imagem (redação manuscrita digitalizada)
+const DOCUMENT_MIME = ['application/pdf', ...IMAGE_MIME];
+const DOCUMENT_EXT = ['.pdf', ...IMAGE_EXT];
+
+type FileKind = 'image' | 'video' | 'document';
 
 // ─────────────────────────────────────────────
 // Magic bytes — valida o conteúdo REAL do arquivo
@@ -39,19 +44,30 @@ const VIDEO_SIGNATURES: Signature[] = [
   { offset: 0, bytes: ascii('OggS') }, // OGG
 ];
 
+const DOCUMENT_SIGNATURES: Signature[] = [
+  { offset: 0, bytes: ascii('%PDF') }, // PDF
+  ...IMAGE_SIGNATURES,
+];
+
 function matchesSignature(buffer: Buffer, sig: Signature): boolean {
   if (buffer.length < sig.offset + sig.bytes.length) return false;
   return sig.bytes.every((b, i) => b === null || buffer[sig.offset + i] === b);
 }
 
+const SIGNATURES_BY_KIND: Record<FileKind, Signature[]> = {
+  image: IMAGE_SIGNATURES,
+  video: VIDEO_SIGNATURES,
+  document: DOCUMENT_SIGNATURES,
+};
+
 function hasValidMagic(buffer: Buffer, kind: FileKind): boolean {
-  const signatures = kind === 'image' ? IMAGE_SIGNATURES : VIDEO_SIGNATURES;
+  const signatures = SIGNATURES_BY_KIND[kind];
   const matched = signatures.some((sig) => matchesSignature(buffer, sig));
   if (!matched) return false;
 
   // WEBP precisa também do marcador "WEBP" no offset 8 (RIFF sozinho é ambíguo — .wav, .avi)
   const isRiff = matchesSignature(buffer, { offset: 0, bytes: ascii('RIFF') });
-  if (kind === 'image' && isRiff) {
+  if (kind !== 'video' && isRiff) {
     return matchesSignature(buffer, { offset: 8, bytes: ascii('WEBP') });
   }
   return true;
@@ -86,12 +102,17 @@ function getExtension(name: string): string {
 // Validação principal (usada nos services antes do upload)
 // ─────────────────────────────────────────────
 
+const MAX_SIZE_BY_KIND: Record<FileKind, number> = {
+  image: MAX_IMAGE_SIZE,
+  video: MAX_VIDEO_SIZE,
+  document: MAX_DOCUMENT_SIZE,
+};
+
 function assertFile(file: Express.Multer.File, kind: FileKind): void {
-  const isImage = kind === 'image';
-  const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
-  const allowedMime = isImage ? IMAGE_MIME : VIDEO_MIME;
-  const allowedExt = isImage ? IMAGE_EXT : VIDEO_EXT;
-  const label = isImage ? 'imagem' : 'vídeo';
+  const maxSize = MAX_SIZE_BY_KIND[kind];
+  const allowedMime = MIME_BY_KIND[kind];
+  const allowedExt = EXT_BY_KIND[kind];
+  const label = LABEL_BY_KIND[kind];
 
   if (!file.buffer || file.size === 0) {
     throw new BadRequestException(`Arquivo de ${label} vazio ou inválido.`);
@@ -112,9 +133,7 @@ function assertFile(file: Express.Multer.File, kind: FileKind): void {
 
   // Checagem definitiva: o conteúdo real bate com um formato permitido?
   if (!hasValidMagic(file.buffer, kind)) {
-    throw new BadRequestException(
-      `O conteúdo do arquivo não corresponde a um ${label} válido.`,
-    );
+    throw new BadRequestException(CONTENT_MISMATCH_BY_KIND[kind]);
   }
 }
 
@@ -126,16 +145,43 @@ export function assertValidVideo(file: Express.Multer.File): void {
   assertFile(file, 'video');
 }
 
+export function assertValidDocument(file: Express.Multer.File): void {
+  assertFile(file, 'document');
+}
+
 // ─────────────────────────────────────────────
 // fileFilter do Multer — primeira barreira (mime + extensão), antes de bufferizar
 // ─────────────────────────────────────────────
 
 type MulterCallback = (error: Error | null, acceptFile: boolean) => void;
 
+const MIME_BY_KIND: Record<FileKind, string[]> = {
+  image: IMAGE_MIME,
+  video: VIDEO_MIME,
+  document: DOCUMENT_MIME,
+};
+const EXT_BY_KIND: Record<FileKind, string[]> = {
+  image: IMAGE_EXT,
+  video: VIDEO_EXT,
+  document: DOCUMENT_EXT,
+};
+const LABEL_BY_KIND: Record<FileKind, string> = {
+  image: 'imagem',
+  video: 'vídeo',
+  document: 'arquivo',
+};
+
+// Frase completa por tipo — evita concordância errada montando texto por partes
+const CONTENT_MISMATCH_BY_KIND: Record<FileKind, string> = {
+  image: 'O conteúdo do arquivo não corresponde a uma imagem válida.',
+  video: 'O conteúdo do arquivo não corresponde a um vídeo válido.',
+  document: 'O conteúdo do arquivo não corresponde a um PDF ou imagem válido.',
+};
+
 function makeFileFilter(kind: FileKind) {
-  const allowedMime = kind === 'image' ? IMAGE_MIME : VIDEO_MIME;
-  const allowedExt = kind === 'image' ? IMAGE_EXT : VIDEO_EXT;
-  const label = kind === 'image' ? 'imagem' : 'vídeo';
+  const allowedMime = MIME_BY_KIND[kind];
+  const allowedExt = EXT_BY_KIND[kind];
+  const label = LABEL_BY_KIND[kind];
 
   return (_req: Request, file: Express.Multer.File, cb: MulterCallback) => {
     const okMime = allowedMime.includes(file.mimetype);
@@ -149,6 +195,11 @@ function makeFileFilter(kind: FileKind) {
 export const imageMulterOptions = {
   limits: { fileSize: MAX_IMAGE_SIZE, files: 1 },
   fileFilter: makeFileFilter('image'),
+};
+
+export const documentMulterOptions = {
+  limits: { fileSize: MAX_DOCUMENT_SIZE, files: 1 },
+  fileFilter: makeFileFilter('document'),
 };
 
 // Sign aceita video (campo "video") + image (campo "image") no mesmo request.
