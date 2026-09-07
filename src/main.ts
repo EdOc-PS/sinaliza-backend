@@ -18,9 +18,15 @@ async function bootstrap() {
   // Limita o tamanho do corpo JSON (uploads têm limite próprio no Multer)
   app.useBodyParser('json', { limit: '1mb' });
 
-  // CORS
+  // CORS — aceita uma lista separada por vírgula em CORS_ORIGIN (ex: front local +
+  // deploy do Vercel). Sem a variável, cai só no front local para não abrir geral.
+  const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: corsOrigins,
     credentials: true,
   });
 
