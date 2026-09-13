@@ -48,12 +48,12 @@ async function bootstrap() {
     .setTitle('Sinaliza — API')
     .setDescription(
       'API do repositório digital de sinais de Libras.\n\n' +
-      '**Roles disponíveis:** `STUDENT` · `EDUCATOR` · `GUARDIAN` · `MANAGER`\n\n' +
+      '**Roles disponíveis:** `STUDENT` · `EDUCATOR` · `MANAGER`\n\n' +
       '**Autenticação:** JWT Bearer — faça login em `/auth/login` e use o token retornado.',
     )
     .setVersion('0.2')
     .addTag('Auth', 'Autenticação e registro de usuários')
-    .addTag('Disciplines', 'Gerenciamento de disciplinas e matrículas')
+    .addTag('Classrooms', 'Gerenciamento de turmas e matrículas')
     .addTag('Hand Config', 'Gerenciamento do configuração de mão')
     .addTag('Users', 'Gerenciamento de usuários')
     

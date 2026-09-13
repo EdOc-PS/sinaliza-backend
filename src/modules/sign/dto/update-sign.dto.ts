@@ -19,7 +19,7 @@ export class UpdateSignDto {
   @IsUUID()
   handConfigId?: string;
 
-  @ApiPropertyOptional({ isArray: true, type: String, description: 'Disciplinas do sinal (substitui o conjunto atual)' })
+  @ApiPropertyOptional({ isArray: true, type: String, description: 'Turmas do sinal (substitui o conjunto atual)' })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
@@ -30,7 +30,7 @@ export class UpdateSignDto {
     }
     return [];
   })
-  disciplineIds?: string[];
+  classroomIds?: string[];
 
   @ApiPropertyOptional({ example: 'https://youtube.com/watch?v=xxx' })
   @IsOptional()

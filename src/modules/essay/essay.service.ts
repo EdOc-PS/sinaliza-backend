@@ -19,31 +19,31 @@ export class EssayService {
     private readonly r2Service: R2Service,
   ) {}
 
-  // Propostas e exemplos só existem na disciplina Contexto
-  private async assertContextDiscipline(disciplineId: string) {
-    const discipline = await this.prisma.discipline.findUnique({
-      where: { id: disciplineId },
+  // Propostas e exemplos só existem na turma Contexto
+  private async assertContextClassroom(classroomId: string) {
+    const classroom = await this.prisma.classroom.findUnique({
+      where: { id: classroomId },
       select: { id: true, isContext: true },
     });
 
-    if (!discipline) throw new NotFoundException('Disciplina não encontrada.');
-    if (!discipline.isContext) {
+    if (!classroom) throw new NotFoundException('Turma não encontrada.');
+    if (!classroom.isContext) {
       throw new BadRequestException(
-        'Propostas e exemplos de redação existem apenas na disciplina Contexto.',
+        'Propostas e exemplos de redação existem apenas na turma Contexto.',
       );
     }
   }
 
   // ── Propostas ──────────────────────────────────────────
 
-  findPrompts(disciplineId: string, userId: string) {
-    return this.essayRepository.findPromptsByDiscipline(disciplineId, userId);
+  findPrompts(classroomId: string, userId: string) {
+    return this.essayRepository.findPromptsByDiscipline(classroomId, userId);
   }
 
-  async createPrompt(disciplineId: string, creatorId: string, dto: CreateEssayPromptDto) {
-    await this.assertContextDiscipline(disciplineId);
+  async createPrompt(classroomId: string, creatorId: string, dto: CreateEssayPromptDto) {
+    await this.assertContextClassroom(classroomId);
 
-    return this.essayRepository.createPrompt(disciplineId, creatorId, {
+    return this.essayRepository.createPrompt(classroomId, creatorId, {
       title: dto.title.trim(),
       description: dto.description?.trim() || null,
     });
@@ -79,24 +79,24 @@ export class EssayService {
 
   // ── Exemplos ───────────────────────────────────────────
 
-  findExamples(disciplineId: string) {
-    return this.essayRepository.findExamplesByDiscipline(disciplineId);
+  findExamples(classroomId: string) {
+    return this.essayRepository.findExamplesByDiscipline(classroomId);
   }
 
   async createExample(
-    disciplineId: string,
+    classroomId: string,
     creatorId: string,
     dto: CreateEssayExampleDto,
     file?: Express.Multer.File,
   ) {
-    await this.assertContextDiscipline(disciplineId);
+    await this.assertContextClassroom(classroomId);
 
     if (!file) throw new BadRequestException('Envie o arquivo da redação (PDF ou imagem).');
     assertValidDocument(file);
 
     const fileUrl = await this.r2Service.uploadDocument(file, 'essays/examples');
 
-    return this.essayRepository.createExample(disciplineId, creatorId, {
+    return this.essayRepository.createExample(classroomId, creatorId, {
       title: dto.title.trim(),
       description: dto.description?.trim() || null,
       fileUrl,

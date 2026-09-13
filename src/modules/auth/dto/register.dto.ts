@@ -54,16 +54,6 @@ export class DataProfileDto {
     @IsEnum(LibrasLevel)
     @IsOptional()
     proficienciaLibras?: LibrasLevel
-
-    @ApiPropertyOptional({ example: 'mãe', description: '[GUARDIAN]' })
-    @IsString()
-    @IsOptional()
-    parentesco?: string
-
-    @ApiPropertyOptional({ example: 'aluno@email.com', description: '[GUARDIAN]' })
-    @IsEmail({}, { message: 'Informe um e-mail válido.' })
-    @IsOptional()
-    studentEmail?: string
 }
 
 export class RegisterDto {

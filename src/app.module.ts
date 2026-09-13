@@ -4,7 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from '@modules/auth/auth.module';
 import { CategoryModule } from '@modules/category/category.module';
-import { DisciplineModule } from '@modules/disciplines/discipline.module';
+import { ClassroomModule } from '@modules/classrooms/classroom.module';
 import { EssayModule } from '@modules/essay/essay.module';
 import { FavoriteModule } from '@modules/favorite/favorite.module';
 import { GlossaryDisciplineModule } from '@modules/glossary-discipline/glossary-discipline.module';
@@ -22,7 +22,7 @@ import { SignModule } from '@modules/sign/sign.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     AuthModule,
     CategoryModule,
-    DisciplineModule,
+    ClassroomModule,
     EssayModule,
     FavoriteModule,
     GlossaryDisciplineModule,

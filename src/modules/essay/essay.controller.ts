@@ -19,7 +19,7 @@ import {
   UpdateEssayPromptDto,
 } from './dto/essay.dto';
 
-const ALL_ROLES = [Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER] as const;
+const ALL_ROLES = [Role.STUDENT, Role.EDUCATOR, Role.MANAGER] as const;
 
 @ApiTags('Essay')
 @ApiBearerAuth('access-token')
@@ -28,17 +28,17 @@ const ALL_ROLES = [Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER] as 
 export class EssayController {
   constructor(private readonly essayService: EssayService) {}
 
-  // GET /disciplines/:id/essay-prompts — propostas com a marcação do próprio usuário
+  // GET /classrooms/:id/essay-prompts — propostas com a marcação do próprio usuário
   @Roles(...ALL_ROLES)
-  @Get('disciplines/:id/essay-prompts')
+  @Get('classrooms/:id/essay-prompts')
   async findPrompts(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     const prompts = await this.essayService.findPrompts(id, req.user.userId);
     return { success: true, message: 'Propostas obtidas com sucesso', object: prompts };
   }
 
-  // POST /disciplines/:id/essay-prompts
+  // POST /classrooms/:id/essay-prompts
   @Roles(Role.EDUCATOR, Role.MANAGER)
-  @Post('disciplines/:id/essay-prompts')
+  @Post('classrooms/:id/essay-prompts')
   async createPrompt(
     @Param('id') id: string,
     @Body() dto: CreateEssayPromptDto,
@@ -80,19 +80,19 @@ export class EssayController {
     return { success: true, message: 'Proposta desmarcada' };
   }
 
-  // GET /disciplines/:id/essay-examples
+  // GET /classrooms/:id/essay-examples
   @Roles(...ALL_ROLES)
-  @Get('disciplines/:id/essay-examples')
+  @Get('classrooms/:id/essay-examples')
   async findExamples(@Param('id') id: string) {
     const examples = await this.essayService.findExamples(id);
     return { success: true, message: 'Exemplos obtidos com sucesso', object: examples };
   }
 
-  // POST /disciplines/:id/essay-examples — upload de PDF/imagem
+  // POST /classrooms/:id/essay-examples — upload de PDF/imagem
   @Roles(Role.EDUCATOR, Role.MANAGER)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', documentMulterOptions))
-  @Post('disciplines/:id/essay-examples')
+  @Post('classrooms/:id/essay-examples')
   async createExample(
     @Param('id') id: string,
     @Body() dto: CreateEssayExampleDto,

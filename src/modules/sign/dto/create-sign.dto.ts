@@ -17,8 +17,8 @@ export class CreateSignDto {
   handConfigId: string;
 
   @ApiPropertyOptional({
-    example: ['uuid-da-disciplina-1', 'uuid-da-disciplina-2'],
-    description: 'Disciplinas às quais o sinal pertence. Array ou string separada por vírgula.',
+    example: ['uuid-da-turma-1', 'uuid-da-turma-2'],
+    description: 'Turmas às quais o sinal pertence. Array ou string separada por vírgula.',
     isArray: true,
     type: String,
   })
@@ -32,7 +32,7 @@ export class CreateSignDto {
     }
     return [];
   })
-  disciplineIds?: string[];
+  classroomIds?: string[];
 
   @ApiPropertyOptional({ example: 'https://youtube.com/watch?v=xxx', description: 'URL alternativa (ex: YouTube)' })
   @IsOptional()

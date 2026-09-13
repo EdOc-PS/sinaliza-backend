@@ -28,7 +28,7 @@ export class CategoryController {
 
   // GET /category?search=
   @FindAllCategoriesDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get()
   async findAll(@Query('search') search?: string) {
     const categories = await this.categoryService.findAll(search);

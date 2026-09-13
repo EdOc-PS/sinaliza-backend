@@ -1,7 +1,7 @@
 /**
- * Backfill da disciplina Contexto.
+ * Backfill da turma Contexto.
  *
- * - Cria a disciplina Contexto se ela ainda não existir (isContext = true)
+ * - Cria a turma Contexto se ela ainda não existir (isContext = true)
  * - Matricula TODOS os alunos e educadores existentes que ainda não estão nela
  *
  * Uso: npm run context:backfill
@@ -24,11 +24,9 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// Mesma regra do DisciplineService: a role na turma deriva das roles do usuário
+// Mesma regra do ClassroomService: a role na turma deriva das roles do usuário
 function resolveClassRole(roles: Role[]): ClassRole {
-  if (roles.includes('EDUCATOR') || roles.includes('MANAGER')) return 'EDUCATOR';
-  if (roles.includes('GUARDIAN')) return 'FAMILY';
-  return 'STUDENT';
+  return roles.includes('EDUCATOR') ? 'EDUCATOR' : 'STUDENT';
 }
 
 // Código de convite no mesmo formato do resto do sistema (6 caracteres)
@@ -38,8 +36,8 @@ function generateClassCode(): string {
 }
 
 async function main() {
-  // 1. Garante que a disciplina Contexto existe
-  let context = await prisma.discipline.findFirst({ where: { isContext: true } });
+  // 1. Garante que a turma Contexto existe
+  let context = await prisma.classroom.findFirst({ where: { isContext: true } });
 
   if (!context) {
     // Precisa de um professor responsável — usa o primeiro gestor/educador encontrado
@@ -53,7 +51,7 @@ async function main() {
       process.exit(1);
     }
 
-    context = await prisma.discipline.create({
+    context = await prisma.classroom.create({
       data: {
         name: 'Contexto',
         description:
@@ -65,12 +63,12 @@ async function main() {
         institutionId: teacher.institutionId,
       },
     });
-    console.log(`✔ Disciplina Contexto criada (id: ${context.id})`);
+    console.log(`✔ Turma Contexto criada (id: ${context.id})`);
   } else {
-    console.log(`• Disciplina Contexto já existe (id: ${context.id})`);
+    console.log(`• Turma Contexto já existe (id: ${context.id})`);
   }
 
-  // 2. Matricula alunos e educadores que ainda não estão na disciplina
+  // 2. Matricula alunos e educadores que ainda não estão na turma
   const users = await prisma.user.findMany({
     where: {
       OR: [
@@ -84,11 +82,11 @@ async function main() {
 
   let enrolled = 0;
   for (const user of users) {
-    const result = await prisma.disciplineEnrollment.upsert({
-      where: { userId_disciplineId: { userId: user.id, disciplineId: context.id } },
+    const result = await prisma.classroomEnrollment.upsert({
+      where: { userId_classroomId: { userId: user.id, classroomId: context.id } },
       create: {
         userId: user.id,
-        disciplineId: context.id,
+        classroomId: context.id,
         roleInClass: resolveClassRole(user.roles),
       },
       update: {},

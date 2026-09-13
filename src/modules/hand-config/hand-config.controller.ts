@@ -44,7 +44,7 @@ export class HandConfigController {
 
   // GET /hand-config?search=
   @FindAllHandConfigsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get()
   async findAll(@Query('search') search?: string) {
     const handConfigs = await this.handConfigService.findAll(search);
@@ -53,7 +53,7 @@ export class HandConfigController {
 
   // GET /hand-config/search/:name
   @FindOneHandConfigDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get('search/:name')
   async findOne(@Param('name') name: string) {
     const handConfig = await this.handConfigService.findByName(name);

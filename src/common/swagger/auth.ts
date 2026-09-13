@@ -11,8 +11,7 @@ export function RegisterDocs() {
                 'Registro unificado. Envie `role` + os campos específicos do perfil em `dataProfile`.\n\n' +
                 '- **STUDENT** → `grauEscolar`, `necessidadesEspeciais`\n' +
                 '- **EDUCATOR (Professor)** → `educatorType: TEACHER`, `department`, `specialty`\n' +
-                '- **EDUCATOR (Intérprete)** → `educatorType: INTERPRETER`, `certificate`, `areaAtuacao`, `proficienciaLibras`\n' +
-                '- **GUARDIAN** → `parentesco`, `studentEmail`',
+                '- **EDUCATOR (Intérprete)** → `educatorType: INTERPRETER`, `certificate`, `areaAtuacao`, `proficienciaLibras`',
         }),
         ApiBody({
             type: RegisterDto,
@@ -59,19 +58,6 @@ export function RegisterDocs() {
                             certificate: 'ProLibras 2023',
                             areaAtuacao: 'Interpretação em sala de aula',
                             proficienciaLibras: 'FLUENTE',
-                        },
-                    },
-                },
-                guardian: {
-                    summary: 'Responsável (Familiar)',
-                    value: {
-                        name: 'Ana Pereira',
-                        email: 'ana@email.com',
-                        password: 'senha123',
-                        role: 'GUARDIAN',
-                        dataProfile: {
-                            parentesco: 'mãe',
-                            studentEmail: 'joao@email.com',
                         },
                     },
                 },

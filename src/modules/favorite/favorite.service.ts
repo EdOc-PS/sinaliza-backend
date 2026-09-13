@@ -23,7 +23,7 @@ export class FavoriteService {
     return this.favoriteRepository.findByUser(userId);
   }
 
-  async findByUserAndDiscipline(userId: string, disciplineId: string) {
-    return this.favoriteRepository.findByUserAndDiscipline(userId, disciplineId);
+  async findByUserAndClassroom(userId: string, classroomId: string) {
+    return this.favoriteRepository.findByUserAndClassroom(userId, classroomId);
   }
 }

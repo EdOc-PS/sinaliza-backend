@@ -12,10 +12,10 @@ export class EssayRepository {
 
   // ── Propostas ──────────────────────────────────────────
 
-  // Traz as propostas da disciplina já com a marcação de concluída pelo usuário
-  async findPromptsByDiscipline(disciplineId: string, userId: string) {
+  // Traz as propostas da turma já com a marcação de concluída pelo usuário
+  async findPromptsByDiscipline(classroomId: string, userId: string) {
     const prompts = await this.prisma.essayPrompt.findMany({
-      where: { disciplineId },
+      where: { classroomId },
       select: {
         id: true,
         title: true,
@@ -39,9 +39,9 @@ export class EssayRepository {
     return this.prisma.essayPrompt.findUnique({ where: { id } });
   }
 
-  createPrompt(disciplineId: string, creatorId: string, data: PromptData) {
+  createPrompt(classroomId: string, creatorId: string, data: PromptData) {
     return this.prisma.essayPrompt.create({
-      data: { ...data, disciplineId, creatorId },
+      data: { ...data, classroomId, creatorId },
     });
   }
 
@@ -69,9 +69,9 @@ export class EssayRepository {
 
   // ── Exemplos ───────────────────────────────────────────
 
-  findExamplesByDiscipline(disciplineId: string) {
+  findExamplesByDiscipline(classroomId: string) {
     return this.prisma.essayExample.findMany({
-      where: { disciplineId },
+      where: { classroomId },
       select: {
         id: true,
         title: true,
@@ -88,11 +88,11 @@ export class EssayRepository {
   }
 
   createExample(
-    disciplineId: string,
+    classroomId: string,
     creatorId: string,
     data: { title: string; description?: string | null; fileUrl: string },
   ) {
-    return this.prisma.essayExample.create({ data: { ...data, disciplineId, creatorId } });
+    return this.prisma.essayExample.create({ data: { ...data, classroomId, creatorId } });
   }
 
   deleteExample(id: string) {

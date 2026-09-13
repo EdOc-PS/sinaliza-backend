@@ -8,7 +8,7 @@ import { Role } from '@common/enums/enum';
 import { type AuthenticatedRequest } from '@common/interfaces/authenticated';
 
 import { SearchService } from './search.service';
-import { SearchSignsDocs, SearchDisciplineSignsDocs, RelatedSignsDocs } from '@common/swagger/search';
+import { SearchSignsDocs, SearchClassroomSignsDocs, RelatedSignsDocs } from '@common/swagger/search';
 
 @ApiTags('Search')
 @ApiBearerAuth('access-token')
@@ -19,7 +19,7 @@ export class SearchController {
 
   // GET /search/signs?search=&handConfigId=
   @SearchSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get('signs')
   async searchSigns(
     @Request() req: AuthenticatedRequest,
@@ -31,20 +31,20 @@ export class SearchController {
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 
-  // GET /search/disciplines/:disciplineId/signs?search=&handConfigId=
-  @SearchDisciplineSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
-  @Get('disciplines/:disciplineId/signs')
-  async searchDisciplineSigns(
+  // GET /search/classrooms/:classroomId/signs?search=&handConfigId=
+  @SearchClassroomSignsDocs()
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
+  @Get('classrooms/:classroomId/signs')
+  async searchClassroomSigns(
     @Request() req: AuthenticatedRequest,
-    @Param('disciplineId') disciplineId: string,
+    @Param('classroomId') classroomId: string,
     @Query('search') search?: string,
     @Query('handConfigId') handConfigId?: string,
     @Query('categoryId') categoryId?: string,
   ) {
-    const signs = await this.searchService.searchDisciplineSigns(
+    const signs = await this.searchService.searchClassroomSigns(
       req.user.userId,
-      disciplineId,
+      classroomId,
       { search, handConfigId, categoryId },
     );
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
@@ -52,7 +52,7 @@ export class SearchController {
 
   // GET /search/signs/:signId/related
   @RelatedSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get('signs/:signId/related')
   async findRelatedSigns(
     @Request() req: AuthenticatedRequest,

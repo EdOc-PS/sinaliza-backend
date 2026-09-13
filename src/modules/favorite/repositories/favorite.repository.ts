@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
 
-// Retorna apenas os campos slim do sinal (igual ao endpoint disciplines/:id/signs)
+// Retorna apenas os campos slim do sinal (igual ao endpoint classrooms/:id/signs)
 const slimSignSelect = {
   sign: {
     select: {
@@ -41,9 +41,9 @@ export class FavoriteRepository {
     return rows.map((r) => r.sign);
   }
 
-  async findByUserAndDiscipline(userId: string, disciplineId: string) {
+  async findByUserAndClassroom(userId: string, classroomId: string) {
     const rows = await this.prisma.favorite.findMany({
-      where: { userId, sign: { disciplines: { some: { id: disciplineId } } } },
+      where: { userId, sign: { classrooms: { some: { id: classroomId } } } },
       select: slimSignSelect,
       orderBy: { sign: { name: 'asc' } },
     });

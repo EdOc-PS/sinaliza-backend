@@ -7,7 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
 import { InstitutionsService } from '../institutions/institutions.service';
 import { AuthRepository } from './repositories/auth.repository';
-import { DisciplineService } from '../disciplines/discipline.service';
+import { ClassroomService } from '../classrooms/classroom.service';
 import { Role } from '@common/enums/enum';
 
 
@@ -18,7 +18,7 @@ export class AuthService {
         private readonly usersService: UsersService,
         private readonly authRepository: AuthRepository,
         private readonly institutionsService: InstitutionsService,
-        private readonly disciplineService: DisciplineService,
+        private readonly classroomService: ClassroomService,
         private jwtService: JwtService
     ) { }
 
@@ -61,8 +61,8 @@ export class AuthService {
 
         const account = await this.authRepository.createAccount(userData, profileData);
 
-        // Todo usuário entra automaticamente na disciplina Contexto
-        await this.disciplineService.enrollInContext(account.id, [dto.role]);
+        // Todo usuário entra automaticamente na turma Contexto
+        await this.classroomService.enrollInContext(account.id, [dto.role]);
 
         return account;
     }
@@ -95,15 +95,6 @@ export class AuthService {
                         certificate: profile.certificate,
                         areaAtuacao: profile.areaAtuacao,
                         proficienciaLibras: profile.proficienciaLibras,
-                    },
-                };
-
-            case Role.GUARDIAN:
-                return {
-                    type: Role.GUARDIAN as const,
-                    data: {
-                        parentesco: profile.parentesco ?? '',
-                        studentEmail: profile.studentEmail,
                     },
                 };
 

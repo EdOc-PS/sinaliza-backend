@@ -7,7 +7,7 @@ interface CreateSignData {
   categoryId: string;
   handConfigId: string;
   creatorId: string;
-  disciplineIds?: string[];
+  classroomIds?: string[];
   institutionId?: string | null;
   videoUrl?: string | null;
   anotherUrl?: string | null;
@@ -22,7 +22,7 @@ interface UpdateSignData {
   name?: string;
   categoryId?: string;
   handConfigId?: string;
-  disciplineIds?: string[];
+  classroomIds?: string[];
   videoUrl?: string | null;
   anotherUrl?: string | null;
   imgUrl?: string | null;
@@ -58,7 +58,7 @@ const signSelect = {
   updatedAt: true,
   category: { select: { id: true, name: true, value: true } },
   handConfig: { select: { id: true, name: true, imgUrl: true } },
-  disciplines: { select: { id: true, name: true } },
+  classrooms: { select: { id: true, name: true } },
   glossaryDisciplines: { select: { id: true, name: true } },
 };
 
@@ -67,13 +67,13 @@ export class SignRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateSignData) {
-    const { disciplineIds, ...rest } = data;
+    const { classroomIds, ...rest } = data;
     return this.prisma.sign.create({
       data: {
         ...rest,
         tags: data.tags ?? [],
-        ...(disciplineIds && disciplineIds.length > 0
-          ? { disciplines: { connect: disciplineIds.map((id) => ({ id })) } }
+        ...(classroomIds && classroomIds.length > 0
+          ? { classrooms: { connect: classroomIds.map((id) => ({ id })) } }
           : {}),
       },
       select: signSelect,
@@ -111,14 +111,14 @@ export class SignRepository {
   }
 
   async update(id: string, data: UpdateSignData) {
-    const { disciplineIds, ...rest } = data;
+    const { classroomIds, ...rest } = data;
     return this.prisma.sign.update({
       where: { id },
       data: {
         ...rest,
-        // Se disciplineIds veio, substitui o conjunto inteiro (set)
-        ...(disciplineIds !== undefined
-          ? { disciplines: { set: disciplineIds.map((did) => ({ id: did })) } }
+        // Se classroomIds veio, substitui o conjunto inteiro (set)
+        ...(classroomIds !== undefined
+          ? { classrooms: { set: classroomIds.map((did) => ({ id: did })) } }
           : {}),
       },
       select: signSelect,
@@ -165,7 +165,7 @@ export class SignRepository {
         imgUrl: true,
         createdAt: true,
         category: { select: { id: true, name: true, value: true } },
-        disciplines: { select: { id: true, name: true } },
+        classrooms: { select: { id: true, name: true } },
       },
       orderBy: { updatedAt: 'asc' },
     });

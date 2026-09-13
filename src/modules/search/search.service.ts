@@ -11,18 +11,18 @@ interface SearchFilters {
 export class SearchService {
   constructor(private readonly searchRepository: SearchRepository) {}
 
-  // Busca global — apenas sinais de disciplinas que o usuário leciona ou está matriculado
+  // Busca global — apenas sinais de turmas que o usuário leciona ou está matriculado
   async searchSigns(userId: string, filters: SearchFilters) {
     return this.searchRepository.searchAccessibleSigns(userId, filters);
   }
 
-  // Busca dentro de uma disciplina específica (valida acesso do usuário)
-  async searchDisciplineSigns(userId: string, disciplineId: string, filters: SearchFilters) {
-    const hasAccess = await this.searchRepository.hasDisciplineAccess(userId, disciplineId);
+  // Busca dentro de uma turma específica (valida acesso do usuário)
+  async searchClassroomSigns(userId: string, classroomId: string, filters: SearchFilters) {
+    const hasAccess = await this.searchRepository.hasDisciplineAccess(userId, classroomId);
     if (!hasAccess) {
-      throw new NotFoundException('Disciplina não encontrada ou sem acesso');
+      throw new NotFoundException('Turma não encontrada ou sem acesso');
     }
-    return this.searchRepository.searchSignsInDiscipline(disciplineId, filters);
+    return this.searchRepository.searchSignsInDiscipline(classroomId, filters);
   }
 
   // Sinais semelhantes ao informado, acessíveis ao usuário.

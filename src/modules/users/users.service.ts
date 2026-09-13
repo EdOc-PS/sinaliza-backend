@@ -6,7 +6,7 @@ import { CreateEducatorDto } from "./dto/create-educator.dto";
 import { Role, ApprovalStatus } from "@common/enums/enum";
 import { assertValidRoleCombination } from "@common/utils/roles";
 import { InstitutionsService } from "../institutions/institutions.service";
-import { DisciplineService } from "../disciplines/discipline.service";
+import { ClassroomService } from '../classrooms/classroom.service';
 
 @Injectable()
 export class UsersService {
@@ -14,7 +14,7 @@ export class UsersService {
   constructor(
     private usersRepository: UsersRepository,
     private readonly institutionsService: InstitutionsService,
-    private readonly disciplineService: DisciplineService,
+    private readonly classroomService: ClassroomService,
   ) {}
 
   findAll() {
@@ -27,14 +27,14 @@ export class UsersService {
 
   // Lista usuários por role — restrito às roles funcionais (uma por vez, nunca combinadas)
   findMembersByRole(role: Role, search?: string) {
-    const allowed: Role[] = [Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN];
+    const allowed: Role[] = [Role.STUDENT, Role.EDUCATOR];
     if (!allowed.includes(role)) {
-      throw new BadRequestException('Role inválida. Use STUDENT, EDUCATOR ou GUARDIAN.');
+      throw new BadRequestException('Role inválida. Use STUDENT ou EDUCATOR.');
     }
     return this.usersRepository.findByRole(role, search);
   }
 
-  // Aprova ou recusa uma conta pendente (perfil student/guardian)
+  // Aprova ou recusa uma conta pendente (perfil de aluno)
   async updateApproval(id: string, status: ApprovalStatus) {
     await this.findByIdOrFail(id);
     return this.usersRepository.updateApprovalStatus(id, status);
@@ -74,10 +74,14 @@ export class UsersService {
       },
     );
 
-    // Educador também entra automaticamente na disciplina Contexto
-    if (educator) await this.disciplineService.enrollInContext(educator.id, roles);
+    // Educador também entra automaticamente na turma Contexto
+    if (educator) await this.classroomService.enrollInContext(educator.id, roles);
 
     return educator;
+  }
+
+  markOnboardingSeen(userId: string) {
+    return this.usersRepository.markOnboardingSeen(userId);
   }
 
   findUser(id: string) {

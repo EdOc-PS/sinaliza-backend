@@ -62,7 +62,7 @@ export class SignController {
 
   // GET /sign/options
   @FindSignOptionsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get('options')
   async findOptions(@Request() req: AuthenticatedRequest) {
     const options = await this.signService.findOptions(req.user.userId);
@@ -71,7 +71,7 @@ export class SignController {
 
   // GET /sign?search=&categoryId=&handConfigId=&tag=
   @FindAllSignsDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get()
   async findAll(
     @Query('search') search?: string,
@@ -93,7 +93,7 @@ export class SignController {
 
   // GET /sign/:id
   @FindOneSignDocs()
-  @Roles(Role.STUDENT, Role.EDUCATOR, Role.GUARDIAN, Role.MANAGER)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const sign = await this.signService.findById(id);

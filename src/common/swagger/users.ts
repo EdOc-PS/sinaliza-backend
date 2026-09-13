@@ -21,13 +21,13 @@ export function FindMembersDocs() {
         ApiOperation({
             summary: 'Listar usuários por role',
             description:
-                'Apenas **MANAGER**. Lista usuários de **uma** role por vez — `STUDENT`, `EDUCATOR` ou `GUARDIAN` ' +
-                '(nunca combinadas na mesma lista). Inclui o status de aprovação (para student/guardian). Filtro opcional por nome ou email.',
+                'Apenas **MANAGER**. Lista usuários de **uma** role por vez — `STUDENT` ou `EDUCATOR` ' +
+                '(nunca combinadas na mesma lista). Inclui o status de aprovação (para student). Filtro opcional por nome ou email.',
         }),
-        ApiQuery({ name: 'role', required: true, enum: ['STUDENT', 'EDUCATOR', 'GUARDIAN'], description: 'Role a listar' }),
+        ApiQuery({ name: 'role', required: true, enum: ['STUDENT', 'EDUCATOR'], description: 'Role a listar' }),
         ApiQuery({ name: 'search', required: false, description: 'Busca parcial por nome ou email' }),
         ApiResponse({ status: 200, description: 'Lista de usuários da role informada' }),
-        ApiResponse({ status: 400, description: 'Role inválida (use STUDENT, EDUCATOR ou GUARDIAN)' }),
+        ApiResponse({ status: 400, description: 'Role inválida (use STUDENT ou EDUCATOR)' }),
         ApiResponse({ status: 403, description: 'Apenas MANAGER' }),
     );
 }
@@ -36,7 +36,7 @@ export function UpdateApprovalDocs() {
     return applyDecorators(
         ApiOperation({
             summary: 'Aprovar/recusar conta pendente',
-            description: 'Apenas **MANAGER**. Define o status de aprovação (`APPROVED`/`REJECTED`/`PENDING`) do perfil student/guardian.',
+            description: 'Apenas **MANAGER**. Define o status de aprovação (`APPROVED`/`REJECTED`/`PENDING`) do perfil de aluno.',
         }),
         ApiParam({ name: 'id', description: 'UUID do usuário' }),
         ApiResponse({ status: 200, description: 'Status atualizado' }),
@@ -91,7 +91,7 @@ export function UpdateRolesDocs() {
         ApiOperation({
             summary: 'Atualizar perfis (roles) do usuário',
             description:
-                'Apenas **MANAGER**. Define a lista de perfis do usuário. STUDENT é exclusivo (não combina com EDUCATOR/GUARDIAN); MANAGER combina com qualquer perfil.',
+                'Apenas **MANAGER**. Define a lista de perfis do usuário. STUDENT é exclusivo; MANAGER só combina com EDUCATOR.',
         }),
         ApiParam({ name: 'id', description: 'UUID do usuário' }),
         ApiBody({
@@ -100,10 +100,6 @@ export function UpdateRolesDocs() {
                 adminEducator: {
                     summary: 'Tornar Admin + Educador',
                     value: { roles: ['MANAGER', 'EDUCATOR'] },
-                },
-                educatorGuardian: {
-                    summary: 'Educador + Familiar',
-                    value: { roles: ['EDUCATOR', 'GUARDIAN'] },
                 },
             },
         }),

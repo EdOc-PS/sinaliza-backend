@@ -8,7 +8,7 @@ export class UpdateRolesDto {
     isArray: true,
     example: ['MANAGER', 'EDUCATOR'],
     description:
-      'Lista de perfis do usuário. STUDENT não pode ser combinado com EDUCATOR/GUARDIAN; MANAGER combina com qualquer perfil.',
+      'Lista de perfis do usuário. STUDENT é exclusivo; MANAGER só combina com EDUCATOR.',
   })
   @IsArray()
   @ArrayNotEmpty()

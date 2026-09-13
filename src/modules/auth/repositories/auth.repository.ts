@@ -25,7 +25,6 @@ type EducatorData = {
 type ProfileData =
     | { type: Role.STUDENT;  data: { grauEscolar: string; necessidadesEspeciais: string } }
     | { type: Role.EDUCATOR; data: EducatorData }
-    | { type: Role.GUARDIAN; data: { parentesco: string; studentEmail?: string } }
     | null;
 
 @Injectable()
@@ -46,13 +45,12 @@ export class AuthRepository {
                 switch (profileData.type) {
                     case Role.STUDENT:  await tx.student.create({ data: profileInsert });  break;
                     case Role.EDUCATOR: await tx.educator.create({ data: profileInsert }); break;
-                    case Role.GUARDIAN: await tx.guardian.create({ data: profileInsert }); break;
                 }
             }
 
             return tx.user.findUnique({
                 where: { id: user.id },
-                include: { student: true, educator: true, guardian: true },
+                include: { student: true, educator: true },
             });
         });
     }

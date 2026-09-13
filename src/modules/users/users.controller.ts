@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRolesDto } from './dto/update-roles.dto';
 import { CreateEducatorDto } from './dto/create-educator.dto';
@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
+import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, FindMembersDocs, UpdateApprovalDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
 
@@ -73,6 +74,17 @@ export class UsersController {
             success: true,
             message: 'Usuários encontrados com sucesso!',
             object: users
+        };
+    }
+
+    // PATCH /users/me/onboarding — marca o tour inicial como visto
+    @Patch("me/onboarding")
+    async markOnboardingSeen(@Request() req: AuthenticatedRequest) {
+        const user = await this.usersService.markOnboardingSeen(req.user.userId);
+        return {
+            success: true,
+            message: 'Onboarding concluído',
+            object: user,
         };
     }
 

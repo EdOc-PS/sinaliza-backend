@@ -1,7 +1,7 @@
+// Combinações válidas: {STUDENT}, {EDUCATOR}, {EDUCATOR, MANAGER}
 export enum Role {
   STUDENT = 'STUDENT',
   EDUCATOR = 'EDUCATOR',
-  GUARDIAN = 'GUARDIAN',
   MANAGER = 'MANAGER',
 }
 
@@ -23,12 +23,6 @@ export enum LibrasLevel {
   FLUENTE = 'FLUENTE',
 }
 
-export enum SchoolLevel {
-  ENSINO_MEDIO_1 = 'ENSINO_MEDIO_1',
-  ENSINO_MEDIO_2 = 'ENSINO_MEDIO_2',
-  ENSINO_MEDIO_3 = 'ENSINO_MEDIO_3',
-}
-
 export enum GlobalStatus {
   PRIVATE = 'PRIVATE',
   PENDING = 'PENDING',
@@ -36,10 +30,8 @@ export enum GlobalStatus {
   REJECTED = 'REJECTED',
 }
 
+// Papel dentro de uma turma. O papel global vem de User.roles.
 export enum ClassRole {
-  STUDENT = 'STUDENT',
-  FAMILY = 'FAMILY',
   EDUCATOR = 'EDUCATOR',
-  INTERPRETER = 'INTERPRETER',
-  ASSISTANT = 'ASSISTANT',
+  STUDENT = 'STUDENT',
 }

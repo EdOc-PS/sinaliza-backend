@@ -33,16 +33,15 @@ export class UsersRepository {
         createdAt: true,
         educator: { select: { educatorType: true } },
         student: { select: { status: true } },
-        guardian: { select: { status: true } },
       },
       orderBy: { name: 'asc' },
     });
 
-    // Achata o educatorType e o status de aprovação (student/guardian) no objeto
-    return users.map(({ educator, student, guardian, ...rest }) => ({
+    // Achata o educatorType e o status de aprovação do aluno no objeto
+    return users.map(({ educator, student, ...rest }) => ({
       ...rest,
       educatorType: educator?.educatorType ?? null,
-      approvalStatus: student?.status ?? guardian?.status ?? null,
+      approvalStatus: student?.status ?? null,
     }));
   }
 
@@ -51,12 +50,9 @@ export class UsersRepository {
     return this.findByRole(Role.EDUCATOR, search);
   }
 
-  // Atualiza o status de aprovação do perfil (student e/ou guardian) do usuário
+  // Atualiza o status de aprovação do perfil de aluno
   async updateApprovalStatus(userId: string, status: ApprovalStatus) {
-    await this.prisma.$transaction([
-      this.prisma.student.updateMany({ where: { userId }, data: { status } }),
-      this.prisma.guardian.updateMany({ where: { userId }, data: { status } }),
-    ]);
+    await this.prisma.student.updateMany({ where: { userId }, data: { status } });
     return this.findOne(userId);
   }
 
@@ -102,7 +98,6 @@ export class UsersRepository {
       include: {
         educator: true,
         student: true,
-        guardian: true,
         institution: { select: { name: true } },
       },
     });
@@ -110,11 +105,11 @@ export class UsersRepository {
     if (!user) return null;
 
     // Achata o educatorType (TEACHER | INTERPRETER) e os dados específicos do perfil no objeto do usuário.
-    const { educator, student, guardian, ...rest } = user;
+    const { educator, student, ...rest } = user;
     return {
       ...rest,
       educatorType: educator?.educatorType ?? null,
-      approvalStatus: student?.status ?? guardian?.status ?? null,
+      approvalStatus: student?.status ?? null,
       dataProfile: educator
         ? {
             department: educator.department,
@@ -128,13 +123,17 @@ export class UsersRepository {
               grauEscolar: student.grauEscolar,
               necessidadesEspeciais: student.necessidadesEspeciais,
             }
-          : guardian
-            ? {
-                parentesco: guardian.parentesco,
-                studentEmail: guardian.studentEmail,
-              }
-            : null,
+          : null,
     };
+  }
+
+  // Marca que o usuário concluiu (ou pulou) o tour inicial
+  async markOnboardingSeen(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { onboardingSeenAt: new Date() },
+    });
+    return this.findOne(userId);
   }
 
   async findByEmail(email: string) {
@@ -186,15 +185,6 @@ export class UsersRepository {
             certificate: dataProfile.certificate,
             areaAtuacao: dataProfile.areaAtuacao,
             proficienciaLibras: dataProfile.proficienciaLibras,
-          },
-        });
-      }
-      if (user.roles.includes('GUARDIAN')) {
-        await this.prisma.guardian.update({
-          where: { userId: id },
-          data: {
-            parentesco: dataProfile.parentesco,
-            studentEmail: dataProfile.studentEmail,
           },
         });
       }

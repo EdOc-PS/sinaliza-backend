@@ -8,7 +8,7 @@ interface SearchFilters {
   categoryId?: string;
 }
 
-// Card resumido (mesmo shape consumido pelo SignCard no front) + disciplinas de origem
+// Card resumido (mesmo shape consumido pelo SignCard no front) + turmas de origem
 const signCardSelect = {
   id: true,
   name: true,
@@ -18,15 +18,15 @@ const signCardSelect = {
   createdAt: true,
   category: { select: { id: true, name: true, value: true } },
   handConfig: { select: { id: true, name: true, imgUrl: true } },
-  disciplines: { select: { id: true, name: true } },
+  classrooms: { select: { id: true, name: true } },
 };
 
 @Injectable()
 export class SearchRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Disciplinas que o usuário leciona OU está matriculado
-  private accessibleDisciplineFilter(userId: string): Prisma.DisciplineWhereInput {
+  // Turmas que o usuário leciona OU está matriculado
+  private accessibleDisciplineFilter(userId: string): Prisma.ClassroomWhereInput {
     return {
       OR: [
         { teacherId: userId },
@@ -49,11 +49,11 @@ export class SearchRepository {
     };
   }
 
-  // Busca global: sinais de todas as disciplinas que o usuário tem acesso
+  // Busca global: sinais de todas as turmas que o usuário tem acesso
   async searchAccessibleSigns(userId: string, filters: SearchFilters) {
     return this.prisma.sign.findMany({
       where: {
-        disciplines: { some: this.accessibleDisciplineFilter(userId) },
+        classrooms: { some: this.accessibleDisciplineFilter(userId) },
         ...this.buildSignFilter(filters),
       },
       select: signCardSelect,
@@ -61,11 +61,11 @@ export class SearchRepository {
     });
   }
 
-  // Busca dentro de uma disciplina específica
-  async searchSignsInDiscipline(disciplineId: string, filters: SearchFilters) {
+  // Busca dentro de uma turma específica
+  async searchSignsInDiscipline(classroomId: string, filters: SearchFilters) {
     return this.prisma.sign.findMany({
       where: {
-        disciplines: { some: { id: disciplineId } },
+        classrooms: { some: { id: classroomId } },
         ...this.buildSignFilter(filters),
       },
       select: signCardSelect,
@@ -82,7 +82,7 @@ export class SearchRepository {
   }
 
   // Candidatos a "semelhante": mesma config de mão OU mesma categoria,
-  // acessíveis ao usuário (disciplina que participa) e excluindo o próprio sinal
+  // acessíveis ao usuário (turma que participa) e excluindo o próprio sinal
   async findRelatedCandidates(
     userId: string,
     signId: string,
@@ -92,7 +92,7 @@ export class SearchRepository {
     return this.prisma.sign.findMany({
       where: {
         id: { not: signId },
-        disciplines: { some: this.accessibleDisciplineFilter(userId) },
+        classrooms: { some: this.accessibleDisciplineFilter(userId) },
         OR: [{ handConfigId }, { categoryId }],
       },
       select: signCardSelect,
@@ -100,15 +100,15 @@ export class SearchRepository {
     });
   }
 
-  // Verifica se o usuário tem acesso à disciplina (leciona ou matriculado)
-  async hasDisciplineAccess(userId: string, disciplineId: string): Promise<boolean> {
-    const discipline = await this.prisma.discipline.findFirst({
+  // Verifica se o usuário tem acesso à turma (leciona ou matriculado)
+  async hasDisciplineAccess(userId: string, classroomId: string): Promise<boolean> {
+    const classroom = await this.prisma.classroom.findFirst({
       where: {
-        id: disciplineId,
+        id: classroomId,
         ...this.accessibleDisciplineFilter(userId),
       },
       select: { id: true },
     });
-    return !!discipline;
+    return !!classroom;
   }
 }

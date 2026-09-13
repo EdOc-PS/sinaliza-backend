@@ -8,7 +8,7 @@ import { PrismaService } from '@/database/prisma.service';
 
 import { UsersModule } from '../users/users.module';
 import { InstitutionsModule } from '../institutions/institutions.module';
-import { DisciplineModule } from '../disciplines/discipline.module';
+import { ClassroomModule } from '../classrooms/classroom.module';
 import { AuthRepository } from './repositories/auth.repository';
 import { JwtStrategy } from './jwt.strategy';
 
@@ -34,7 +34,7 @@ import { JwtStrategy } from './jwt.strategy';
     }),
     UsersModule,
     InstitutionsModule,
-    DisciplineModule,
+    ClassroomModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService, AuthRepository, JwtStrategy],

@@ -5,10 +5,10 @@ import { UsersRepository } from './repositories/users.repository';
 import { PrismaService } from '@/database/prisma.service';
 import { JwtStrategy } from '../auth/jwt.strategy';
 import { InstitutionsModule } from '../institutions/institutions.module';
-import { DisciplineModule } from '../disciplines/discipline.module';
+import { ClassroomModule } from '../classrooms/classroom.module';
 
 @Module({
-  imports: [InstitutionsModule, DisciplineModule],
+  imports: [InstitutionsModule, ClassroomModule],
   providers: [
     UsersService,
     UsersRepository,

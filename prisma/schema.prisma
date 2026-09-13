@@ -34,15 +34,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Preenchido quando o usuário conclui (ou pula) o tour inicial da plataforma
+  onboardingSeenAt DateTime?
+
   institution Institution? @relation(fields: [institutionId], references: [id])
 
   educator Educator?
   student  Student?
-  guardian Guardian?
 
-  // Relações com Disciplinas
-  disciplines           Discipline[]           @relation("TeacherDisciplines")
-  disciplineEnrollments DisciplineEnrollment[]
+  // Relações com Turmas
+  classrooms           Classroom[]           @relation("TeacherClassrooms")
+  classroomEnrollments ClassroomEnrollment[]
 
   favorites Favorite[]
   history   History[]
@@ -50,10 +52,10 @@ model User {
   essayCompletions EssayPromptCompletion[]
 }
 
+// Combinações válidas: {STUDENT}, {EDUCATOR}, {EDUCATOR, MANAGER}
 enum Role {
   STUDENT
   EDUCATOR
-  GUARDIAN
   MANAGER
 }
 
@@ -70,7 +72,7 @@ enum EducatorType {
   INTERPRETER
 }
 
-// Status de aprovação de contas criadas publicamente (STUDENT/GUARDIAN)
+// Status de aprovação de contas criadas publicamente (STUDENT)
 enum ApprovalStatus {
   PENDING
   APPROVED
@@ -106,56 +108,36 @@ model Student {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// GUARDIAN (Responsável)
-model Guardian {
-  id           String         @id @default(uuid())
-  userId       String         @unique
-  parentesco   String
-  studentEmail String?
-  status       ApprovalStatus @default(PENDING)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// DISCIPLINE (Turma)
-enum SchoolLevel {
-  ENSINO_MEDIO_1
-  ENSINO_MEDIO_2
-  ENSINO_MEDIO_3
-}
-
+// CLASSROOM (Turma)
+// Papel do usuário dentro de uma turma. O papel global vem de User.roles;
+// aqui só interessa quem ensina e quem aprende naquela turma.
 enum ClassRole {
-  STUDENT
-  FAMILY
   EDUCATOR
-  INTERPRETER
-  ASSISTANT
+  STUDENT
 }
 
-model Discipline {
-  id              String       @id @default(uuid())
+model Classroom {
+  id              String  @id @default(uuid())
   name            String
   description     String?
   colorBackground String? // Hexadecimal: ex "#BACA57"
-  classCode       String       @unique // Gerado pelo service (ex: "ABC1D2")
-  schoolYear      Int? // ex: 2026
-  schoolLevel     SchoolLevel?
-  isActive        Boolean      @default(true)
-  // Disciplina "Contexto": todos os alunos e educadores são matriculados
+  classCode       String  @unique // Gerado pelo service (ex: "ABC1D2")
+  isActive        Boolean @default(true)
+  // Turma "Contexto": todos os alunos e educadores são matriculados
   // automaticamente e ela ganha as abas de propostas e exemplos de redação.
-  isContext       Boolean      @default(false)
+  isContext       Boolean @default(false)
   teacherId       String
   institutionId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teacher     User                   @relation("TeacherDisciplines", fields: [teacherId], references: [id])
-  institution Institution?           @relation(fields: [institutionId], references: [id])
-  enrollments DisciplineEnrollment[]
-  signs       Sign[]                 @relation("DisciplineSigns")
+  teacher     User                  @relation("TeacherClassrooms", fields: [teacherId], references: [id])
+  institution Institution?          @relation(fields: [institutionId], references: [id])
+  enrollments ClassroomEnrollment[]
+  signs       Sign[]                @relation("ClassroomSigns")
 
-  // Conteúdo da disciplina Contexto (integração com o projeto de redação)
+  // Conteúdo da turma Contexto (integração com o projeto de redação)
   essayPrompts  EssayPrompt[]
   essayExamples EssayExample[]
 
@@ -165,22 +147,22 @@ model Discipline {
   @@index([isContext])
 }
 
-// ESSAY PROMPT (Proposta de redação — lista de tarefas da disciplina Contexto)
+// ESSAY PROMPT (Proposta de redação — lista de tarefas da turma Contexto)
 model EssayPrompt {
-  id           String    @id @default(uuid())
-  title        String
-  description  String?
-  order        Int     @default(0)
-  disciplineId String
-  creatorId    String
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  order       Int     @default(0)
+  classroomId String
+  creatorId   String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  discipline  Discipline              @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  classroom   Classroom               @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   completions EssayPromptCompletion[]
 
-  @@index([disciplineId])
+  @@index([classroomId])
 }
 
 // Conclusão individual: cada aluno marca as próprias propostas
@@ -200,36 +182,36 @@ model EssayPromptCompletion {
 
 // ESSAY EXAMPLE (Exemplo de redação — arquivo PDF/imagem no R2)
 model EssayExample {
-  id           String  @id @default(uuid())
-  title        String
-  description  String?
-  fileUrl      String
-  disciplineId String
-  creatorId    String
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  fileUrl     String
+  classroomId String
+  creatorId   String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
-  @@index([disciplineId])
+  @@index([classroomId])
 }
 
-// DISCIPLINE ENROLLMENT (Matrícula)
-model DisciplineEnrollment {
-  id           String    @id @default(uuid())
-  userId       String
-  disciplineId String
-  roleInClass  ClassRole
+// CLASSROOM ENROLLMENT (Matrícula)
+model ClassroomEnrollment {
+  id          String    @id @default(uuid())
+  userId      String
+  classroomId String
+  roleInClass ClassRole
 
   createdAt DateTime @default(now())
 
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
-  // Um usuário só pode estar matriculado uma vez por disciplina
-  @@unique([userId, disciplineId])
-  @@index([disciplineId])
+  // Um usuário só pode estar matriculado uma vez por turma
+  @@unique([userId, classroomId])
+  @@index([classroomId])
   @@index([userId])
 }
 
@@ -261,9 +243,9 @@ model Category {
   signs Sign[]
 }
 
-// GLOSSARY DISCIPLINE (Disciplina fixa do glossário global)
-// Criada pelo gestor. Diferente de Discipline (turma): não tem código de convite nem matrícula,
-// serve apenas para agrupar os sinais públicos em "disciplinas" no glossário global.
+// GLOSSARY DISCIPLINE (Disciplina do glossário global)
+// Criada pelo gestor. Diferente de Classroom (turma): não tem código de convite nem matrícula,
+// serve apenas para agrupar os sinais públicos por área de conhecimento no glossário global.
 model GlossaryDiscipline {
   id          String  @id @default(uuid())
   name        String
@@ -299,16 +281,16 @@ model Sign {
   tags                String[] @default([])
   creatorId           String
   institutionId       String?
-  // O sinal continua nas disciplinas; quando PUBLIC, também fica visível a todos
+  // O sinal continua nas turmas; quando PUBLIC, também fica visível a todos
   globalStatus        GlobalStatus @default(PRIVATE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category    Category     @relation(fields: [categoryId], references: [id])
-  handConfig  HandConfig   @relation(fields: [handConfigId], references: [id])
-  // Um sinal pode pertencer a várias disciplinas (many-to-many)
-  disciplines Discipline[] @relation("DisciplineSigns")
+  category   Category    @relation(fields: [categoryId], references: [id])
+  handConfig HandConfig  @relation(fields: [handConfigId], references: [id])
+  // Um sinal pode pertencer a várias turmas (many-to-many)
+  classrooms Classroom[] @relation("ClassroomSigns")
   // Disciplinas do glossário global às quais o sinal foi associado ao ser promovido
   glossaryDisciplines GlossaryDiscipline[] @relation("GlossaryDisciplineSigns")
   institution Institution? @relation(fields: [institutionId], references: [id])
@@ -374,7 +356,7 @@ model Institution {
   updatedAt DateTime @updatedAt
 
   users       User[]
-  disciplines Discipline[]
+  classrooms  Classroom[]
   signs       Sign[]
   handConfigs HandConfig[]
 }
@@ -382,7 +364,7 @@ model Institution {
 // PARAM (Tabela genérica de parâmetros de selects)
 model Param {
   id       String  @id @default(uuid())
-  type     String // ex: "SCHOOL_LEVEL", "SCHOOL_YEAR", "PARENTESCO"
+  type     String // ex: "GRAMMATICAL_CLASS"
   label    String // ex: "1º Ano do Ensino Médio"
   value    String // ex: "ENSINO_MEDIO_1"
   order    Int     @default(0)

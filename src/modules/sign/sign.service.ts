@@ -4,7 +4,7 @@ import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
 import { R2Service } from '@modules/r2/r2.service';
 import { PrismaService } from '@/database/prisma.service';
-import { DisciplineService } from '@modules/disciplines/discipline.service';
+import { ClassroomService } from '@modules/classrooms/classroom.service';
 import { assertValidImage, assertValidVideo } from '@common/security/file-validation';
 import { GlobalStatus, Role } from '@common/enums/enum';
 
@@ -19,7 +19,7 @@ export class SignService {
     private readonly signRepository: SignRepository,
     private readonly r2Service: R2Service,
     private readonly prisma: PrismaService,
-    private readonly disciplineService: DisciplineService,
+    private readonly classroomService: ClassroomService,
   ) {}
 
   async create(dto: CreateSignDto, creatorId: string, files: SignFiles) {
@@ -44,7 +44,7 @@ export class SignService {
       throw new BadRequestException('Categoria não encontrada.');
     }
 
-    await this.assertDisciplinesExist(dto.disciplineIds);
+    await this.assertClassroomsExist(dto.classroomIds);
 
     const nameExists = await this.signRepository.existsByName(dto.name);
     if (nameExists) {
@@ -71,7 +71,7 @@ export class SignService {
       categoryId: dto.categoryId,
       handConfigId: dto.handConfigId,
       creatorId,
-      disciplineIds: dto.disciplineIds ?? [],
+      classroomIds: dto.classroomIds ?? [],
       videoUrl,
       anotherUrl: dto.anotherUrl ?? null,
       imgUrl,
@@ -82,14 +82,14 @@ export class SignService {
     });
   }
 
-  // Garante que todas as disciplinas informadas existem
-  private async assertDisciplinesExist(disciplineIds?: string[]) {
-    if (!disciplineIds || disciplineIds.length === 0) return;
-    const count = await this.prisma.discipline.count({
-      where: { id: { in: disciplineIds } },
+  // Garante que todas as turmas informadas existem
+  private async assertClassroomsExist(classroomIds?: string[]) {
+    if (!classroomIds || classroomIds.length === 0) return;
+    const count = await this.prisma.classroom.count({
+      where: { id: { in: classroomIds } },
     });
-    if (count !== disciplineIds.length) {
-      throw new BadRequestException('Uma ou mais disciplinas não foram encontradas.');
+    if (count !== classroomIds.length) {
+      throw new BadRequestException('Uma ou mais turmas não foram encontradas.');
     }
   }
 
@@ -133,7 +133,7 @@ export class SignService {
       }
     }
 
-    await this.assertDisciplinesExist(dto.disciplineIds);
+    await this.assertClassroomsExist(dto.classroomIds);
 
     // Valida o conteúdo real dos arquivos antes de substituir
     if (files.video) assertValidVideo(files.video);
@@ -158,7 +158,7 @@ export class SignService {
       name: dto.name,
       categoryId: dto.categoryId,
       handConfigId: dto.handConfigId,
-      disciplineIds: dto.disciplineIds,
+      classroomIds: dto.classroomIds,
       videoUrl,
       anotherUrl: dto.anotherUrl,
       imgUrl,
@@ -170,17 +170,17 @@ export class SignService {
   }
 
   async findOptions(userId: string) {
-    const [categories, disciplines] = await Promise.all([
+    const [categories, classrooms] = await Promise.all([
       this.prisma.category.findMany({
         select: { id: true, name: true },
         orderBy: { name: 'asc' },
       }),
-      this.disciplineService.findMine(userId),
+      this.classroomService.findMine(userId),
     ]);
 
     return {
       categories: categories.map((c) => ({ value: c.id, label: c.name })),
-      disciplines: disciplines.map((d: any) => ({ value: d.id, label: d.name })),
+      classrooms: classrooms.map((d: any) => ({ value: d.id, label: d.name })),
     };
   }
 
@@ -196,7 +196,7 @@ export class SignService {
   }
 
   // Educador promove o sinal — entra na fila de aprovação do gestor.
-  // Pode associar o sinal a nenhuma, uma ou várias disciplinas do glossário.
+  // Pode associar o sinal a nenhuma, uma ou várias turmas do glossário.
   async promote(id: string, userId: string, userRoles: Role[], glossaryDisciplineIds?: string[]) {
     const sign = await this.signRepository.findById(id);
     if (!sign) throw new NotFoundException('Sinal não encontrado.');
@@ -218,12 +218,12 @@ export class SignService {
     return this.signRepository.promote(id, glossaryDisciplineIds);
   }
 
-  // Garante que todas as disciplinas do glossário informadas existem
+  // Garante que todas as turmas do glossário informadas existem
   private async assertGlossaryDisciplinesExist(ids?: string[]) {
     if (!ids || ids.length === 0) return;
     const count = await this.prisma.glossaryDiscipline.count({ where: { id: { in: ids } } });
     if (count !== ids.length) {
-      throw new BadRequestException('Uma ou mais disciplinas do glossário não foram encontradas.');
+      throw new BadRequestException('Uma ou mais turmas do glossário não foram encontradas.');
     }
   }
 
@@ -247,7 +247,7 @@ export class SignService {
     return this.signRepository.findPendingPromotions();
   }
 
-  // Filtros do glossário público — categorias, configurações de mão e disciplinas.
+  // Filtros do glossário público — categorias, configurações de mão e turmas.
   // Endpoint aberto: o glossário público não tem token para chamar /category e /hand-config.
   async findGlobalFilters() {
     const [categories, handConfigs, glossaryDisciplines] = await Promise.all([
