@@ -119,6 +119,9 @@ export class ClassroomService {
     if (classroom.teacher.id !== teacherId) {
       throw new ForbiddenException('Apenas o professor da turma pode editá-la');
     }
+    if (classroom.isContext) {
+      throw new ForbiddenException('A turma Contexto não pode ser editada');
+    }
 
     return this.classroomRepository.update(id, dto);
   }
@@ -128,6 +131,9 @@ export class ClassroomService {
 
     if (classroom.teacher.id !== teacherId) {
       throw new ForbiddenException('Apenas o professor da turma pode excluí-la');
+    }
+    if (classroom.isContext) {
+      throw new ForbiddenException('A turma Contexto não pode ser excluída');
     }
 
     return this.classroomRepository.delete(id);
