@@ -116,7 +116,12 @@ export class UsersService {
   async update(id: string, updatedUser: UpdateUserDto) {
     await this.findByIdOrFail(id);
 
-    return this.usersRepository.update(id, updatedUser);
+    // Senha nunca vai para o banco em texto puro
+    const data = updatedUser.password
+      ? { ...updatedUser, password: await bcrypt.hash(updatedUser.password, 10) }
+      : updatedUser;
+
+    return this.usersRepository.update(id, data);
   }
 
   async updateRoles(id: string, roles: Role[]) {
