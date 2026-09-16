@@ -1,11 +1,6 @@
 name: Keep API awake
 
-# O Render (plano free) suspende a instância depois de ~15 min sem receber
-# requisições, e a primeira requisição depois disso demora dezenas de
-# segundos para responder. Este workflow bate em /health a cada 10 minutos
-# para a instância nunca chegar a dormir — evita o cold start em vez de só
-# tolerá-lo (o frontend também tem retentativa silenciosa como segunda linha
-# de defesa, para quando isto aqui falhar ou a instância reiniciar por deploy).
+# Evita o cold start do Render (plano free) batendo em /health a cada 10 min.
 on:
   schedule:
     - cron: "*/10 * * * *"
@@ -16,4 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping /health
-        run: curl -sf --max-time 55 "${{ vars.API_URL || 'https://sinaliza-api-2ey0.onrender.com' }}/health"
+        run: |
+          curl -sf --max-time 100 --retry 2 --retry-delay 10 --retry-all-errors \
+            "${{ vars.API_URL || 'https://sinaliza-api-2ey0.onrender.com' }}/health"
