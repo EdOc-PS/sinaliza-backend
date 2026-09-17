@@ -30,6 +30,7 @@ export class UsersRepository {
         email: true,
         avatar: true,
         roles: true,
+        status: true,
         createdAt: true,
         educator: { select: { educatorType: true } },
         student: { select: { status: true } },

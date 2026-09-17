@@ -12,6 +12,7 @@ interface SearchFilters {
 const signCardSelect = {
   id: true,
   name: true,
+  slug: true,
   categoryId: true,
   videoUrl: true,
   anotherUrl: true,

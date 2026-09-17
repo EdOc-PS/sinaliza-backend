@@ -96,7 +96,8 @@ export class SignController {
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const sign = await this.signService.findById(id);
+    // Aceita o slug (link novo) ou o id (link antigo/interno) no mesmo parâmetro
+    const sign = await this.signService.findByIdOrSlug(id);
     return { success: true, message: 'Sinal obtido com sucesso', object: sign };
   }
 

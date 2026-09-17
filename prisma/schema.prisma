@@ -270,6 +270,9 @@ enum GlobalStatus {
 model Sign {
   id                  String  @id @default(uuid())
   name                String // Palavra em português
+  // Gerado a partir do nome (kebab-case) na criação; fixo depois — trocar o
+  // slug quebraria links já compartilhados. Usado na URL em vez do id.
+  slug                String  @unique
   categoryId          String
   handConfigId        String
   videoUrl            String? // URL do vídeo upado no R2

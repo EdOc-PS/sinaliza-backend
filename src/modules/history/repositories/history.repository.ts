@@ -7,6 +7,7 @@ const slimSignSelect = {
     select: {
       id: true,
       name: true,
+      slug: true,
       videoUrl: true,
       anotherUrl: true,
       createdAt: true,

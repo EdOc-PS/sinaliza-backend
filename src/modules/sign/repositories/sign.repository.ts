@@ -4,6 +4,7 @@ import { GlobalStatus } from '@common/enums/enum';
 
 interface CreateSignData {
   name: string;
+  slug: string;
   categoryId: string;
   handConfigId: string;
   creatorId: string;
@@ -43,6 +44,7 @@ interface FindAllFilters {
 const signSelect = {
   id: true,
   name: true,
+  slug: true,
   handConfigId: true,
   categoryId: true,
   videoUrl: true,
@@ -103,10 +105,22 @@ export class SignRepository {
     });
   }
 
+  async findBySlug(slug: string) {
+    return this.prisma.sign.findUnique({
+      where: { slug },
+      select: signSelect,
+    });
+  }
+
   async existsByName(name: string) {
     const sign = await this.prisma.sign.findFirst({
       where: { name: { equals: name, mode: 'insensitive' } },
     });
+    return !!sign;
+  }
+
+  async existsBySlug(slug: string) {
+    const sign = await this.prisma.sign.findUnique({ where: { slug }, select: { id: true } });
     return !!sign;
   }
 
@@ -160,6 +174,7 @@ export class SignRepository {
       select: {
         id: true,
         name: true,
+        slug: true,
         videoUrl: true,
         anotherUrl: true,
         imgUrl: true,
@@ -187,6 +202,7 @@ export class SignRepository {
       select: {
         id: true,
         name: true,
+        slug: true,
         videoUrl: true,
         anotherUrl: true,
         imgUrl: true,

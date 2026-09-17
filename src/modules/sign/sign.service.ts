@@ -13,6 +13,22 @@ interface SignFiles {
   image?: Express.Multer.File;
 }
 
+// v4/v5 padrão do Prisma (gen_random_uuid()) — usado para diferenciar id de slug na mesma rota
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Kebab-case sem acento, cortado num tamanho razoável para não virar outro "id gigante"
+function toSignSlug(name: string): string {
+  return name
+    .trim()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/g, '');
+}
+
 @Injectable()
 export class SignService {
   constructor(
@@ -66,8 +82,11 @@ export class SignService {
       imgUrl = await this.r2Service.uploadImage(files.image, 'signs/images');
     }
 
+    const slug = await this.generateUniqueSlug(dto.name);
+
     return this.signRepository.create({
       name: dto.name,
+      slug,
       categoryId: dto.categoryId,
       handConfigId: dto.handConfigId,
       creatorId,
@@ -80,6 +99,19 @@ export class SignService {
       movementDescription: dto.movementDescription ?? null,
       tags: dto.tags ?? [],
     });
+  }
+
+  // Nome de sinal já é único (checado acima), então o slug base quase nunca
+  // colide — só acontece se a normalização (acentos/caixa) igualar dois nomes
+  // diferentes. Nesse caso rara, acrescenta um sufixo numérico.
+  private async generateUniqueSlug(name: string): Promise<string> {
+    const base = toSignSlug(name) || 'sinal';
+    let slug = base;
+    let suffix = 2;
+    while (await this.signRepository.existsBySlug(slug)) {
+      slug = `${base}-${suffix++}`;
+    }
+    return slug;
   }
 
   // Garante que todas as turmas informadas existem
@@ -105,6 +137,16 @@ export class SignService {
 
   async findById(id: string) {
     const sign = await this.signRepository.findById(id);
+    if (!sign) throw new NotFoundException('Sinal não encontrado.');
+    return sign;
+  }
+
+  // Usado só na rota pública de detalhe (GET /sign/:id): aceita tanto o slug
+  // (link novo, curto) quanto o id/UUID (link antigo, ainda funciona).
+  async findByIdOrSlug(idOrSlug: string) {
+    const sign = UUID_RE.test(idOrSlug)
+      ? await this.signRepository.findById(idOrSlug)
+      : await this.signRepository.findBySlug(idOrSlug);
     if (!sign) throw new NotFoundException('Sinal não encontrado.');
     return sign;
   }

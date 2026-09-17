@@ -137,4 +137,20 @@ export class UsersService {
     return this.usersRepository.delete(id);
   }
 
+  // Ativar/desativar conta — o desativado não passa mais pelo login (ver AuthService.login)
+  async updateStatus(id: string, status: boolean) {
+    await this.findByIdOrFail(id);
+
+    return this.usersRepository.update(id, { status });
+  }
+
+  // PATCH /users/:id é usado tanto por autoedição de perfil quanto pelo gestor
+  // editando um educador — sem essa checagem, qualquer usuário logado poderia
+  // alterar (ou excluir) a conta de qualquer outro só sabendo o id.
+  assertSelfOrManager(requesterId: string, requesterRoles: Role[], targetId: string) {
+    if (requesterId === targetId) return;
+    if (requesterRoles.includes(Role.MANAGER)) return;
+    throw new ForbiddenException('Você só pode editar a própria conta.');
+  }
+
 }

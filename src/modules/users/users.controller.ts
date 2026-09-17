@@ -3,6 +3,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRolesDto } from './dto/update-roles.dto';
 import { CreateEducatorDto } from './dto/create-educator.dto';
 import { UpdateApprovalDto } from './dto/update-approval.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -21,6 +22,8 @@ export class UsersController {
 
     // GET /users
     @FindDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
     @Get()
     async findAll() {
         const users = await this.usersService.findAll();
@@ -104,6 +107,8 @@ export class UsersController {
 
     // GET /users/:id
     @FindByIdDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
     @Get(":id")
     async findUser(@Param("id") id: string) {
 
@@ -133,6 +138,8 @@ export class UsersController {
 
     // DELETE /users/:id
     @DeleteDocs()
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
     @Delete(":id")
     async deleteUser(@Param("id") id: string) {
         await this.usersService.delete(id);
@@ -142,15 +149,33 @@ export class UsersController {
         };
     }
 
-    // PATCH /users/:id
+    // PATCH /users/:id — a própria pessoa editando o perfil, ou o gestor editando um educador
     @UpdateDocs()
     @Patch(":id")
-    async updateUser(@Param("id") id: string, @Body() updatedUser: UpdateUserDto) {
+    async updateUser(
+        @Param("id") id: string,
+        @Body() updatedUser: UpdateUserDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        this.usersService.assertSelfOrManager(req.user.userId, req.user.roles, id);
         const user = await this.usersService.update(id, updatedUser);
         return {
             success: true,
             message: 'Usuário atualizado com sucesso!',
             object: user
+        };
+    }
+
+    // PATCH /users/:id/status — ativar/desativar conta (apenas gestor)
+    @UseGuards(RolesGuard)
+    @Roles(Role.MANAGER)
+    @Patch(":id/status")
+    async updateStatus(@Param("id") id: string, @Body() dto: UpdateStatusDto) {
+        const user = await this.usersService.updateStatus(id, dto.status);
+        return {
+            success: true,
+            message: dto.status ? 'Conta reativada com sucesso!' : 'Conta desativada com sucesso!',
+            object: user,
         };
     }
 
