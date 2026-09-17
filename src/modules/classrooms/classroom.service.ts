@@ -22,13 +22,17 @@ const flattenEducatorType = (user: any) => {
   return { ...rest, educatorType: educator?.educatorType ?? null };
 };
 
+// +1 porque quem criou a turma (teacherId) não tem uma linha própria em
+// ClassroomEnrollment — sem isso o dono nunca entrava na contagem de membros.
+const countMembers = (count: any) => (count?.enrollments || 0) + 1;
+
 // Detalhe completo (/classrooms/:id, create, update) — mantém objeto teacher
 const transformClassroom = (classroom: any) => {
   const { _count, teacher, ...rest } = classroom;
   return {
     ...rest,
     teacher: flattenEducatorType(teacher),
-    userCount: _count?.enrollments || 0,
+    userCount: countMembers(_count),
   };
 };
 
@@ -38,7 +42,7 @@ const transformClassroomCard = (classroom: any) => {
   return {
     ...rest,
     teacherName: teacher?.name ?? null,
-    userCount: _count?.enrollments || 0,
+    userCount: countMembers(_count),
   };
 };
 
