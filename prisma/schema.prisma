@@ -328,6 +328,9 @@ model History {
   signId String
 
   accessedAt DateTime @default(now()) @updatedAt
+  // Incrementado a cada novo acesso (register) — usado no dashboard do gestor
+  // para ranquear sinais mais/menos usados.
+  accessCount Int @default(1)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   sign Sign @relation(fields: [signId], references: [id], onDelete: Cascade)

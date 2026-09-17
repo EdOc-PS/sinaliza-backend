@@ -82,6 +82,24 @@ export class SignRepository {
     });
   }
 
+  // Lista slim de todos os sinais (dashboard de uso do gestor) — sem
+  // filtros/paginação, então mantém só os campos necessários pro ranking/UI
+  async findAllSlim() {
+    return this.prisma.sign.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        videoUrl: true,
+        anotherUrl: true,
+        imgUrl: true,
+        globalStatus: true,
+        category: { select: { id: true, name: true, value: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findAll(filters: FindAllFilters = {}) {
     const { search, categoryId, handConfigId, glossaryDisciplineId, tag } = filters;
 

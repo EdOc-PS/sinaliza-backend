@@ -9,6 +9,7 @@ import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
 import { JoinClassroomDto } from './dto/join-classroom.dto';
 import { ClassRole, Role } from '@common/enums/enum';
+import { HistoryService } from '@modules/history/history.service';
 
 // Deriva o papel na turma a partir das roles do usuário.
 // Educador (inclusive gestor, que é sempre educador) ensina; o resto aprende.
@@ -48,7 +49,10 @@ const transformClassroomCard = (classroom: any) => {
 
 @Injectable()
 export class ClassroomService {
-  constructor(private readonly classroomRepository: ClassroomRepository) {}
+  constructor(
+    private readonly classroomRepository: ClassroomRepository,
+    private readonly historyService: HistoryService,
+  ) {}
 
   async create(teacherId: string, dto: CreateClassroomDto) {
     const classCode = this.generateClassCode();
@@ -215,6 +219,30 @@ export class ClassroomService {
     if (!classroom) throw new NotFoundException('Turma não encontrada');
 
     return this.classroomRepository.findSignsByClassroom(classroomId);
+  }
+
+  // Sinais mais/menos usados dentro da turma — visualização compacta pro
+  // educador (dono da turma) ou gestor, sem precisar abrir o dashboard geral.
+  async findUsageStats(classroomId: string, requesterId: string, requesterRoles: Role[], limit = 5) {
+    const classroom = await this.findById(classroomId);
+
+    const isManager = requesterRoles.includes(Role.MANAGER);
+    if (classroom.teacher.id !== requesterId && !isManager) {
+      throw new ForbiddenException('Apenas o professor da turma pode ver estas estatísticas');
+    }
+
+    const signs = await this.classroomRepository.findSignsByClassroom(classroomId);
+    const usageBySign = await this.historyService.sumAccessBySign(signs.map((s) => s.id));
+
+    const withUsage = signs.map((sign) => ({
+      ...sign,
+      usageCount: usageBySign.get(sign.id) ?? 0,
+    }));
+
+    const mostUsed = [...withUsage].sort((a, b) => b.usageCount - a.usageCount).slice(0, limit);
+    const leastUsed = [...withUsage].sort((a, b) => a.usageCount - b.usageCount).slice(0, limit);
+
+    return { mostUsed, leastUsed };
   }
 
   private generateClassCode(): string {

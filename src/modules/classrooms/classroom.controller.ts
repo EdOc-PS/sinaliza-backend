@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -102,6 +103,23 @@ export class ClassroomController {
   ) {
     const favorites = await this.favoriteService.findByUserAndClassroom(req.user.userId, id);
     return { success: true, message: 'Favoritos da turma obtidos com sucesso', object: favorites };
+  }
+
+  // GET /classrooms/:id/usage-stats?limit= — sinais mais/menos usados da turma
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Get(':id/usage-stats')
+  async getUsageStats(
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest,
+    @Query('limit') limit?: string,
+  ) {
+    const stats = await this.classroomService.findUsageStats(
+      id,
+      req.user.userId,
+      req.user.roles,
+      limit ? Number(limit) : undefined,
+    );
+    return { success: true, message: 'Estatísticas de uso obtidas com sucesso', object: stats };
   }
 
   // GET /classrooms/:id/members

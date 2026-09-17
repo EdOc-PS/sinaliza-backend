@@ -91,6 +91,14 @@ export class SignController {
     return { success: true, message: 'Promoções pendentes obtidas com sucesso', object: signs };
   }
 
+  // GET /sign/usage-stats?limit= — sinais mais/menos usados (dashboard do gestor)
+  @Roles(Role.MANAGER)
+  @Get('usage-stats')
+  async getUsageStats(@Query('limit') limit?: string) {
+    const stats = await this.signService.getUsageStats(limit ? Number(limit) : undefined);
+    return { success: true, message: 'Estatísticas de uso obtidas com sucesso', object: stats };
+  }
+
   // GET /sign/:id
   @FindOneSignDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)

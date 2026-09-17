@@ -5,6 +5,7 @@ import { UpdateSignDto } from './dto/update-sign.dto';
 import { R2Service } from '@modules/r2/r2.service';
 import { PrismaService } from '@/database/prisma.service';
 import { ClassroomService } from '@modules/classrooms/classroom.service';
+import { HistoryService } from '@modules/history/history.service';
 import { assertValidImage, assertValidVideo } from '@common/security/file-validation';
 import { GlobalStatus, Role } from '@common/enums/enum';
 
@@ -36,6 +37,7 @@ export class SignService {
     private readonly r2Service: R2Service,
     private readonly prisma: PrismaService,
     private readonly classroomService: ClassroomService,
+    private readonly historyService: HistoryService,
   ) {}
 
   async create(dto: CreateSignDto, creatorId: string, files: SignFiles) {
@@ -287,6 +289,25 @@ export class SignService {
   // Promoções pendentes (área de trabalho do gestor)
   async findPendingPromotions() {
     return this.signRepository.findPendingPromotions();
+  }
+
+  // Sinais mais/menos usados (dashboard do gestor) — ranqueados pela soma de
+  // acessos registrados no histórico. Sinais nunca acessados entram como 0.
+  async getUsageStats(limit = 10) {
+    const [signs, usageBySign] = await Promise.all([
+      this.signRepository.findAllSlim(),
+      this.historyService.sumAccessBySign(),
+    ]);
+
+    const withUsage = signs.map((sign) => ({
+      ...sign,
+      usageCount: usageBySign.get(sign.id) ?? 0,
+    }));
+
+    const mostUsed = [...withUsage].sort((a, b) => b.usageCount - a.usageCount).slice(0, limit);
+    const leastUsed = [...withUsage].sort((a, b) => a.usageCount - b.usageCount).slice(0, limit);
+
+    return { mostUsed, leastUsed };
   }
 
   // Filtros do glossário público — categorias, configurações de mão e turmas.

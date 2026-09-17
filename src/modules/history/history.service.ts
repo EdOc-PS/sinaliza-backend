@@ -20,4 +20,8 @@ export class HistoryService {
   async clear(userId: string) {
     return this.historyRepository.clear(userId);
   }
+
+  async sumAccessBySign(signIds?: string[]) {
+    return this.historyRepository.sumAccessBySign(signIds);
+  }
 }

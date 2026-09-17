@@ -20,14 +20,26 @@ const slimSignSelect = {
 export class HistoryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Registra (ou atualiza o horário de) o acesso ao sinal
+  // Registra o acesso ao sinal — cria a linha (accessCount 1) ou incrementa
+  // o contador de quem já acessou antes
   async register(userId: string, signId: string) {
     return this.prisma.history.upsert({
       where: { userId_signId: { userId, signId } },
       create: { userId, signId },
-      update: { accessedAt: new Date() },
-      select: { userId: true, signId: true, accessedAt: true },
+      update: { accessedAt: new Date(), accessCount: { increment: 1 } },
+      select: { userId: true, signId: true, accessedAt: true, accessCount: true },
     });
+  }
+
+  // Soma de acessos por sinal — usado no ranking de mais/menos usados do dashboard.
+  // `signIds` restringe a soma a um conjunto (ex: sinais de uma turma).
+  async sumAccessBySign(signIds?: string[]) {
+    const rows = await this.prisma.history.groupBy({
+      by: ['signId'],
+      _sum: { accessCount: true },
+      ...(signIds ? { where: { signId: { in: signIds } } } : {}),
+    });
+    return new Map(rows.map((r) => [r.signId, r._sum.accessCount ?? 0]));
   }
 
   async findByUser(userId: string, limit: number) {
