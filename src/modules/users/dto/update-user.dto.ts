@@ -1,8 +1,12 @@
 import { ApiPropertyOptional } from "@nestjs/swagger"
 import { Transform, Type } from "class-transformer"
-import { IsBoolean, IsDate, IsEmail, IsObject, IsOptional, IsPhoneNumber, IsString, IsUrl, MinLength, ValidateNested } from "class-validator"
+import { IsBoolean, IsDate, IsEmail, IsIn, IsObject, IsOptional, IsPhoneNumber, IsString, MinLength, ValidateNested } from "class-validator"
 
 import { DataProfileDto } from "@/modules/auth/dto/register.dto"
+
+// Espelha AVATAR_PRESET_KEYS do front (src/lib/constants/avatars.ts) — o banco
+// guarda só a chave do preset, nunca uma URL/imagem, pra não gastar espaço no Neon.
+export const AVATAR_PRESET_KEYS = ['profile', 'interpreter', 'student', 'educator', 'hello', 'sun'] as const
 
 export class UpdateUserDto {
     @ApiPropertyOptional({
@@ -57,11 +61,12 @@ export class UpdateUserDto {
     phone?: string
 
     @ApiPropertyOptional({
-        example: 'https://example.com/avatar.jpg',
-        description: 'URL do avatar do usuário',
+        example: 'sun',
+        description: 'Chave do avatar pré-definido (imagem já existe no front, não uma URL)',
+        enum: AVATAR_PRESET_KEYS,
     })
     @IsOptional()
-    @IsUrl()
+    @IsIn(AVATAR_PRESET_KEYS, { message: 'Avatar inválido.' })
     avatar?: string
 
     @ApiPropertyOptional({

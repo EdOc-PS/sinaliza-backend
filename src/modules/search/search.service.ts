@@ -5,6 +5,7 @@ interface SearchFilters {
   search?: string;
   handConfigId?: string;
   categoryId?: string;
+  glossaryDisciplineId?: string;
 }
 
 @Injectable()

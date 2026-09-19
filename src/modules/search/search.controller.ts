@@ -26,8 +26,9 @@ export class SearchController {
     @Query('search') search?: string,
     @Query('handConfigId') handConfigId?: string,
     @Query('categoryId') categoryId?: string,
+    @Query('glossaryDisciplineId') glossaryDisciplineId?: string,
   ) {
-    const signs = await this.searchService.searchSigns(req.user.userId, { search, handConfigId, categoryId });
+    const signs = await this.searchService.searchSigns(req.user.userId, { search, handConfigId, categoryId, glossaryDisciplineId });
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 

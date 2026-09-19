@@ -6,6 +6,7 @@ interface SearchFilters {
   search?: string;
   handConfigId?: string;
   categoryId?: string;
+  glossaryDisciplineId?: string;
 }
 
 // Card resumido (mesmo shape consumido pelo SignCard no front) + turmas de origem
@@ -37,7 +38,7 @@ export class SearchRepository {
   }
 
   private buildSignFilter(filters: SearchFilters): Prisma.SignWhereInput {
-    const { search, handConfigId, categoryId } = filters;
+    const { search, handConfigId, categoryId, glossaryDisciplineId } = filters;
     return {
       ...(search && {
         OR: [
@@ -47,6 +48,7 @@ export class SearchRepository {
       }),
       ...(handConfigId && { handConfigId }),
       ...(categoryId && { categoryId }),
+      ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: glossaryDisciplineId } } }),
     };
   }
 
