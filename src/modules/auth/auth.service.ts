@@ -9,6 +9,7 @@ import { InstitutionsService } from '../institutions/institutions.service';
 import { AuthRepository } from './repositories/auth.repository';
 import { ClassroomService } from '../classrooms/classroom.service';
 import { Role } from '@common/enums/enum';
+import { getRandomAvatarKey } from '../users/dto/update-user.dto';
 
 
 @Injectable()
@@ -55,6 +56,7 @@ export class AuthService {
             bio: dto.bio,
             roles: [dto.role],
             institutionId,
+            avatar: getRandomAvatarKey(),
         };
 
         const profileData = this.buildProfileData(dto);

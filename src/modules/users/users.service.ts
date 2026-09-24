@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { UsersRepository } from "./repositories/users.repository";
-import { UpdateUserDto } from "./dto/update-user.dto";
+import { UpdateUserDto, getRandomAvatarKey } from "./dto/update-user.dto";
 import { CreateEducatorDto } from "./dto/create-educator.dto";
 import { Role, ApprovalStatus } from "@common/enums/enum";
 import { assertValidRoleCombination } from "@common/utils/roles";
@@ -62,6 +62,7 @@ export class UsersService {
         phone: dto.phone,
         bio: dto.bio,
         institutionId,
+        avatar: getRandomAvatarKey(),
       },
       roles,
       {

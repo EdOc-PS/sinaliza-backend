@@ -13,7 +13,7 @@ const classroomCardSelect = {
   isContext: true,
   teacherId: true,
   teacher: {
-    select: { name: true },
+    select: { name: true, avatar: true },
   },
   _count: {
     select: { enrollments: true },

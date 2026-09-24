@@ -6,7 +6,17 @@ import { DataProfileDto } from "@/modules/auth/dto/register.dto"
 
 // Espelha AVATAR_PRESET_KEYS do front (src/lib/constants/avatars.ts) — o banco
 // guarda só a chave do preset, nunca uma URL/imagem, pra não gastar espaço no Neon.
-export const AVATAR_PRESET_KEYS = ['profile', 'interpreter', 'student', 'educator', 'hello', 'sun'] as const
+export const AVATAR_PRESET_KEYS = [
+    'alien', 'astronaut', 'girl-heart', 'girl', 'kitten', 'knight', 'ninja',
+    'paleontologist', 'pirate', 'police', 'psychologist', 'queen', 'robot',
+    'student', 'superhero', 'teacher-blond', 'teacher', 'vampire', 'veterinary',
+    'witch', 'wizard',
+] as const
+
+// Sorteia um avatar pra conta nova — sem seleção manual no cadastro ainda
+export function getRandomAvatarKey(): string {
+    return AVATAR_PRESET_KEYS[Math.floor(Math.random() * AVATAR_PRESET_KEYS.length)]
+}
 
 export class UpdateUserDto {
     @ApiPropertyOptional({

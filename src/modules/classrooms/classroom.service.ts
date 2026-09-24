@@ -43,6 +43,7 @@ const transformClassroomCard = (classroom: any) => {
   return {
     ...rest,
     teacherName: teacher?.name ?? null,
+    teacherAvatar: teacher?.avatar ?? null,
     userCount: countMembers(_count),
   };
 };

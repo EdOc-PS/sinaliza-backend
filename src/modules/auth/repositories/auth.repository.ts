@@ -11,6 +11,7 @@ type UserData = {
     bio?: string;
     roles: Role[];
     institutionId?: string | null;
+    avatar?: string;
 };
 
 type EducatorData = {

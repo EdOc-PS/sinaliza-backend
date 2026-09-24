@@ -66,6 +66,7 @@ export class UsersRepository {
       phone?: string;
       bio?: string;
       institutionId?: string | null;
+      avatar?: string;
     },
     roles: Role[],
     educatorData: {
