@@ -19,7 +19,7 @@ export class CategoryController {
 
   // POST /category
   @CreateCategoryDocs()
-  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Roles(Role.MANAGER)
   @Post()
   async create(@Body() dto: CreateCategoryDto) {
     const category = await this.categoryService.create(dto);
@@ -37,7 +37,7 @@ export class CategoryController {
 
   // DELETE /category/:id
   @DeleteCategoryDocs()
-  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Roles(Role.MANAGER)
   @Delete(':id')
   async delete(@Param('id') id: string) {
     await this.categoryService.delete(id);
