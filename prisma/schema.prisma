@@ -37,6 +37,13 @@ model User {
   // Preenchido quando o usuário conclui (ou pula) o tour inicial da plataforma
   onboardingSeenAt DateTime?
 
+  // Proteção contra força bruta: após 6 senhas erradas seguidas a conta
+  // fica bloqueada até `lockedUntil`. Zera no login certo ou ao redefinir a senha.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  passwordResetTokens PasswordResetToken[]
+
   institution Institution? @relation(fields: [institutionId], references: [id])
 
   educator Educator?
@@ -378,4 +385,19 @@ model Param {
 
   @@unique([type, value])
   @@index([type])
+}
+
+// Recuperação de senha — guarda só o hash (SHA-256) do token enviado por email,
+// nunca o token em si. Expira em 1h e só pode ser usado uma vez.
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

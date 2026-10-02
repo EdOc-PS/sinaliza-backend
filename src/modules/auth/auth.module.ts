@@ -11,6 +11,8 @@ import { InstitutionsModule } from '../institutions/institutions.module';
 import { ClassroomModule } from '../classrooms/classroom.module';
 import { AuthRepository } from './repositories/auth.repository';
 import { JwtStrategy } from './jwt.strategy';
+import { PasswordResetService } from './password-reset.service';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -35,8 +37,9 @@ import { JwtStrategy } from './jwt.strategy';
     UsersModule,
     InstitutionsModule,
     ClassroomModule,
+    EmailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, AuthRepository, JwtStrategy],
+  providers: [AuthService, PrismaService, AuthRepository, JwtStrategy, PasswordResetService],
 })
 export class AuthModule { }

@@ -55,4 +55,31 @@ export class AuthRepository {
             });
         });
     }
+
+    // Soma uma tentativa errada; ao atingir o limite, bloqueia e zera o contador
+    async registerFailedLogin(userId: string, maxAttempts: number, lockMinutes: number) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data: { failedLoginAttempts: { increment: 1 } },
+            select: { failedLoginAttempts: true },
+        });
+
+        if (user.failedLoginAttempts < maxAttempts) {
+            return { locked: false, remaining: maxAttempts - user.failedLoginAttempts };
+        }
+
+        const lockedUntil = new Date(Date.now() + lockMinutes * 60_000);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { failedLoginAttempts: 0, lockedUntil },
+        });
+        return { locked: true, remaining: 0 };
+    }
+
+    async clearLoginLock(userId: string) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { failedLoginAttempts: 0, lockedUntil: null },
+        });
+    }
 }
