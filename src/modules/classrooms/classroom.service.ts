@@ -241,9 +241,8 @@ export class ClassroomService {
     }));
 
     const mostUsed = [...withUsage].sort((a, b) => b.usageCount - a.usageCount).slice(0, limit);
-    const leastUsed = [...withUsage].sort((a, b) => a.usageCount - b.usageCount).slice(0, limit);
 
-    return { mostUsed, leastUsed };
+    return { mostUsed };
   }
 
   private generateClassCode(): string {

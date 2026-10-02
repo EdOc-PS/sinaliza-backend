@@ -105,7 +105,7 @@ export class ClassroomController {
     return { success: true, message: 'Favoritos da turma obtidos com sucesso', object: favorites };
   }
 
-  // GET /classrooms/:id/usage-stats?limit= — sinais mais/menos usados da turma
+  // GET /classrooms/:id/usage-stats?limit= — sinais mais usados da turma
   @Roles(Role.EDUCATOR, Role.MANAGER)
   @Get(':id/usage-stats')
   async getUsageStats(

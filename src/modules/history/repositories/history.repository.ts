@@ -23,12 +23,17 @@ export class HistoryRepository {
   // Registra o acesso ao sinal — cria a linha (accessCount 1) ou incrementa
   // o contador de quem já acessou antes
   async register(userId: string, signId: string) {
-    return this.prisma.history.upsert({
-      where: { userId_signId: { userId, signId } },
-      create: { userId, signId },
-      update: { accessedAt: new Date(), accessCount: { increment: 1 } },
-      select: { userId: true, signId: true, accessedAt: true, accessCount: true },
-    });
+    const [history] = await this.prisma.$transaction([
+      this.prisma.history.upsert({
+        where: { userId_signId: { userId, signId } },
+        create: { userId, signId },
+        update: { accessedAt: new Date(), accessCount: { increment: 1 } },
+        select: { userId: true, signId: true, accessedAt: true, accessCount: true },
+      }),
+      // Evento individual — base do gráfico de acessos por dia do dashboard
+      this.prisma.signAccess.create({ data: { userId, signId }, select: { id: true } }),
+    ]);
+    return history;
   }
 
   // Soma de acessos por sinal — usado no ranking de mais/menos usados do dashboard.

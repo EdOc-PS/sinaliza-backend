@@ -55,6 +55,7 @@ model User {
 
   favorites Favorite[]
   history   History[]
+  signAccesses SignAccess[]
 
   essayCompletions EssayPromptCompletion[]
 }
@@ -306,6 +307,7 @@ model Sign {
   institution Institution? @relation(fields: [institutionId], references: [id])
   favorites   Favorite[]
   history     History[]
+  accesses    SignAccess[]
 
   @@index([handConfigId])
   @@index([creatorId])
@@ -400,4 +402,19 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Um registro por acesso a um sinal (só insere) — alimenta o gráfico de
+// acessos por dia do dashboard. History guarda só o último acesso por usuário.
+model SignAccess {
+  id        String   @id @default(uuid())
+  signId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  sign Sign @relation(fields: [signId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([signId])
 }
