@@ -284,6 +284,10 @@ export class SignService {
     );
   }
 
+  async findByCreator(creatorId: string) {
+    return this.signRepository.findByCreator(creatorId);
+  }
+
   // Promoções pendentes (área de trabalho do gestor)
   async findPendingPromotions() {
     return this.signRepository.findPendingPromotions();

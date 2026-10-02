@@ -84,6 +84,14 @@ export class SignController {
   }
 
   // GET /sign/promotions — sinais aguardando aprovação (educador visualiza, só gestor aprova/recusa)
+  // GET /sign/mine — sinais criados pelo educador logado
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Get('mine')
+  async findMine(@Request() req: AuthenticatedRequest) {
+    const signs = await this.signService.findByCreator(req.user.userId);
+    return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
+  }
+
   @Roles(Role.EDUCATOR, Role.MANAGER)
   @Get('promotions')
   async findPendingPromotions() {

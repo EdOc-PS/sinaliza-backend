@@ -168,6 +168,26 @@ export class SignRepository {
   }
 
   // Sinais aguardando aprovação do gestor (promoções pendentes)
+  // Sinais criados por um educador (listagem "Meus sinais" no ambiente de trabalho)
+  async findByCreator(creatorId: string) {
+    return this.prisma.sign.findMany({
+      where: { creatorId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        videoUrl: true,
+        anotherUrl: true,
+        imgUrl: true,
+        globalStatus: true,
+        createdAt: true,
+        category: { select: { id: true, name: true, value: true } },
+        classrooms: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findPendingPromotions() {
     return this.prisma.sign.findMany({
       where: { globalStatus: GlobalStatus.PENDING },
