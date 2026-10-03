@@ -178,6 +178,7 @@ export class ClassroomRepository {
         slug: true,
         videoUrl: true,
         anotherUrl: true,
+        globalStatus: true,
         createdAt: true,
         category: { select: { id: true, name: true, value: true } },
       },
