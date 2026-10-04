@@ -12,6 +12,8 @@ const classroomCardSelect = {
   isActive: true,
   isContext: true,
   teacherId: true,
+  teacherLastSeenAt: true,
+  createdAt: true,
   teacher: {
     select: { name: true, avatar: true },
   },
@@ -93,12 +95,40 @@ export class ClassroomRepository {
     });
   }
 
-  // Zera a bolinha de sinais novos — sem efeito se o usuário não é matriculado
+  // Zera a bolinha de sinais novos — vale para o dono (campo na turma)
+  // e para quem é matriculado (campo na matrícula)
   async markSeen(userId: string, classroomId: string) {
-    return this.prisma.classroomEnrollment.updateMany({
-      where: { userId, classroomId },
-      data: { lastSeenAt: new Date() },
+    const now = new Date();
+    return this.prisma.$transaction([
+      this.prisma.classroom.updateMany({
+        where: { id: classroomId, teacherId: userId },
+        data: { teacherLastSeenAt: now },
+      }),
+      this.prisma.classroomEnrollment.updateMany({
+        where: { userId, classroomId },
+        data: { lastSeenAt: now },
+      }),
+    ]);
+  }
+
+  // Educador matriculado há mais tempo — herda a turma quando o dono sai
+  async findOldestEducator(classroomId: string) {
+    return this.prisma.classroomEnrollment.findFirst({
+      where: { classroomId, roleInClass: ClassRole.EDUCATOR },
+      orderBy: { createdAt: 'asc' },
     });
+  }
+
+  // Passa a turma para outro educador: ele vira o dono e a matrícula dele
+  // deixa de existir (o dono não tem linha em ClassroomEnrollment)
+  async transferOwnership(classroomId: string, enrollment: { id: string; userId: string; lastSeenAt: Date | null }) {
+    return this.prisma.$transaction([
+      this.prisma.classroom.update({
+        where: { id: classroomId },
+        data: { teacherId: enrollment.userId, teacherLastSeenAt: enrollment.lastSeenAt },
+      }),
+      this.prisma.classroomEnrollment.delete({ where: { id: enrollment.id } }),
+    ]);
   }
 
   async findById(id: string) {

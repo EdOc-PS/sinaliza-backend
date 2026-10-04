@@ -100,11 +100,18 @@ export class ClassroomService {
       }
     }
 
-    // Bolinha de "sinais novos": criados desde a última visita à turma
+    // Bolinha de "sinais novos": criados desde a última visita à turma.
+    // Dono usa o campo da turma; matriculado usa o da matrícula.
+    const lastSeen = [
+      ...created.map((c) => ({ id: c.id, since: c.teacherLastSeenAt ?? c.createdAt })),
+      ...enrollments
+        .filter((e) => e.classroom.teacherId !== userId)
+        .map((e) => ({ id: e.classroom.id, since: e.lastSeenAt ?? e.createdAt })),
+    ];
     const newCounts = await Promise.all(
-      enrollments.map(async (e) => [
-        e.classroom.id,
-        await this.classroomRepository.countNewSigns(e.classroom.id, e.lastSeenAt ?? e.createdAt, userId),
+      lastSeen.map(async ({ id, since }) => [
+        id,
+        await this.classroomRepository.countNewSigns(id, since, userId),
       ] as const),
     );
     for (const [id, count] of newCounts) {
@@ -225,7 +232,21 @@ export class ClassroomService {
     return this.classroomRepository.unenroll(userId, classroomId);
   }
 
+  // Aluno e educador matriculado saem livremente (o dono continua educando a turma).
+  // O dono só sai se houver outro educador: a turma passa para o que entrou primeiro.
   async leave(userId: string, classroomId: string) {
+    const classroom = await this.findById(classroomId);
+
+    if (classroom.teacher.id === userId) {
+      const heir = await this.classroomRepository.findOldestEducator(classroomId);
+      if (!heir) {
+        throw new ForbiddenException(
+          'Você é o único educador da turma. Adicione outro educador antes de sair.',
+        );
+      }
+      return this.classroomRepository.transferOwnership(classroomId, heir);
+    }
+
     const enrollment = await this.classroomRepository.findEnrollment(userId, classroomId);
     if (!enrollment) throw new NotFoundException('Matrícula não encontrada');
     return this.classroomRepository.unenroll(userId, classroomId);

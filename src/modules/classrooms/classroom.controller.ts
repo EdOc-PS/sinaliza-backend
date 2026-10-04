@@ -185,9 +185,9 @@ export class ClassroomController {
     return { success: true, message: 'Turma excluída com sucesso' };
   }
 
-  // DELETE /classrooms/:id/leave
+  // DELETE /classrooms/:id/leave — se o dono sair, a turma passa ao educador mais antigo
   @LeaveClassroomDocs()
-  @Roles(Role.STUDENT)
+  @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Delete(':id/leave')
   async leave(
     @Param('id') id: string,

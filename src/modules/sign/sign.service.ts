@@ -237,16 +237,12 @@ export class SignService {
     return this.signRepository.delete(id);
   }
 
-  // Educador promove o sinal — entra na fila de aprovação do gestor.
-  // Pode associar o sinal a nenhuma, uma ou várias turmas do glossário.
-  async promote(id: string, userId: string, userRoles: Role[], glossaryDisciplineIds?: string[]) {
+  // Qualquer educador (ou gestor) pode pedir a promoção — não só o criador.
+  // O sinal entra na fila de aprovação do gestor (a rota já restringe a
+  // EDUCATOR/MANAGER). Pode associar nenhuma, uma ou várias turmas do glossário.
+  async promote(id: string, glossaryDisciplineIds?: string[]) {
     const sign = await this.signRepository.findById(id);
     if (!sign) throw new NotFoundException('Sinal não encontrado.');
-
-    const isManager = userRoles.includes(Role.MANAGER);
-    if (sign.creatorId !== userId && !isManager) {
-      throw new ForbiddenException('Apenas o criador do sinal pode promovê-lo.');
-    }
 
     if (sign.globalStatus === GlobalStatus.PUBLIC) {
       throw new ConflictException('Este sinal já é público.');

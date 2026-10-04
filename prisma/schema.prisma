@@ -135,6 +135,9 @@ model Classroom {
   // automaticamente e ela ganha as abas de propostas e exemplos de redação.
   isContext       Boolean @default(false)
   teacherId       String
+  // O dono da turma não tem linha em ClassroomEnrollment — a última visita
+  // dele (bolinha de sinais novos) fica aqui. Nulo = usa a criação da turma.
+  teacherLastSeenAt DateTime?
   institutionId   String?
 
   createdAt DateTime @default(now())

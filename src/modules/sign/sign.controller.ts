@@ -109,15 +109,14 @@ export class SignController {
     return { success: true, message: 'Sinal obtido com sucesso', object: sign };
   }
 
-  // PATCH /sign/:id/promote — educador envia o sinal para aprovação do gestor
+  // PATCH /sign/:id/promote — qualquer educador envia o sinal para aprovação do gestor
   @Roles(Role.EDUCATOR, Role.MANAGER)
   @Patch(':id/promote')
   async promote(
     @Param('id') id: string,
     @Body() dto: PromoteSignDto,
-    @Request() req: AuthenticatedRequest,
   ) {
-    const sign = await this.signService.promote(id, req.user.userId, req.user.roles, dto.glossaryDisciplineIds);
+    const sign = await this.signService.promote(id, dto.glossaryDisciplineIds);
     return { success: true, message: 'Sinal enviado para aprovação do gestor', object: sign };
   }
 
