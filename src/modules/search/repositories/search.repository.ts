@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
 import { Prisma } from '@prisma/client';
+import { splitIds } from '@modules/sign/repositories/sign.repository';
 
 interface SearchFilters {
   search?: string;
@@ -46,9 +47,9 @@ export class SearchRepository {
           { tags: { has: search } },
         ],
       }),
-      ...(handConfigId && { handConfigId }),
-      ...(categoryId && { categoryId }),
-      ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: glossaryDisciplineId } } }),
+      ...(handConfigId && { handConfigId: { in: splitIds(handConfigId) } }),
+      ...(categoryId && { categoryId: { in: splitIds(categoryId) } }),
+      ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: { in: splitIds(glossaryDisciplineId) } } } }),
     };
   }
 

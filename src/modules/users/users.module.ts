@@ -6,9 +6,10 @@ import { PrismaService } from '@/database/prisma.service';
 import { JwtStrategy } from '../auth/jwt.strategy';
 import { InstitutionsModule } from '../institutions/institutions.module';
 import { ClassroomModule } from '../classrooms/classroom.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
-  imports: [InstitutionsModule, ClassroomModule],
+  imports: [InstitutionsModule, ClassroomModule, EmailModule],
   providers: [
     UsersService,
     UsersRepository,

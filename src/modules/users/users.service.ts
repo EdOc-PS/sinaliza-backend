@@ -1,5 +1,8 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
+import { EmailService } from "@modules/email/email.service";
+import { approvalTemplate } from "@modules/email/templates/approval.template";
 import { UsersRepository } from "./repositories/users.repository";
 import { UpdateUserDto, getRandomAvatarKey } from "./dto/update-user.dto";
 import { CreateEducatorDto } from "./dto/create-educator.dto";
@@ -10,11 +13,14 @@ import { ClassroomService } from '../classrooms/classroom.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
 
   constructor(
     private usersRepository: UsersRepository,
     private readonly institutionsService: InstitutionsService,
     private readonly classroomService: ClassroomService,
+    private readonly emailService: EmailService,
+    private readonly config: ConfigService,
   ) {}
 
   findAll() {
@@ -34,10 +40,34 @@ export class UsersService {
     return this.usersRepository.findByRole(role, search);
   }
 
-  // Aprova ou recusa uma conta pendente (perfil de aluno)
+  // Aprova ou recusa uma conta (perfil de aluno). Também serve para o gestor
+  // rever uma recusa. O aluno é avisado por email da decisão.
   async updateApproval(id: string, status: ApprovalStatus) {
-    await this.findByIdOrFail(id);
-    return this.usersRepository.updateApprovalStatus(id, status);
+    const user = await this.findByIdOrFail(id);
+    const updated = await this.usersRepository.updateApprovalStatus(id, status);
+
+    if (user.email && (status === ApprovalStatus.APPROVED || status === ApprovalStatus.REJECTED)) {
+      await this.sendApprovalEmail(user.name, user.email, status === ApprovalStatus.APPROVED);
+    }
+
+    return updated;
+  }
+
+  // Falha no envio não desfaz a decisão do gestor — fica só no log
+  private async sendApprovalEmail(name: string, email: string, approved: boolean) {
+    const frontendUrl = (this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173').replace(/\/+$/, '');
+    const { html, text, subject } = approvalTemplate({
+      name,
+      approved,
+      loginUrl: `${frontendUrl}/auth/login`,
+      logoUrl: `${frontendUrl}/logo/logo-simples.png`,
+    });
+
+    try {
+      await this.emailService.send({ to: email, subject, html, text });
+    } catch (err) {
+      this.logger.error(`Não foi possível enviar o email de aprovação para ${email}`, err as Error);
+    }
   }
 
   // Cadastro de educador (professor/intérprete) feito por um MANAGER

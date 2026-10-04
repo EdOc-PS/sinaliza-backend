@@ -121,6 +121,14 @@ export class SignController {
     return { success: true, message: 'Sinal enviado para aprovação do gestor', object: sign };
   }
 
+  // PATCH /sign/:id/unpromote — gestor tira um sinal público do glossário global
+  @Roles(Role.MANAGER)
+  @Patch(':id/unpromote')
+  async unpromote(@Param('id') id: string) {
+    const sign = await this.signService.unpromote(id);
+    return { success: true, message: 'Sinal removido do glossário global', object: sign };
+  }
+
   // PATCH /sign/:id/promotion — gestor aprova ou recusa a promoção
   @Roles(Role.MANAGER)
   @Patch(':id/promotion')

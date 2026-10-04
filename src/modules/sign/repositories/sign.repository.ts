@@ -35,11 +35,16 @@ interface UpdateSignData {
 
 interface FindAllFilters {
   search?: string;
+  /** Aceita uma ou várias ids separadas por vírgula (filtro com múltipla seleção) */
   categoryId?: string;
   handConfigId?: string;
   glossaryDisciplineId?: string;
   tag?: string;
 }
+
+// "a,b,c" → ["a","b","c"] — os filtros do front permitem selecionar vários itens
+export const splitIds = (value?: string) =>
+  (value ?? '').split(',').map((v) => v.trim()).filter(Boolean);
 
 const signSelect = {
   id: true,
@@ -88,9 +93,9 @@ export class SignRepository {
     return this.prisma.sign.findMany({
       where: {
         ...(search && { name: { contains: search, mode: 'insensitive' } }),
-        ...(categoryId && { categoryId }),
-        ...(handConfigId && { handConfigId }),
-        ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: glossaryDisciplineId } } }),
+        ...(categoryId && { categoryId: { in: splitIds(categoryId) } }),
+        ...(handConfigId && { handConfigId: { in: splitIds(handConfigId) } }),
+        ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: { in: splitIds(glossaryDisciplineId) } } } }),
         ...(tag && { tags: { has: tag } }),
       },
       select: signSelect,
@@ -168,6 +173,16 @@ export class SignRepository {
   }
 
   // Sinais aguardando aprovação do gestor (promoções pendentes)
+  // Tira o sinal do glossário global: volta a ser só das turmas e perde as
+  // disciplinas do glossário (elas só fazem sentido para sinais públicos)
+  async unpromote(id: string) {
+    return this.prisma.sign.update({
+      where: { id },
+      data: { globalStatus: GlobalStatus.PRIVATE, glossaryDisciplines: { set: [] } },
+      select: signSelect,
+    });
+  }
+
   // Sinais criados por um educador (listagem "Meus sinais" no ambiente de trabalho)
   async findByCreator(creatorId: string) {
     return this.prisma.sign.findMany({
@@ -214,9 +229,9 @@ export class SignRepository {
       where: {
         globalStatus: GlobalStatus.PUBLIC,
         ...(search && { name: { contains: search, mode: 'insensitive' } }),
-        ...(categoryId && { categoryId }),
-        ...(handConfigId && { handConfigId }),
-        ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: glossaryDisciplineId } } }),
+        ...(categoryId && { categoryId: { in: splitIds(categoryId) } }),
+        ...(handConfigId && { handConfigId: { in: splitIds(handConfigId) } }),
+        ...(glossaryDisciplineId && { glossaryDisciplines: { some: { id: { in: splitIds(glossaryDisciplineId) } } } }),
         ...(tag && { tags: { has: tag } }),
       },
       select: {

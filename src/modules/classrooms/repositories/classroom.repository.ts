@@ -75,9 +75,29 @@ export class ClassroomRepository {
       select: {
         roleInClass: true,
         createdAt: true,
+        lastSeenAt: true,
         classroom: { select: classroomCardSelect },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Sinais da turma criados depois de `since` (exceto os do próprio usuário)
+  async countNewSigns(classroomId: string, since: Date, userId: string) {
+    return this.prisma.sign.count({
+      where: {
+        classrooms: { some: { id: classroomId } },
+        createdAt: { gt: since },
+        creatorId: { not: userId },
+      },
+    });
+  }
+
+  // Zera a bolinha de sinais novos — sem efeito se o usuário não é matriculado
+  async markSeen(userId: string, classroomId: string) {
+    return this.prisma.classroomEnrollment.updateMany({
+      where: { userId, classroomId },
+      data: { lastSeenAt: new Date() },
     });
   }
 

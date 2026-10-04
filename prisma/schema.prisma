@@ -211,6 +211,9 @@ model ClassroomEnrollment {
   userId      String
   classroomId String
   roleInClass ClassRole
+  // Última vez que o usuário abriu a turma — sinais criados depois disso
+  // contam como "novos" na bolinha do card. Nulo = usa a data da matrícula.
+  lastSeenAt  DateTime?
 
   createdAt DateTime @default(now())
 

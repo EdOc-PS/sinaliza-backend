@@ -89,8 +89,10 @@ export class ClassroomController {
   @FindClassroomSignsDocs()
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get(':id/signs')
-  async findSigns(@Param('id') id: string) {
+  async findSigns(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     const signs = await this.classroomService.findSigns(id);
+    // Abrir a lista de sinais conta como visita: zera a bolinha de sinais novos
+    await this.classroomService.markSeen(req.user.userId, id);
     return { success: true, message: 'Sinais obtidos com sucesso', object: signs };
   }
 

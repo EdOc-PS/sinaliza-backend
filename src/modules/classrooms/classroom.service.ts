@@ -100,7 +100,23 @@ export class ClassroomService {
       }
     }
 
-    return Array.from(map.values());
+    // Bolinha de "sinais novos": criados desde a última visita à turma
+    const newCounts = await Promise.all(
+      enrollments.map(async (e) => [
+        e.classroom.id,
+        await this.classroomRepository.countNewSigns(e.classroom.id, e.lastSeenAt ?? e.createdAt, userId),
+      ] as const),
+    );
+    for (const [id, count] of newCounts) {
+      const card = map.get(id);
+      if (card) card.newSignsCount = count;
+    }
+
+    return Array.from(map.values()).map((c) => ({ newSignsCount: 0, ...c }));
+  }
+
+  markSeen(userId: string, classroomId: string) {
+    return this.classroomRepository.markSeen(userId, classroomId);
   }
 
   async findAllByTeacher(teacherId: string) {

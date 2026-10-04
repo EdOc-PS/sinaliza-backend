@@ -284,6 +284,16 @@ export class SignService {
     );
   }
 
+  // Gestor remove um sinal público do glossário global
+  async unpromote(id: string) {
+    const sign = await this.signRepository.findById(id);
+    if (!sign) throw new NotFoundException('Sinal não encontrado.');
+    if (sign.globalStatus !== GlobalStatus.PUBLIC) {
+      throw new ConflictException('Este sinal não está no glossário global.');
+    }
+    return this.signRepository.unpromote(id);
+  }
+
   async findByCreator(creatorId: string) {
     return this.signRepository.findByCreator(creatorId);
   }
