@@ -38,6 +38,15 @@ export class HandConfigService {
     const handConfig = await this.handConfigRepository.findById(id);
     if (!handConfig) throw new NotFoundException('Configuração de mão não encontrada');
 
+    // Nome é único no banco — sem essa checagem o Prisma estoura P2002 (erro 500).
+    // Checa antes do upload para não subir imagem à toa.
+    if (dto.name && dto.name !== handConfig.name) {
+      const sameName = await this.handConfigRepository.findByExactName(dto.name);
+      if (sameName && sameName.id !== id) {
+        throw new BadRequestException('Já existe uma configuração de mão com este nome');
+      }
+    }
+
     let imgUrl = handConfig.imgUrl;
 
     if (file) {
@@ -54,9 +63,17 @@ export class HandConfigService {
     const handConfig = await this.handConfigRepository.findById(id);
     if (!handConfig) throw new NotFoundException('Configuração de mão não encontrada');
 
-    // Deleta a imagem do R2 junto com o registro
-    if (handConfig.imgUrl) await this.r2Service.delete(handConfig.imgUrl);
+    // Sinal exige configuração de mão (FK sem cascade): sem essa checagem o Prisma estoura P2003 (erro 500)
+    const signsCount = await this.handConfigRepository.countSigns(id);
+    if (signsCount > 0) {
+      throw new BadRequestException(
+        `Não é possível excluir: ${signsCount} sinal(is) usam esta configuração de mão`,
+      );
+    }
 
-    return this.handConfigRepository.delete(id);
+    // Remove o registro antes da imagem: se o banco falhar, o R2 não fica com a imagem perdida
+    const deleted = await this.handConfigRepository.delete(id);
+    if (handConfig.imgUrl) await this.r2Service.delete(handConfig.imgUrl);
+    return deleted;
   }
 }

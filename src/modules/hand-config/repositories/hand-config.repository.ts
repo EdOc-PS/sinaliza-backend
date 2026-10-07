@@ -54,6 +54,14 @@ export class HandConfigRepository {
     });
   }
 
+  // Nome exato (sem diferenciar maiúsculas) — para checar duplicidade
+  async findByExactName(name: string) {
+    return this.prisma.handConfig.findFirst({
+      where: { name: { equals: name, mode: 'insensitive' } },
+      select: { id: true },
+    });
+  }
+
   async existsByName(name: string) {
     const handConfig = await this.prisma.handConfig.findFirst({
       where: { name: { equals: name, mode: 'insensitive' } },
@@ -67,6 +75,10 @@ export class HandConfigRepository {
       data,
       select: handConfigSelect,
     });
+  }
+
+  async countSigns(id: string) {
+    return this.prisma.sign.count({ where: { handConfigId: id } });
   }
 
   async delete(id: string) {
