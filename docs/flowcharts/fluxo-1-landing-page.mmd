@@ -1,0 +1,39 @@
+---
+title: "Fluxo 1 — Landing page: Glossário Global ou Solicitar entrada"
+---
+flowchart TB
+    A([Início]) --> B["Acessa a landing page"]
+    B --> C{"O que deseja fazer?"}
+
+    %% ===== Caminho 1: Glossário Global =====
+    C -- "Ver sinais" --> D["Clica em 'Glossário Global'"]
+    D --> E{"Quer aplicar filtros?"}
+    E -- Sim --> F["Clica no botão de filtros"]
+    F --> G["Seleciona os filtros desejados"]
+    G --> H["Clica em 'Pesquisar'"]
+    H --> I["Procura o sinal na lista"]
+    E -- Não --> I
+    I --> J["Clica no sinal"]
+    J --> K["Assiste ao vídeo do sinal"]
+    K --> Z([Fim])
+
+    %% ===== Caminho 2: Solicitar entrada =====
+    C -- "Criar conta" --> L["Clica em 'Solicitar entrada'"]
+    L --> M["Preenche nome e e-mail"]
+    M --> O["Preenche os dados do perfil"]
+    O --> P["Preenche telefone e bio (opcional)"]
+    P --> Q["Cria e confirma a senha"]
+    Q --> R["Clica em 'Criar conta'"]
+    R --> S["Aguarda a aprovação do gestor"]
+    S --> Z
+
+    %% ===== Notas =====
+    nG["Filtros disponíveis:<br/>• Texto (nome do sinal)<br/>• Categoria<br/>• Configuração de mão<br/>• Disciplina"]:::note
+    nO["Grau escolar e<br/>necessidades especiais"]:::note
+    nS["Recebe um e-mail quando<br/>a conta for aprovada"]:::note
+
+    G -.- nG
+    O -.- nO
+    S -.- nS
+
+    classDef note fill:#FFF8E1,stroke:#E6AB6E,stroke-dasharray:4 3,color:#5B6B7A,font-size:12px

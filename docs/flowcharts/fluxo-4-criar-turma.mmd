@@ -1,0 +1,36 @@
+---
+title: "Fluxo 4 — Educador/Gestor cria ou entra em uma turma"
+---
+flowchart TB
+    A([Início]) --> B["Faz login como educador/gestor"]
+    B --> C["Aba 'Turmas' já vem selecionada"]
+    C --> D{"Criar turma ou<br/>entrar em uma turma?"}
+
+    %% ===== Caminho 1: Entrar em turma =====
+    D -- "Entrar em turma" --> E["Clica em 'Entrar em turma'"]
+    E --> F["Digita o código da turma"]
+    F --> G["Entra na turma"]
+    G --> H["Vê os sinais da turma"]
+    H --> Z([Fim])
+
+    %% ===== Caminho 2: Criar turma =====
+    D -- "Criar turma" --> I["Clica em 'Criar turma'"]
+    I --> J["Preenche o formulário"]
+    J --> K["Turma criada"]
+    K --> L["Turma aparece na lista de turmas"]
+    L --> M["Seleciona a turma criada"]
+    M --> N{"O que deseja ver?"}
+    N -- "Sinais" --> H
+    N -- "Dashboard" --> P["Vê o dashboard da turma"]
+    P --> Z
+    N -- "Configurações" --> Q["Vê as configurações da turma"]
+    Q --> Z
+
+    %% ===== Notas =====
+    nC["Por padrão, a aba 'Turmas'<br/>já vem selecionada"]:::note
+    nJ["Campos: nome, cor e descrição"]:::note
+
+    C -.- nC
+    J -.- nJ
+
+    classDef note fill:#FFF8E1,stroke:#E6AB6E,stroke-dasharray:4 3,color:#5B6B7A,font-size:12px

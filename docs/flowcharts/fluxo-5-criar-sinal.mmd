@@ -1,0 +1,48 @@
+---
+title: "Fluxo 5 — Educador cria e gerencia sinal"
+---
+flowchart TB
+    A([Início]) --> B["Faz login como educador"]
+    B --> C["Clica em 'Ambiente de trabalho'"]
+    C --> D["Clica em 'Criar sinal'"]
+    D --> E["Formulário 1: informações"]
+    E --> F["Formulário 2: contexto"]
+    F --> G["Formulário 3: mídia"]
+    G --> I["Sinal criado na turma"]
+    I --> J{"O que deseja fazer?"}
+
+    %% ===== Caminho 1: Ver sinal =====
+    J -- "Ver sinal" --> K["Clica no sinal"]
+    K --> L["Vê o sinal"]
+    L --> Z([Fim])
+
+    %% ===== Caminho 2: Gerenciar =====
+    J -- "Gerenciar" --> M{"Qual ação?"}
+    M -- Editar --> N["Edita o sinal"]
+    N --> Z
+    M -- Deletar --> O["Deleta o sinal"]
+    O --> Z
+    M -- Promover --> P["Clica em 'Promover sinal'"]
+    P --> Q["Sistema gera solicitação para o gestor"]
+
+    %% ===== Sub-fluxo: Gestor =====
+    Q --> R["Gestor faz login na plataforma"]
+    R --> S["Clica em 'Ambiente de trabalho'"]
+    S --> T["Vê a lista de sinais para promoção"]
+    T --> U{"Aceita a promoção?"}
+    U -- Sim --> V["Sinal vai para o glossário público"]
+    V --> W["Sinal ganha destaque em turmas"]
+    W --> Z
+    U -- Não --> X["Sinal continua provisório na turma"]
+    X --> Z
+
+    %% ===== Notas =====
+    nE["Informações:<br/>turma do sinal, nome, classe gramatical,<br/>significado e configuração de mão"]:::note
+    nF["Contexto:<br/>exemplo em português,<br/>exemplo em Libras e tags"]:::note
+    nG["Mídia:<br/>vídeo e imagem"]:::note
+
+    E -.- nE
+    F -.- nF
+    G -.- nG
+
+    classDef note fill:#FFF8E1,stroke:#E6AB6E,stroke-dasharray:4 3,color:#5B6B7A,font-size:12px

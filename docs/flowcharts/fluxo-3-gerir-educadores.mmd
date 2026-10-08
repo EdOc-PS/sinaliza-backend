@@ -1,0 +1,26 @@
+---
+title: "Fluxo 3 — Gestor cria ou gere educador"
+---
+flowchart TB
+    A([Início]) --> B["Faz login como gestor"]
+    B --> C["Clica na aba 'Educadores'"]
+    C --> D{"O que deseja fazer?"}
+
+    %% ===== Caminho 1: Criar conta =====
+    D -- "Criar conta" --> E["Clica em 'Criar novo educador'"]
+    E --> F["Formulário 1: escolhe o perfil do educador"]
+    F --> G["Marca ou não a opção 'Também é gestor'"]
+    G --> I["Formulário 2: preenche os dados"]
+    I --> M["Formulário 3: define a senha"]
+    M --> N["Conta do educador criada"]
+    N --> Z([Fim])
+
+    %% ===== Caminho 2: Gerir educador =====
+    D -- "Gerir educador" --> O["Procura o educador"]
+    O --> P["Seleciona o educador"]
+    P --> Q["Clica nos três pontinhos"]
+    Q --> R{"Qual ação?"}
+    R -- Editar --> S["Edita os dados do educador"]
+    S --> Z
+    R -- Deletar --> T["Deleta a conta do educador"]
+    T --> Z

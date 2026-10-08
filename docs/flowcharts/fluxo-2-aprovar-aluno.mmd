@@ -1,0 +1,16 @@
+---
+title: "Fluxo 2 — Gestor aprova aluno"
+---
+flowchart TB
+    A([Início]) --> B["Faz login como gestor"]
+    B --> C["Clica no menu 'Alunos'"]
+    C --> D["Acessa a lista de pendentes"]
+    D --> E{"Posso aprovar?"}
+
+    E -- Sim --> F["Aprova o aluno"]
+    F --> G["Sistema notifica o aluno"]
+    G --> H["Aluno recebe e-mail:<br/>conta aprovada e login liberado"]
+    H --> Z([Fim])
+
+    E -- Não --> I["Aluno vai para a aba 'Bloqueados'"]
+    I --> Z

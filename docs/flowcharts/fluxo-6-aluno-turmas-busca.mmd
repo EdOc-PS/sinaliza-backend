@@ -1,0 +1,36 @@
+---
+title: "Fluxo 6 — Aluno acessa turmas, busca sinais e glossário"
+---
+flowchart TB
+    A([Início]) --> B["Faz login como aluno"]
+    B --> C["Acessa a tela de turmas"]
+    C --> D{"O que deseja fazer?"}
+
+    %% ===== Turma com acesso =====
+    D -- "Entrar em turma com acesso" --> E["Clica na turma desejada"]
+    E --> H["Vê os sinais da turma"]
+    H --> Z([Fim])
+
+    %% ===== Turma sem acesso =====
+    D -- "Entrar em turma sem acesso" --> F["Clica em 'Participar de uma turma'"]
+    F --> G["Digita o código da turma"]
+    G --> G2["Entra na turma"]
+    G2 --> H
+
+    %% ===== Pesquisar sinal =====
+    D -- "Pesquisar sinal" --> I["Clica em 'Pesquisar sinal' no topo"]
+    I --> J["Escreve o que deseja no filtro"]
+    J --> K["Clica em 'Buscar'"]
+    K --> L["Vê o resultado da busca"]
+    L --> Z
+
+    %% ===== Glossário global =====
+    D -- "Glossário global" --> M["Acessa a tela de Glossário Global"]
+    M --> Z
+
+    %% ===== Notas =====
+    nI["Como explicado anteriormente, a pesquisa<br/>de sinal funciona da mesma maneira<br/>em todos os lugares"]:::note
+
+    I -.- nI
+
+    classDef note fill:#FFF8E1,stroke:#E6AB6E,stroke-dasharray:4 3,color:#5B6B7A,font-size:12px
