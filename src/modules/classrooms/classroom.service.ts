@@ -1,3 +1,4 @@
+import { NotificationService } from '@modules/email/notification.service';
 import {
   Injectable,
   NotFoundException,
@@ -53,6 +54,7 @@ export class ClassroomService {
   constructor(
     private readonly classroomRepository: ClassroomRepository,
     private readonly historyService: HistoryService,
+    private readonly notifications: NotificationService,
   ) {}
 
   async create(teacherId: string, dto: CreateClassroomDto) {
@@ -210,6 +212,7 @@ export class ClassroomService {
 
     const roleInClass = resolveClassRole(user.roles as Role[]);
     await this.classroomRepository.enroll(user.id, classroomId, roleInClass);
+    await this.notifications.addedToClassroom(user.id, classroomId, classroom.name, classroom.teacher.name);
 
     const members = await this.classroomRepository.findMembers(classroomId);
     const added = members.find((m) => m.user.id === user.id);

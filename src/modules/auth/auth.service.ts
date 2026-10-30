@@ -1,3 +1,4 @@
+import { NotificationService } from '@modules/email/notification.service';
 import * as bcrypt from 'bcrypt'
 
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -19,6 +20,7 @@ const LOCK_MINUTES = 30;
 export class AuthService {
 
     constructor(
+        private readonly notifications: NotificationService,
         private readonly usersService: UsersService,
         private readonly authRepository: AuthRepository,
         private readonly institutionsService: InstitutionsService,
@@ -91,6 +93,11 @@ export class AuthService {
 
         // Todo usuário entra automaticamente na turma Contexto
         await this.classroomService.enrollInContext(account.id, [dto.role]);
+
+        // Conta de aluno nasce pendente: avisa os gestores que há cadastro para analisar
+        if (dto.role === Role.STUDENT) {
+            await this.notifications.studentPendingApproval(dto.name, institutionId);
+        }
 
         return account;
     }

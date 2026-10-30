@@ -7,6 +7,7 @@ import { PrismaService } from '@/database/prisma.service';
 import { ClassroomService } from '@modules/classrooms/classroom.service';
 import { assertValidImage, assertValidVideo } from '@common/security/file-validation';
 import { GlobalStatus, Role } from '@common/enums/enum';
+import { NotificationService } from '@modules/email/notification.service';
 
 interface SignFiles {
   video?: Express.Multer.File;
@@ -36,6 +37,7 @@ export class SignService {
     private readonly r2Service: R2Service,
     private readonly prisma: PrismaService,
     private readonly classroomService: ClassroomService,
+    private readonly notifications: NotificationService,
   ) {}
 
   async create(dto: CreateSignDto, creatorId: string, files: SignFiles) {
@@ -253,7 +255,9 @@ export class SignService {
 
     await this.assertGlossaryDisciplinesExist(glossaryDisciplineIds);
 
-    return this.signRepository.promote(id, glossaryDisciplineIds);
+    const promoted = await this.signRepository.promote(id, glossaryDisciplineIds);
+    await this.notifications.promotionRequested(sign.creatorId, sign.name);
+    return promoted;
   }
 
   // Garante que todas as turmas do glossário informadas existem
@@ -266,7 +270,8 @@ export class SignService {
   }
 
   // Gestor aprova ou recusa a promoção de um sinal pendente
-  async reviewPromotion(id: string, approve: boolean) {
+  // Na recusa, o motivo fica salvo no sinal e o criador é avisado por email.
+  async reviewPromotion(id: string, approve: boolean, reason?: string) {
     const sign = await this.signRepository.findById(id);
     if (!sign) throw new NotFoundException('Sinal não encontrado.');
 
@@ -274,20 +279,28 @@ export class SignService {
       throw new ConflictException('Este sinal não está aguardando aprovação.');
     }
 
-    return this.signRepository.updateGlobalStatus(
-      id,
-      approve ? GlobalStatus.PUBLIC : GlobalStatus.REJECTED,
-    );
+    if (approve) {
+      const updated = await this.signRepository.updateGlobalStatus(id, GlobalStatus.PUBLIC);
+      await this.notifications.promotionApproved(sign.creatorId, sign.name, sign.slug);
+      return updated;
+    }
+
+    const rejectionReason = reason!.trim();
+    const updated = await this.signRepository.updateGlobalStatus(id, GlobalStatus.REJECTED, rejectionReason);
+    await this.notifications.promotionRejected(sign.creatorId, sign.name, sign.slug, rejectionReason);
+    return updated;
   }
 
-  // Gestor remove um sinal público do glossário global
-  async unpromote(id: string) {
+  // Gestor remove um sinal público do glossário global; o criador é avisado com o motivo
+  async unpromote(id: string, reason: string) {
     const sign = await this.signRepository.findById(id);
     if (!sign) throw new NotFoundException('Sinal não encontrado.');
     if (sign.globalStatus !== GlobalStatus.PUBLIC) {
       throw new ConflictException('Este sinal não está no glossário global.');
     }
-    return this.signRepository.unpromote(id);
+    const updated = await this.signRepository.unpromote(id);
+    await this.notifications.signUnpromoted(sign.creatorId, sign.name, sign.slug, reason.trim());
+    return updated;
   }
 
   async findByCreator(creatorId: string) {

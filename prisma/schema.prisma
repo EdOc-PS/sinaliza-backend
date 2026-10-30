@@ -300,6 +300,8 @@ model Sign {
   institutionId       String?
   // O sinal continua nas turmas; quando PUBLIC, também fica visível a todos
   globalStatus        GlobalStatus @default(PRIVATE)
+  // Motivo informado pelo gestor ao recusar a promoção (limpo ao promover de novo)
+  rejectionReason     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

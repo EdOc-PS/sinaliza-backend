@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundEx
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
 import { EmailService } from "@modules/email/email.service";
+import { NotificationService } from "@modules/email/notification.service";
 import { approvalTemplate } from "@modules/email/templates/approval.template";
 import { UsersRepository } from "./repositories/users.repository";
 import { UpdateUserDto, getRandomAvatarKey } from "./dto/update-user.dto";
@@ -21,6 +22,7 @@ export class UsersService {
     private readonly classroomService: ClassroomService,
     private readonly emailService: EmailService,
     private readonly config: ConfigService,
+    private readonly notifications: NotificationService,
   ) {}
 
   findAll() {
@@ -106,7 +108,10 @@ export class UsersService {
     );
 
     // Educador também entra automaticamente na turma Contexto
-    if (educator) await this.classroomService.enrollInContext(educator.id, roles);
+    if (educator) {
+      await this.classroomService.enrollInContext(educator.id, roles);
+      await this.notifications.educatorWelcome(dto.name, dto.email);
+    }
 
     return educator;
   }

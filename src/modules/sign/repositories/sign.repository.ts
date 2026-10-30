@@ -61,6 +61,7 @@ const signSelect = {
   tags: true,
   creatorId: true,
   globalStatus: true,
+  rejectionReason: true,
   createdAt: true,
   updatedAt: true,
   category: { select: { id: true, name: true, value: true } },
@@ -149,10 +150,10 @@ export class SignRepository {
   }
 
   // Atualiza o status de promoção ao glossário global
-  async updateGlobalStatus(id: string, globalStatus: GlobalStatus) {
+  async updateGlobalStatus(id: string, globalStatus: GlobalStatus, rejectionReason: string | null = null) {
     return this.prisma.sign.update({
       where: { id },
-      data: { globalStatus },
+      data: { globalStatus, rejectionReason },
       select: signSelect,
     });
   }
@@ -164,6 +165,7 @@ export class SignRepository {
       where: { id },
       data: {
         globalStatus: GlobalStatus.PENDING,
+        rejectionReason: null,
         ...(glossaryDisciplineIds !== undefined
           ? { glossaryDisciplines: { set: glossaryDisciplineIds.map((gid) => ({ id: gid })) } }
           : {}),
@@ -178,7 +180,7 @@ export class SignRepository {
   async unpromote(id: string) {
     return this.prisma.sign.update({
       where: { id },
-      data: { globalStatus: GlobalStatus.PRIVATE, glossaryDisciplines: { set: [] } },
+      data: { globalStatus: GlobalStatus.PRIVATE, rejectionReason: null, glossaryDisciplines: { set: [] } },
       select: signSelect,
     });
   }
@@ -195,6 +197,7 @@ export class SignRepository {
         anotherUrl: true,
         imgUrl: true,
         globalStatus: true,
+        rejectionReason: true,
         createdAt: true,
         category: { select: { id: true, name: true, value: true } },
         classrooms: { select: { id: true, name: true } },

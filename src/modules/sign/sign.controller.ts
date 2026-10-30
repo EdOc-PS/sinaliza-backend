@@ -17,6 +17,7 @@ import { CreateSignDto } from './dto/create-sign.dto';
 import { UpdateSignDto } from './dto/update-sign.dto';
 import { ReviewPromotionDto } from './dto/review-promotion.dto';
 import { PromoteSignDto } from './dto/promote-sign.dto';
+import { UnpromoteSignDto } from './dto/unpromote-sign.dto';
 import { signMulterOptions } from '@common/security/file-validation';
 import {
   CreateSignDocs,
@@ -123,8 +124,8 @@ export class SignController {
   // PATCH /sign/:id/unpromote — gestor tira um sinal público do glossário global
   @Roles(Role.MANAGER)
   @Patch(':id/unpromote')
-  async unpromote(@Param('id') id: string) {
-    const sign = await this.signService.unpromote(id);
+  async unpromote(@Param('id') id: string, @Body() dto: UnpromoteSignDto) {
+    const sign = await this.signService.unpromote(id, dto.reason);
     return { success: true, message: 'Sinal removido do glossário global', object: sign };
   }
 
@@ -135,7 +136,7 @@ export class SignController {
     @Param('id') id: string,
     @Body() dto: ReviewPromotionDto,
   ) {
-    const sign = await this.signService.reviewPromotion(id, dto.approve);
+    const sign = await this.signService.reviewPromotion(id, dto.approve, dto.reason);
     return {
       success: true,
       message: dto.approve ? 'Sinal aprovado — agora é público!' : 'Promoção recusada',
