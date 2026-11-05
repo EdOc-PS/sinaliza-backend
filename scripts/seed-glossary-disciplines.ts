@@ -1,9 +1,9 @@
 /**
- * Cadastra as disciplinas básicas e técnicas do glossário.
+ * Cadastra as disciplinas básicas e técnicas do glossário e categorias extras de sinais.
  *
  * Uso: npx ts-node scripts/seed-glossary-disciplines.ts
  *
- * É idempotente: disciplinas que já existem (mesmo nome) são ignoradas.
+ * É idempotente: disciplinas e categorias que já existem são ignoradas.
  */
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
@@ -35,6 +35,18 @@ const disciplines = [
   { name: 'Redes de Computadores', description: 'Sinais de protocolos, conexões e internet.' },
 ];
 
+// Mesmo formato do campo Category.value: nome em UPPER_SNAKE
+const categories = [
+  { name: 'Família', value: 'FAMILIA' },
+  { name: 'Alimento', value: 'ALIMENTO' },
+  { name: 'Número', value: 'NUMERO' },
+  { name: 'Cor', value: 'COR' },
+  { name: 'Tempo', value: 'TEMPO' },
+  { name: 'Profissão', value: 'PROFISSAO' },
+  { name: 'Emoção', value: 'EMOCAO' },
+  { name: 'Escola', value: 'ESCOLA' },
+];
+
 async function main() {
   let created = 0;
 
@@ -53,7 +65,10 @@ async function main() {
     console.log(`✔ Criada: ${discipline.name}`);
   }
 
-  console.log(`Concluído: ${created} criadas, ${disciplines.length - created} já existiam.`);
+  console.log(`Disciplinas: ${created} criadas, ${disciplines.length - created} já existiam.`);
+
+  const { count } = await prisma.category.createMany({ data: categories, skipDuplicates: true });
+  console.log(`Categorias: ${count} criadas, ${categories.length - count} já existiam.`);
 }
 
 main()
