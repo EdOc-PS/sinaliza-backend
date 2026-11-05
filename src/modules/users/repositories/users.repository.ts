@@ -9,7 +9,7 @@ export class UsersRepository {
   constructor(private prisma: PrismaService) { }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({ omit: { password: true } });
   }
 
   // Lista usuários que possuem uma role específica, com filtro opcional por nome/email
@@ -80,7 +80,8 @@ export class UsersRepository {
   ) {
     const userId = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { ...userData, roles },
+        // Senha definida pelo gestor é temporária: a troca é obrigatória no primeiro acesso
+        data: { ...userData, roles, mustChangePassword: true },
       });
 
       await tx.educator.create({
@@ -107,7 +108,7 @@ export class UsersRepository {
     if (!user) return null;
 
     // Achata o educatorType (TEACHER | INTERPRETER) e os dados específicos do perfil no objeto do usuário.
-    const { educator, student, ...rest } = user;
+    const { educator, student, password: _password, ...rest } = user;
     return {
       ...rest,
       educatorType: educator?.educatorType ?? null,

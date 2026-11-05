@@ -38,16 +38,6 @@ export class UpdateUserDto {
     email?: string
 
     @ApiPropertyOptional({
-        example: 'senha123',
-        minLength: 6,
-        description: 'Senha com no mínimo 6 caracteres',
-    })
-    @IsOptional()
-    @IsString()
-    @MinLength(6)
-    password?: string
-
-    @ApiPropertyOptional({
         example: '21/03/2001',
         description: 'Data de nascimento no formato dd/mm/yyyy',
     })

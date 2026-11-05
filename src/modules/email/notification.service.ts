@@ -6,12 +6,14 @@ import { EmailService } from './email.service';
 import { noticeTemplate, type NoticeTemplateData } from './templates/notice.template';
 
 interface Recipient {
+  id: string;
   name: string;
   email: string | null;
 }
 
-// Avisos por email disparados pelas ações da plataforma. Nenhum envio bloqueia
-// nem desfaz a ação que o originou: falhas ficam só no log.
+// Avisos disparados pelas ações da plataforma: sempre viram notificação no sino e
+// só saem por email com EMAIL_NOTIFICATIONS_ENABLED=true (exige domínio verificado).
+// Nenhum aviso bloqueia nem desfaz a ação que o originou: falhas ficam só no log.
 @Injectable()
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
@@ -27,7 +29,23 @@ export class NotificationService {
   }
 
   private async send(to: Recipient, data: Omit<NoticeTemplateData, 'name' | 'logoUrl'>) {
-    if (!to.email) return;
+    try {
+      await this.prisma.notification.create({
+        data: {
+          userId: to.id,
+          tone: data.tone,
+          title: data.title,
+          message: data.paragraphs.join(' '),
+          reason: data.highlight?.text,
+          link: data.button?.url.replace(this.frontendUrl, ''),
+        },
+      });
+    } catch (err) {
+      this.logger.error(`Não foi possível criar a notificação "${data.title}"`, err as Error);
+    }
+
+    if (!to.email || this.config.get<string>('EMAIL_NOTIFICATIONS_ENABLED') !== 'true') return;
+
     const { html, text, subject } = noticeTemplate({
       ...data,
       name: to.name,
@@ -41,7 +59,7 @@ export class NotificationService {
   }
 
   private findUser(id: string) {
-    return this.prisma.user.findUnique({ where: { id }, select: { name: true, email: true } });
+    return this.prisma.user.findUnique({ where: { id }, select: { id: true, name: true, email: true } });
   }
 
   // Gestores ativos (da mesma instituição, quando informada)
@@ -50,10 +68,9 @@ export class NotificationService {
       where: {
         roles: { has: Role.MANAGER },
         status: true,
-        email: { not: null },
         ...(institutionId ? { institutionId } : {}),
       },
-      select: { name: true, email: true },
+      select: { id: true, name: true, email: true },
     });
   }
 
@@ -108,9 +125,9 @@ export class NotificationService {
           preheader: `${author} enviou "${signName}" para o glossário global.`,
           paragraphs: [
             `${author} enviou o sinal "${signName}" para o glossário global.`,
-            'Revise o sinal e aprove ou recuse a promoção na área de trabalho.',
+            'Revise o sinal e aprove ou recuse a promoção no dashboard.',
           ],
-          button: { label: 'Revisar promoções', url: `${this.frontendUrl}/workspace` },
+          button: { label: 'Revisar promoções', url: `${this.frontendUrl}/dashboard` },
         }),
       ),
     );
@@ -155,19 +172,40 @@ export class NotificationService {
   }
 
   // Educador cadastrado pelo gestor → boas-vindas
-  async educatorWelcome(name: string, email: string) {
-    await this.send({ name, email }, {
+  async educatorWelcome(id: string, name: string, email: string) {
+    await this.send({ id, name, email }, {
       tone: 'success',
       badge: 'Conta criada',
       title: 'Bem-vindo(a) ao Sinaliza!',
       preheader: 'Um gestor criou sua conta de educador no Sinaliza.',
       paragraphs: [
         `Um gestor da instituição criou sua conta de educador no Sinaliza com o email ${email}.`,
-        'Para definir sua própria senha, use "Esqueci minha senha" na tela de login: você recebe um link para criar uma senha nova.',
+        'Use a senha informada pelo gestor para entrar na plataforma.',
       ],
-      highlight: { label: 'Definir sua senha', text: `${this.frontendUrl}/auth/forgot-password` },
-      button: { label: 'Entrar no Sinaliza', url: `${this.frontendUrl}/auth/login` },
+      button: { label: 'Abrir minhas turmas', url: `${this.frontendUrl}/classrooms` },
     });
+  }
+
+  // Decisão sobre o cadastro → aluno
+  async approvalDecided(userId: string, approved: boolean) {
+    const user = await this.findUser(userId);
+    if (!user) return;
+    await this.send(user, approved
+      ? {
+          tone: 'success',
+          badge: 'Conta aprovada',
+          title: 'Sua conta foi aprovada!',
+          preheader: 'Você já pode acessar o Sinaliza.',
+          paragraphs: ['Um gestor aprovou o seu cadastro. Suas turmas já estão disponíveis.'],
+          button: { label: 'Abrir minhas turmas', url: `${this.frontendUrl}/classrooms` },
+        }
+      : {
+          tone: 'danger',
+          badge: 'Conta recusada',
+          title: 'Seu cadastro não foi aprovado',
+          preheader: 'Um gestor analisou o seu cadastro.',
+          paragraphs: ['Um gestor analisou o seu cadastro e ele não foi aprovado. Fale com a instituição para saber mais.'],
+        });
   }
 
   // Participante adicionado a uma turma pelo professor

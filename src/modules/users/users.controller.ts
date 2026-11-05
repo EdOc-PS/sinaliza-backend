@@ -9,6 +9,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@common/enums/enum';
+import { AllowPasswordPending } from '@common/decorators/allow-password-pending.decorator';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateEducatorDocs, DeleteDocs, FindByIdDocs, FindDocs, FindEducatorsDocs, FindMembersDocs, UpdateApprovalDocs, UpdateDocs, UpdateRolesDocs } from '@swagger/users';
@@ -81,6 +82,7 @@ export class UsersController {
     }
 
     // PATCH /users/me/onboarding — marca o tour inicial como visto
+    @AllowPasswordPending()
     @Patch("me/onboarding")
     async markOnboardingSeen(@Request() req: AuthenticatedRequest) {
         const user = await this.usersService.markOnboardingSeen(req.user.userId);

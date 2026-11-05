@@ -1,9 +1,6 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { EmailService } from "@modules/email/email.service";
 import { NotificationService } from "@modules/email/notification.service";
-import { approvalTemplate } from "@modules/email/templates/approval.template";
 import { UsersRepository } from "./repositories/users.repository";
 import { UpdateUserDto, getRandomAvatarKey } from "./dto/update-user.dto";
 import { CreateEducatorDto } from "./dto/create-educator.dto";
@@ -14,14 +11,10 @@ import { ClassroomService } from '../classrooms/classroom.service';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(
     private usersRepository: UsersRepository,
     private readonly institutionsService: InstitutionsService,
     private readonly classroomService: ClassroomService,
-    private readonly emailService: EmailService,
-    private readonly config: ConfigService,
     private readonly notifications: NotificationService,
   ) {}
 
@@ -43,33 +36,16 @@ export class UsersService {
   }
 
   // Aprova ou recusa uma conta (perfil de aluno). Também serve para o gestor
-  // rever uma recusa. O aluno é avisado por email da decisão.
+  // rever uma recusa. O aluno é notificado da decisão.
   async updateApproval(id: string, status: ApprovalStatus) {
     const user = await this.findByIdOrFail(id);
     const updated = await this.usersRepository.updateApprovalStatus(id, status);
 
-    if (user.email && (status === ApprovalStatus.APPROVED || status === ApprovalStatus.REJECTED)) {
-      await this.sendApprovalEmail(user.name, user.email, status === ApprovalStatus.APPROVED);
+    if (status === ApprovalStatus.APPROVED || status === ApprovalStatus.REJECTED) {
+      await this.notifications.approvalDecided(user.id, status === ApprovalStatus.APPROVED);
     }
 
     return updated;
-  }
-
-  // Falha no envio não desfaz a decisão do gestor — fica só no log
-  private async sendApprovalEmail(name: string, email: string, approved: boolean) {
-    const frontendUrl = (this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173').replace(/\/+$/, '');
-    const { html, text, subject } = approvalTemplate({
-      name,
-      approved,
-      loginUrl: `${frontendUrl}/auth/login`,
-      logoUrl: `${frontendUrl}/logo/logo-simples.png`,
-    });
-
-    try {
-      await this.emailService.send({ to: email, subject, html, text });
-    } catch (err) {
-      this.logger.error(`Não foi possível enviar o email de aprovação para ${email}`, err as Error);
-    }
   }
 
   // Cadastro de educador (professor/intérprete) feito por um MANAGER
@@ -110,7 +86,7 @@ export class UsersService {
     // Educador também entra automaticamente na turma Contexto
     if (educator) {
       await this.classroomService.enrollInContext(educator.id, roles);
-      await this.notifications.educatorWelcome(dto.name, dto.email);
+      await this.notifications.educatorWelcome(educator.id, dto.name, dto.email);
     }
 
     return educator;
@@ -152,12 +128,7 @@ export class UsersService {
   async update(id: string, updatedUser: UpdateUserDto) {
     await this.findByIdOrFail(id);
 
-    // Senha nunca vai para o banco em texto puro
-    const data = updatedUser.password
-      ? { ...updatedUser, password: await bcrypt.hash(updatedUser.password, 10) }
-      : updatedUser;
-
-    return this.usersRepository.update(id, data);
+    return this.usersRepository.update(id, updatedUser);
   }
 
   async updateRoles(id: string, roles: Role[]) {

@@ -76,6 +76,28 @@ export class AuthRepository {
         return { locked: true, remaining: 0 };
     }
 
+    findPasswordHash(userId: string) {
+        return this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { password: true },
+        });
+    }
+
+    // Grava a nova senha, libera a conta e invalida as sessões anteriores
+    updatePassword(userId: string, password: string) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                password,
+                mustChangePassword: false,
+                passwordChangedAt: new Date(),
+                failedLoginAttempts: 0,
+                lockedUntil: null,
+            },
+            select: { id: true, email: true, roles: true },
+        });
+    }
+
     async clearLoginLock(userId: string) {
         await this.prisma.user.update({
             where: { id: userId },

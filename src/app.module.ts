@@ -12,6 +12,7 @@ import { GlossaryDisciplineModule } from '@modules/glossary-discipline/glossary-
 import { HandConfigModule } from '@modules/hand-config/hand-config.module';
 import { HealthModule } from '@modules/health/health.module';
 import { HistoryModule } from '@modules/history/history.module';
+import { NotificationsModule } from '@modules/notifications/notifications.module';
 import { R2Module } from '@modules/r2/r2.module';
 import { SearchModule } from '@modules/search/search.module';
 import { SignModule } from '@modules/sign/sign.module';
@@ -32,6 +33,7 @@ import { SignModule } from '@modules/sign/sign.module';
     HandConfigModule,
     HealthModule,
     HistoryModule,
+    NotificationsModule,
     R2Module,
     SearchModule,
     SignModule,

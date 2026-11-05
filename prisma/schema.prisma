@@ -42,6 +42,11 @@ model User {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
+  // Conta criada pelo gestor nasce com senha temporária: a API fica bloqueada até a troca
+  mustChangePassword Boolean   @default(false)
+  // Tokens emitidos antes desta data deixam de valer
+  passwordChangedAt  DateTime?
+
   passwordResetTokens PasswordResetToken[]
 
   institution Institution? @relation(fields: [institutionId], references: [id])
@@ -56,6 +61,7 @@ model User {
   favorites Favorite[]
   history   History[]
   signAccesses SignAccess[]
+  notifications Notification[]
 
   essayCompletions EssayPromptCompletion[]
 }
@@ -425,4 +431,24 @@ model SignAccess {
 
   @@index([createdAt])
   @@index([signId])
+}
+
+// Aviso exibido no sino da plataforma (substitui o envio de email)
+model Notification {
+  id      String  @id @default(uuid())
+  userId  String
+  tone    String // success | danger | info
+  title   String
+  message String
+  // Motivo informado pelo gestor, quando houver
+  reason  String?
+  // Caminho interno aberto ao clicar (ex: /signs/casa)
+  link    String?
+  readAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

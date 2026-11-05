@@ -1,7 +1,7 @@
 import { NotificationService } from '@modules/email/notification.service';
 import * as bcrypt from 'bcrypt'
 
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
@@ -100,6 +100,27 @@ export class AuthService {
         }
 
         return account;
+    }
+
+    // Exige a senha atual: um token roubado sozinho não consegue trocar a senha.
+    // Erro 400 (e não 401) para o front não tratar como sessão expirada.
+    async changePassword(userId: string, currentPassword: string, newPassword: string) {
+        const credentials = await this.authRepository.findPasswordHash(userId);
+        if (!credentials) throw new UnauthorizedException('Token inválido ou expirado');
+
+        const isCurrentValid = await bcrypt.compare(currentPassword, credentials.password);
+        if (!isCurrentValid) throw new BadRequestException('Senha atual incorreta');
+
+        if (await bcrypt.compare(newPassword, credentials.password)) {
+            throw new BadRequestException('A nova senha precisa ser diferente da atual');
+        }
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        const user = await this.authRepository.updatePassword(userId, hashed);
+
+        // Token novo mantém esta sessão; as demais caem pelo passwordChangedAt
+        const token = this.jwtService.sign({ userId: user.id, email: user.email, roles: user.roles });
+        return { access_token: token, user: await this.usersService.findUser(user.id) };
     }
 
     async getMe(userId: string) {

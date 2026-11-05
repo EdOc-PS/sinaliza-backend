@@ -74,7 +74,13 @@ export class PasswordResetService {
       // Redefinir a senha também libera um eventual bloqueio por tentativas
       this.prisma.user.update({
         where: { id: record.userId },
-        data: { password: hashed, failedLoginAttempts: 0, lockedUntil: null },
+        data: {
+          password: hashed,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+          mustChangePassword: false,
+          passwordChangedAt: new Date(),
+        },
       }),
       this.prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
     ]);

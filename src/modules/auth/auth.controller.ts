@@ -1,10 +1,12 @@
-import { Body, Controller, Get, HttpCode, Post, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, UseGuards, Request } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { AllowPasswordPending } from '@common/decorators/allow-password-pending.decorator';
 import { PasswordResetService } from './password-reset.service';
 import { ApiResponse } from '@common/dto/response.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -51,6 +53,7 @@ export class AuthController {
     // GET /auth/me
     @GetMeDocs()
     @UseGuards(JwtAuthGuard)
+    @AllowPasswordPending()
     @Get('me')
     async getMe(@Request() req: AuthenticatedRequest) {
         const user = await this.authService.getMe(req.user.userId);
@@ -72,6 +75,16 @@ export class AuthController {
             success: true,
             message: 'Se o email estiver cadastrado, você receberá um link para redefinir a senha.',
         };
+    }
+
+    // PATCH /auth/password — troca a senha do usuário logado
+    @Throttle({ default: { ttl: 60_000, limit: 5 } })
+    @UseGuards(JwtAuthGuard)
+    @AllowPasswordPending()
+    @Patch('password')
+    async changePassword(@Body() dto: ChangePasswordDto, @Request() req: AuthenticatedRequest) {
+        const result = await this.authService.changePassword(req.user.userId, dto.currentPassword, dto.newPassword);
+        return { success: true, message: 'Senha alterada com sucesso!', object: result };
     }
 
     // POST /auth/reset-password — troca a senha usando o token do email
