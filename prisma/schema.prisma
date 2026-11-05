@@ -220,6 +220,8 @@ model ClassroomEnrollment {
   userId      String
   classroomId String
   roleInClass ClassRole
+  // Administrador da turma: mesmas permissões de quem a criou
+  isAdmin     Boolean   @default(false)
   // Última vez que o usuário abriu a turma — sinais criados depois disso
   // contam como "novos" na bolinha do card. Nulo = usa a data da matrícula.
   lastSeenAt  DateTime?

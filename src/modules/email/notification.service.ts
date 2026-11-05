@@ -208,6 +208,20 @@ export class NotificationService {
         });
   }
 
+  // Educador promovido a administrador da turma
+  async promotedToClassroomAdmin(userId: string, classroomId: string, classroomName: string) {
+    const user = await this.findUser(userId);
+    if (!user) return;
+    await this.send(user, {
+      tone: 'success',
+      badge: 'Administrador',
+      title: `Você agora é administrador da turma ${classroomName}`,
+      preheader: `Você pode gerenciar a turma ${classroomName}.`,
+      paragraphs: [`Você recebeu as mesmas permissões de quem criou a turma "${classroomName}".`],
+      button: { label: 'Abrir a turma', url: `${this.frontendUrl}/classrooms/${classroomId}` },
+    });
+  }
+
   // Participante adicionado a uma turma pelo professor
   async addedToClassroom(userId: string, classroomId: string, classroomName: string, teacherName: string) {
     const user = await this.findUser(userId);

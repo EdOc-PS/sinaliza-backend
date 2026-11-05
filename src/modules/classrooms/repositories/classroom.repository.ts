@@ -76,6 +76,7 @@ export class ClassroomRepository {
       where: { userId },
       select: {
         roleInClass: true,
+        isAdmin: true,
         createdAt: true,
         lastSeenAt: true,
         classroom: { select: classroomCardSelect },
@@ -198,6 +199,7 @@ export class ClassroomRepository {
       where: { classroomId },
       select: {
         roleInClass: true,
+        isAdmin: true,
         createdAt: true,
         user: {
           select: {
@@ -210,6 +212,13 @@ export class ClassroomRepository {
         },
       },
       orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async setAdmin(userId: string, classroomId: string, isAdmin: boolean) {
+    return this.prisma.classroomEnrollment.update({
+      where: { userId_classroomId: { userId, classroomId } },
+      data: { isAdmin },
     });
   }
 

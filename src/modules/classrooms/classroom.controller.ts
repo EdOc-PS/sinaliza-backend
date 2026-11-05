@@ -21,6 +21,7 @@ import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
 import { JoinClassroomDto } from './dto/join-classroom.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { UpdateMemberAdminDto } from './dto/update-member-admin.dto';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
 import {
   CreateClassroomDocs,
@@ -158,6 +159,19 @@ export class ClassroomController {
   ) {
     await this.classroomService.removeMember(id, req.user.userId, userId);
     return { success: true, message: 'Participante removido com sucesso' };
+  }
+
+  // PATCH /classrooms/:id/members/:userId/admin — promove ou rebaixa administrador
+  @Roles(Role.EDUCATOR, Role.MANAGER)
+  @Patch(':id/members/:userId/admin')
+  async setMemberAdmin(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: UpdateMemberAdminDto,
+  ) {
+    await this.classroomService.setMemberAdmin(id, req.user.userId, userId, dto.isAdmin);
+    return { success: true, message: dto.isAdmin ? 'Participante promovido a administrador' : 'Administrador rebaixado' };
   }
 
   // PATCH /classrooms/:id

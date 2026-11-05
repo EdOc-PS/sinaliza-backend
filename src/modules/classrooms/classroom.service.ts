@@ -2,6 +2,7 @@ import { NotificationService } from '@modules/email/notification.service';
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
   ForbiddenException,
   ConflictException,
 } from '@nestjs/common';
@@ -97,7 +98,7 @@ export class ClassroomService {
       if (!map.has(c.id)) {
         map.set(c.id, {
           ...transformClassroomCard(c),
-          canManage: c.teacherId === userId,
+          canManage: c.teacherId === userId || e.isAdmin,
         });
       }
     }
@@ -137,8 +138,35 @@ export class ClassroomService {
     const enrollments = await this.classroomRepository.findAllByStudent(userId);
     return enrollments.map(e => ({
       ...transformClassroomCard(e.classroom),
-      canManage: e.classroom.teacherId === userId,
+      canManage: e.classroom.teacherId === userId || e.isAdmin,
     }));
+  }
+
+  // Dono ou administrador da turma têm as mesmas permissões
+  private async canManage(classroomId: string, ownerId: string, userId: string) {
+    if (ownerId === userId) return true;
+    const enrollment = await this.classroomRepository.findEnrollment(userId, classroomId);
+    return !!enrollment?.isAdmin;
+  }
+
+  // Promove ou rebaixa um educador matriculado na turma
+  async setMemberAdmin(classroomId: string, requesterId: string, userId: string, isAdmin: boolean) {
+    const classroom = await this.findById(classroomId);
+    if (!(await this.canManage(classroom.id, classroom.teacher.id, requesterId))) {
+      throw new ForbiddenException('Apenas o dono ou um administrador da turma pode alterar administradores');
+    }
+
+    const enrollment = await this.classroomRepository.findEnrollment(userId, classroomId);
+    if (!enrollment) throw new NotFoundException('Participante não encontrado na turma');
+    // As rotas de gestão da turma exigem perfil de educador
+    if (enrollment.roleInClass !== 'EDUCATOR') {
+      throw new BadRequestException('Apenas educadores podem ser administradores da turma');
+    }
+
+    await this.classroomRepository.setAdmin(userId, classroomId, isAdmin);
+    if (isAdmin && !enrollment.isAdmin) {
+      await this.notifications.promotedToClassroomAdmin(userId, classroomId, classroom.name);
+    }
   }
 
   async findById(id: string) {
@@ -150,8 +178,8 @@ export class ClassroomService {
   async update(id: string, teacherId: string, dto: UpdateClassroomDto) {
     const classroom = await this.findById(id);
 
-    if (classroom.teacher.id !== teacherId) {
-      throw new ForbiddenException('Apenas o professor da turma pode editá-la');
+    if (!(await this.canManage(classroom.id, classroom.teacher.id, teacherId))) {
+      throw new ForbiddenException('Apenas o dono ou um administrador da turma pode editá-la');
     }
     if (classroom.isContext) {
       throw new ForbiddenException('A turma Contexto não pode ser editada');
@@ -163,8 +191,8 @@ export class ClassroomService {
   async delete(id: string, teacherId: string) {
     const classroom = await this.findById(id);
 
-    if (classroom.teacher.id !== teacherId) {
-      throw new ForbiddenException('Apenas o professor da turma pode excluí-la');
+    if (!(await this.canManage(classroom.id, classroom.teacher.id, teacherId))) {
+      throw new ForbiddenException('Apenas o dono ou um administrador da turma pode excluí-la');
     }
     if (classroom.isContext) {
       throw new ForbiddenException('A turma Contexto não pode ser excluída');
@@ -196,8 +224,8 @@ export class ClassroomService {
   // Professor adiciona um participante pelo email
   async addMember(classroomId: string, teacherId: string, email: string) {
     const classroom = await this.findById(classroomId);
-    if (classroom.teacher.id !== teacherId) {
-      throw new ForbiddenException('Apenas o professor da turma pode adicionar participantes');
+    if (!(await this.canManage(classroom.id, classroom.teacher.id, teacherId))) {
+      throw new ForbiddenException('Apenas o dono ou um administrador da turma pode adicionar participantes');
     }
 
     const user = await this.classroomRepository.findUserByEmail(email);
@@ -222,8 +250,8 @@ export class ClassroomService {
   // Professor remove um participante da turma
   async removeMember(classroomId: string, teacherId: string, userId: string) {
     const classroom = await this.findById(classroomId);
-    if (classroom.teacher.id !== teacherId) {
-      throw new ForbiddenException('Apenas o professor da turma pode remover participantes');
+    if (!(await this.canManage(classroom.id, classroom.teacher.id, teacherId))) {
+      throw new ForbiddenException('Apenas o dono ou um administrador da turma pode remover participantes');
     }
     if (userId === classroom.teacher.id) {
       throw new ForbiddenException('O professor da turma não pode ser removido');
@@ -268,8 +296,8 @@ export class ClassroomService {
     const classroom = await this.findById(classroomId);
 
     const isManager = requesterRoles.includes(Role.MANAGER);
-    if (classroom.teacher.id !== requesterId && !isManager) {
-      throw new ForbiddenException('Apenas o professor da turma pode ver estas estatísticas');
+    if (!isManager && !(await this.canManage(classroom.id, classroom.teacher.id, requesterId))) {
+      throw new ForbiddenException('Apenas o dono ou um administrador da turma pode ver estas estatísticas');
     }
 
     const signs = await this.classroomRepository.findSignsByClassroom(classroomId);
