@@ -46,6 +46,8 @@ model User {
   mustChangePassword Boolean   @default(false)
   // Tokens emitidos antes desta data deixam de valer
   passwordChangedAt  DateTime?
+  // Gestor aprovou a troca: o próximo login passa a exigir a senha nova
+  passwordChangeApproved Boolean @default(false)
 
   passwordResetTokens PasswordResetToken[]
 
@@ -62,6 +64,7 @@ model User {
   history   History[]
   signAccesses SignAccess[]
   notifications Notification[]
+  passwordChangeRequests PasswordChangeRequest[]
 
   essayCompletions EssayPromptCompletion[]
 }
@@ -447,10 +450,29 @@ model Notification {
   // Caminho interno aberto ao clicar (ex: /signs/casa)
   link    String?
   readAt  DateTime?
+  // Preenchido nos avisos em que o gestor aprova ou recusa a troca de senha
+  passwordRequestId String?
+  passwordRequest   PasswordChangeRequest? @relation(fields: [passwordRequestId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+// Pedido de troca de senha feito pelo usuário e decidido por um gestor
+model PasswordChangeRequest {
+  id          String         @id @default(uuid())
+  userId      String
+  status      ApprovalStatus @default(PENDING)
+  decidedById String?
+
+  createdAt DateTime  @default(now())
+  decidedAt DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([userId, status])
 }

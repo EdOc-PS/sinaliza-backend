@@ -1,15 +1,45 @@
-import { Controller, Delete, Get, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/jwt-auth.guard';
 import type { AuthenticatedRequest } from '@common/interfaces/authenticated';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+import { Role } from '@common/enums/enum';
 import { NotificationsService } from './notifications.service';
+import { PasswordRequestService } from './password-request.service';
+import { DecidePasswordRequestDto } from './dto/decide-password-request.dto';
 
 @ApiTags('Notifications')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly passwordRequestService: PasswordRequestService,
+  ) {}
+
+  // POST /notifications/password-requests — pede ao gestor a troca da senha
+  @Throttle({ default: { ttl: 60_000, limit: 3 } })
+  @Post('password-requests')
+  async requestPasswordChange(@Request() req: AuthenticatedRequest) {
+    await this.passwordRequestService.create(req.user.userId);
+    return { success: true, message: 'Pedido enviado ao gestor' };
+  }
+
+  // PATCH /notifications/password-requests/:id — gestor aprova ou recusa
+  @UseGuards(RolesGuard)
+  @Roles(Role.MANAGER)
+  @Patch('password-requests/:id')
+  async decidePasswordRequest(
+    @Param('id') id: string,
+    @Body() dto: DecidePasswordRequestDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    await this.passwordRequestService.decide(id, req.user.userId, dto.approve);
+    return { success: true, message: dto.approve ? 'Pedido aprovado' : 'Pedido recusado' };
+  }
 
   // GET /notifications
   @Get()

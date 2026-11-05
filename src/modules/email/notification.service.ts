@@ -28,7 +28,7 @@ export class NotificationService {
     return (this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173').replace(/\/+$/, '');
   }
 
-  private async send(to: Recipient, data: Omit<NoticeTemplateData, 'name' | 'logoUrl'>) {
+  private async send(to: Recipient, data: Omit<NoticeTemplateData, 'name' | 'logoUrl'>, passwordRequestId?: string) {
     try {
       await this.prisma.notification.create({
         data: {
@@ -38,6 +38,7 @@ export class NotificationService {
           message: data.paragraphs.join(' '),
           reason: data.highlight?.text,
           link: data.button?.url.replace(this.frontendUrl, ''),
+          passwordRequestId,
         },
       });
     } catch (err) {
@@ -205,6 +206,43 @@ export class NotificationService {
           title: 'Seu cadastro não foi aprovado',
           preheader: 'Um gestor analisou o seu cadastro.',
           paragraphs: ['Um gestor analisou o seu cadastro e ele não foi aprovado. Fale com a instituição para saber mais.'],
+        });
+  }
+
+  // Pedido de troca de senha → gestores, que aprovam ou recusam na tela de notificações
+  async passwordChangeRequested(requestId: string, userName: string, institutionId?: string | null) {
+    const managers = await this.findManagers(institutionId);
+    await Promise.all(
+      managers.map((manager) =>
+        this.send(manager, {
+          tone: 'info',
+          badge: 'Troca de senha',
+          title: 'Pedido de troca de senha',
+          preheader: `${userName} pediu para redefinir a senha.`,
+          paragraphs: [`${userName} está solicitando redefinir a senha.`],
+        }, requestId),
+      ),
+    );
+  }
+
+  // Decisão sobre a troca de senha → quem pediu
+  async passwordChangeDecided(userId: string, approved: boolean) {
+    const user = await this.findUser(userId);
+    if (!user) return;
+    await this.send(user, approved
+      ? {
+          tone: 'success',
+          badge: 'Troca de senha',
+          title: 'Troca de senha aprovada',
+          preheader: 'Você já pode definir uma nova senha.',
+          paragraphs: ['Um gestor aprovou o seu pedido. Saia e entre de novo na plataforma para definir a nova senha.'],
+        }
+      : {
+          tone: 'danger',
+          badge: 'Troca de senha',
+          title: 'Troca de senha recusada',
+          preheader: 'Um gestor recusou o seu pedido.',
+          paragraphs: ['Um gestor recusou o seu pedido de troca de senha. Fale com a instituição para saber mais.'],
         });
   }
 

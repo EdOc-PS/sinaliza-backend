@@ -79,7 +79,7 @@ export class AuthRepository {
     findPasswordHash(userId: string) {
         return this.prisma.user.findUnique({
             where: { id: userId },
-            select: { password: true },
+            select: { password: true, mustChangePassword: true },
         });
     }
 
@@ -90,11 +90,20 @@ export class AuthRepository {
             data: {
                 password,
                 mustChangePassword: false,
+                passwordChangeApproved: false,
                 passwordChangedAt: new Date(),
                 failedLoginAttempts: 0,
                 lockedUntil: null,
             },
             select: { id: true, email: true, roles: true },
+        });
+    }
+
+    // Aprovação do gestor vira troca obrigatória neste login
+    async applyApprovedPasswordChange(userId: string) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { mustChangePassword: true, passwordChangeApproved: false },
         });
     }
 

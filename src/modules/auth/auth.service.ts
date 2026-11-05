@@ -60,6 +60,10 @@ export class AuthService {
             await this.authRepository.clearLoginLock(user.id);
         }
 
+        if (user.passwordChangeApproved) {
+            await this.authRepository.applyApprovedPasswordChange(user.id);
+        }
+
         const token = this.jwtService.sign({ userId: user.id, email: user.email, roles: user.roles });
 
         // Retorna o usuário enriquecido (inclui approvalStatus para o front decidir sobre pendência)
@@ -102,14 +106,16 @@ export class AuthService {
         return account;
     }
 
-    // Exige a senha atual: um token roubado sozinho não consegue trocar a senha.
+    // Só vale com a troca liberada (senha temporária ou aprovação do gestor): por isso
+    // não pede a senha atual, e uma sessão esquecida aberta não consegue trocar a senha.
     // Erro 400 (e não 401) para o front não tratar como sessão expirada.
-    async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    async changePassword(userId: string, newPassword: string) {
         const credentials = await this.authRepository.findPasswordHash(userId);
         if (!credentials) throw new UnauthorizedException('Token inválido ou expirado');
 
-        const isCurrentValid = await bcrypt.compare(currentPassword, credentials.password);
-        if (!isCurrentValid) throw new BadRequestException('Senha atual incorreta');
+        if (!credentials.mustChangePassword) {
+            throw new ForbiddenException('Peça a troca de senha ao gestor pelo seu perfil');
+        }
 
         if (await bcrypt.compare(newPassword, credentials.password)) {
             throw new BadRequestException('A nova senha precisa ser diferente da atual');

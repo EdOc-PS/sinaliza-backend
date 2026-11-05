@@ -13,6 +13,7 @@ export class NotificationsService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: LIST_LIMIT,
+      include: { passwordRequest: { select: { id: true, status: true } } },
     });
   }
 

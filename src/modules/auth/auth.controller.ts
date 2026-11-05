@@ -83,7 +83,7 @@ export class AuthController {
     @AllowPasswordPending()
     @Patch('password')
     async changePassword(@Body() dto: ChangePasswordDto, @Request() req: AuthenticatedRequest) {
-        const result = await this.authService.changePassword(req.user.userId, dto.currentPassword, dto.newPassword);
+        const result = await this.authService.changePassword(req.user.userId, dto.newPassword);
         return { success: true, message: 'Senha alterada com sucesso!', object: result };
     }
 
