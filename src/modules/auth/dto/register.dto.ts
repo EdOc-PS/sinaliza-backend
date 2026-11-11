@@ -11,6 +11,7 @@ import {
     IsPhoneNumber,
     IsString,
     MinLength,
+    IsIn,
     ValidateNested,
 } from 'class-validator'
 
@@ -75,7 +76,8 @@ export class RegisterDto {
     password!: string
 
     @ApiProperty({ example: 'STUDENT', enum: Role })
-    @IsEnum(Role)
+    // Gestor só é concedido por outro gestor, nunca pelo cadastro público
+    @IsIn([Role.STUDENT, Role.EDUCATOR], { message: 'Perfil inválido para cadastro.' })
     @IsNotEmpty()
     role!: Role
 

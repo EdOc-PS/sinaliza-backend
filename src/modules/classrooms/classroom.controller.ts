@@ -81,8 +81,8 @@ export class ClassroomController {
   // GET /classrooms/:id
   @FindOneClassroomDocs()
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const classroom = await this.classroomService.findById(id);
+  async findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+    const classroom = await this.classroomService.assertCanView(id, req.user.userId, req.user.roles);
     return { success: true, message: 'Turma obtida com sucesso', object: classroom };
   }
 
@@ -91,6 +91,7 @@ export class ClassroomController {
   @Roles(Role.STUDENT, Role.EDUCATOR, Role.MANAGER)
   @Get(':id/signs')
   async findSigns(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+    await this.classroomService.assertCanView(id, req.user.userId, req.user.roles);
     const signs = await this.classroomService.findSigns(id);
     // Abrir a lista de sinais conta como visita: zera a bolinha de sinais novos
     await this.classroomService.markSeen(req.user.userId, id);
@@ -133,7 +134,7 @@ export class ClassroomController {
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    const members = await this.classroomService.findMembers(id, req.user.userId);
+    const members = await this.classroomService.findMembers(id, req.user.userId, req.user.roles);
     return { success: true, message: 'Membros obtidos com sucesso', object: members };
   }
 

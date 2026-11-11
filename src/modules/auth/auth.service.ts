@@ -103,7 +103,9 @@ export class AuthService {
             await this.notifications.studentPendingApproval(dto.name, institutionId);
         }
 
-        return account;
+        // O hash da senha não sai na resposta
+        const { password: _password, ...safeAccount } = account;
+        return safeAccount;
     }
 
     // Só vale com a troca liberada (senha temporária ou aprovação do gestor): por isso

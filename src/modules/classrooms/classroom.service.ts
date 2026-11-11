@@ -142,6 +142,15 @@ export class ClassroomService {
     }));
   }
 
+  // Ver a turma: dono, matriculado ou gestor
+  async assertCanView(classroomId: string, userId: string, roles: Role[]) {
+    const classroom = await this.findById(classroomId);
+    if (roles.includes(Role.MANAGER) || classroom.teacher.id === userId) return classroom;
+    const enrollment = await this.classroomRepository.findEnrollment(userId, classroomId);
+    if (!enrollment) throw new ForbiddenException('Você não participa desta turma');
+    return classroom;
+  }
+
   // Dono ou administrador da turma têm as mesmas permissões
   private async canManage(classroomId: string, ownerId: string, userId: string) {
     if (ownerId === userId) return true;
@@ -215,8 +224,8 @@ export class ClassroomService {
     return transformClassroom(classroom);
   }
 
-  async findMembers(id: string, requesterId: string) {
-    await this.findById(id);
+  async findMembers(id: string, requesterId: string, requesterRoles: Role[]) {
+    await this.assertCanView(id, requesterId, requesterRoles);
     const members = await this.classroomRepository.findMembers(id);
     return members.map((m) => ({ ...m, user: flattenEducatorType(m.user) }));
   }
